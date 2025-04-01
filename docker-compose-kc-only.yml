@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0.1
+    container_name: keycloak
+    entrypoint: /opt/keycloak/bin/kc.sh start-dev --import-realm
+    volumes:
+      - ./keycloak/data:/opt/keycloak/data/h2
+      - ./Keycloak/import:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    restart: unless-stopped
+
+networks:
+  host:
+    external: true

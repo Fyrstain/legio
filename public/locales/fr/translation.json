@@ -1,0 +1,22 @@
+{
+    "navbar": {
+        "items": {
+            "page": "PAGE"
+        },
+        "dropdown": {
+            "login": "Connexion",
+            "logout": "Déconnexion",
+            "admin": "Admin"
+        }
+    },
+    "title": {
+        "page": "Page"
+    },
+    "footer": {
+        "items": {
+            "about": "A propos",
+            "contact": "Contact",
+            "problemtracking": "Suivi de problème"
+        }
+    }
+}

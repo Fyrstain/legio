@@ -1,0 +1,194 @@
+@import url("https://fonts.googleapis.com/css2?family=Georama:wght@400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap");
+
+@font-face {
+    font-family: "Georama SemiCondensed";
+    src: url("../public/Georama_SemiCondensed-Regular.ttf");
+    font-weight: 400;
+}
+
+body {
+    margin: auto;
+    line-height: normal;
+    font-family: var(--font-lato);
+    font-size: 1rem;
+    height: 100%;
+    color: var(--secondary-color);
+}
+
+:root {
+    /* fonts */
+    --title: "Georama SemiCondensed";
+    --font-lato: Lato;
+    --navbar1: Georama;
+
+    /* font sizes */
+    --title-1-desktop-size: 3rem;
+    --title-1-tablet-size: 2.5rem;
+    --title-2-desktop-size: 2.2rem;
+    --title-2-tablet-size: 1.6rem;
+    --title-3-desktop-size: 1.75rem;
+    --title-3-tablet-size: 1.375rem;
+    --title-4-desktop-size: 1.5rem;
+    --title-4-tablet-size: 1.19rem;
+    --title-5-desktop-size: 1.25rem;
+    --title-5-tablet-size: 1rem;
+
+    /* Colors */
+    --primary-color: #e40032;
+    --secondary-color: #333f4c;
+    --gray: #D9D9D9;
+    --lightGray: #F7F6F7;
+    --white: #fff;
+    --info-color: #1581BF;
+    --success-color: #8BC74E;
+    --warning-color: #ECAA07;
+    --pending-color: #e5e912;
+
+    /* Gaps */
+    --gap-md: 0.31rem;
+    --gap-lg: 1rem;
+
+    /* Paddings */
+    --padding-sm: 1.38rem;
+    --padding-md: 3rem;
+}
+
+.section {
+    margin: auto;
+    margin-top: 3rem;
+}
+
+.displayFlexCenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spaceBetweenContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.spaceBetweenContainerStart {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.flexWrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flexWrapStart {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.flexWrapSpaceBetween {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.flexColumnContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.flexColumnContainerAlignStart {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.userCard {
+    width: 70%;
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+}
+
+.cardBody {
+    padding-top: 2rem;
+}
+
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.mediumContainer {
+    width: 48%;
+}
+
+.largeContainer {
+    width: 90%;
+}
+
+.badgeContainer {
+    width: 11rem;
+}
+
+.select {
+    margin-bottom: 1rem;
+}
+
+textarea,
+p {
+    text-align: justify;
+}
+
+.link {
+    margin-top: 2rem;
+}
+
+.actionIcon {
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.actionIcon:hover {
+    color: var(--primary-color);
+}
+
+.button {
+    width: 8.75rem;
+    cursor: pointer;
+    margin: 2rem 2rem 1rem 0;
+}
+
+.fit {
+    width: fit-content;
+}
+
+.largeButton {
+    width: 90%;
+    margin-top: 2rem;
+}
+
+.message {
+    display: none;
+    color: var(--primary-color);
+}
+
+li:hover {
+    background-color: var(--gray);
+    cursor: pointer;
+}
+
+.footerContainer {
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+}

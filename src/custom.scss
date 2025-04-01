@@ -1,0 +1,58 @@
+$darkGray: #333f4c;
+$red: #e40032;
+$white: #fff;
+$gray: #D9D9D9;
+$lightGray: #F7F6F7;
+
+// form-select, textarea and input border color when is not visited
+$input-border-color: $darkGray;
+
+// form-select, border color when is visited
+$input-focus-border-color: $gray;
+
+// form-select icon color
+$gray-800: $darkGray;
+
+// form-select text color
+$input-color: $darkGray;
+
+// box-shadow size when form-select is visited
+$input-focus-width: 0rem;
+
+// box-shadow color when input and textarea are visited
+$input-btn-focus-color: $lightGray;
+
+// card title background
+$card-cap-bg: $lightGray;
+
+// card border color
+$card-border-color: $gray;
+
+// title2 card color
+$card-cap-color: $darkGray;
+
+// numbers pagination color
+$pagination-color: $darkGray;
+
+// Background pagination color
+$pagination-active-bg: $red;
+
+$link-color: $darkGray;
+$link-hover-color: $gray;
+
+$spinner-width: 5rem;
+
+$blue: $gray;
+
+$form-check-input-checked-bg-color: $red;
+
+$theme-colors: (
+    "danger": $red,
+    "primary": $red,
+    "secondary": $darkGray,
+    "success": #8BC74E,
+    "warning": #ECAA07,
+    "info": #1581BF,
+);
+
+@import "~bootstrap/scss/bootstrap";

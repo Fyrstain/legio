@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  front:
+    image: docker.registry.fyrstain.com/pandora/front:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ARG_PORT: ${PORT}
+        ARG_REACT_APP_FHIR_URL: ${REACT_APP_FHIR_URL}
+        ARG_REACT_APP_DISPLAY_CLIENT_LOGO: ${REACT_APP_DISPLAY_CLIENT_LOGO}
+        ARG_REACT_APP_KEYCLOAK_URL: ${REACT_APP_KEYCLOAK_URL}
+        ARG_REACT_APP_REDIRECTURI: ${REACT_APP_REDIRECTURI}
+        ARG_REACT_APP_KEYCLOAK_REALM: ${REACT_APP_KEYCLOAK_REALM}
+        ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID: ${REACT_APP_KEYCLOAK_REALM_CLIENT_ID}
+        ARG_REACT_APP_KEYCLOAK_FLOW: ${REACT_APP_KEYCLOAK_FLOW}
+        ARG_REACT_APP_KEYCLOAK_ONLOAD: ${REACT_APP_KEYCLOAK_ONLOAD}
+        ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME: ${REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME}
+        ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK: ${REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK}
+        ARG_REACT_APP_KEYCLOAK_PKCE_METHOD: ${REACT_APP_KEYCLOAK_PKCE_METHOD}
+        ARG_REACT_APP_KEYCLOAK_RESP_TYPE: ${REACT_APP_KEYCLOAK_RESP_TYPE}
+        ARG_REACT_APP_DISABLE_LIVE_RELOAD: ${REACT_APP_DISABLE_LIVE_RELOAD}
+        ARG_REACT_APP_DISABLE_LIVE_RELOAD_WS_URL: ${REACT_APP_DISABLE_LIVE_RELOAD_WS_URL}
+    ports:
+      - "${PORT}:${PORT}"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://front:3000/Home" ]
+      timeout: "300s"
+      interval: "30s"
+      retries: 3
+      start_period: "15s"
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0.1
+    container_name: keycloak
+    entrypoint: /opt/keycloak/bin/kc.sh start-dev --import-realm
+    volumes:
+      - ./keycloak/data:/opt/keycloak/data/h2
+      - ./Keycloak/import:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    restart: unless-stopped
+
+networks:
+  host:
+    external: true

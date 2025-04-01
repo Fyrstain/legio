@@ -1,0 +1,22 @@
+{
+    "navbar": {
+        "items": {
+            "page": "PAGE"
+        },
+        "dropdown": {
+            "login": "Login",
+            "logout": "Logout",
+            "admin": "Admin"
+        }
+    },
+    "title": {
+        "page": "Page"
+    },
+    "footer": {
+        "items": {
+            "about": "About",
+            "contact": "Contact",
+            "problemtracking": "Problem Tracking"
+        }
+    }
+}

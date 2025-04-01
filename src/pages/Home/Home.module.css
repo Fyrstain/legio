@@ -1,0 +1,13 @@
+.homeimageIcon {
+    width: 35%;
+    height: auto;
+    margin-right: 4rem;
+}
+
+.mainHomeContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    margin-bottom: 5rem;
+}
