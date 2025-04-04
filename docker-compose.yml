@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   front:
-    image: docker.registry.fyrstain.com/pandora/front:latest
+    image: docker.registry.fyrstain.com/legio/front:latest
     build:
       context: .
       dockerfile: Dockerfile

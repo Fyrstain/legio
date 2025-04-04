@@ -12,7 +12,9 @@ import { useEffect } from "react";
 import { Route, Routes, useLocation, useNavigationType } from "react-router-dom";
 // Pages
 import Home from "./pages/Home/Home";
-import Page from "./pages/PageExemple/PageExemple";
+import Studies from "./pages/Studies/Studies";
+import Error from "./pages/Error/Error";
+import InProgress from "./pages/InProgress/InProgress";
 
 require('dayjs/locale/fr');
 
@@ -47,14 +49,22 @@ function App() {
 
     switch (pathname) {
       case "/":
-      case "/Application":
+      case "/Legio":
       case "/Home":
-      case "/Application/Home":
+      case "/Legio/Home":
         title = "Home page";
         metaDescription = "";
         break;
-      case "/Page":
-        title = "page";
+      case "/Error":
+        title = "Oops !";
+        metaDescription = "";
+        break;
+      case "/InProgress":
+        title = "Coming Soon";
+        metaDescription = "";
+        break;
+      case "/Studies":
+        title = "Studies";
         metaDescription = "";
         break;
     }
@@ -85,16 +95,24 @@ function App() {
         element={<Home />}
       />
       <Route
-        path="/Application"
+        path="/Legio"
         element={<Home />}
       />
       <Route
-        path="/Application/Home"
+        path="/Legio/Home"
         element={<Home />}
       />
       <Route
-        path="/Page"
-        element={<Page />}
+        path="/Studies"
+        element={<Studies />}
+      />
+      <Route
+        path="/Error"
+        element={<Error />}
+      />
+      <Route
+        path="/InProgress"
+        element={<InProgress />}
       />
     </Routes>
   );

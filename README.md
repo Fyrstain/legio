@@ -1,5 +1,5 @@
-# Application name
-Description : 
+# Legio
+Description : React front application for cohorting and datamart. 
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ For more information on integrating Nexus with our Maven, npm and Docker project
 ## Retrieving a component added to the library
 
 When a component has just been added to the library to be able to use it :
-1) In the package.json file put the same version as in the library (@fyrstain/fhir-front-library)
+1) In the package.json file put the same version as in the library (@fyrstain/hl7-front-library)
 2) In the terminal, run `npm i --force`
 3) Run `npm start` to view project in browser
 
@@ -104,7 +104,7 @@ done in the background.
 If you want to force the build of the image, use the following command :
 
 ```bash
-docker build -t docker.registry.fyrstain.com/pandora/front:latest --secret id=npmrc,src=C:/Users/wylem/.npmrc --build-arg ARG_PORT=3000 --build-arg ARG_REACT_APP_FHIR_URL=http://localhost:8080/fhir --build-arg ARG_REACT_APP_DISPLAY_CLIENT_LOGO=false --build-arg ARG_REACT_APP_KEYCLOAK_URL=http://localhost:8999/ --build-arg ARG_REACT_APP_REDIRECTURI=http://localhost:3000/ --build-arg ARG_REACT_APP_KEYCLOAK_REALM=demo --build-arg ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID=pandora-demo --build-arg ARG_REACT_APP_KEYCLOAK_FLOW=standard --build-arg ARG_REACT_APP_KEYCLOAK_ONLOAD=check-sso --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME=false --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK=false --build-arg ARG_REACT_APP_KEYCLOAK_PKCE_METHOD=S256 --no-cache .
+docker build -t docker.registry.fyrstain.com/legio/front:latest --secret id=npmrc,src=C:/Users/wylem/.npmrc --build-arg ARG_PORT=3000 --build-arg ARG_REACT_APP_FHIR_URL=http://localhost:8080/fhir --build-arg ARG_REACT_APP_DISPLAY_CLIENT_LOGO=false --build-arg ARG_REACT_APP_KEYCLOAK_URL=http://localhost:8999/ --build-arg ARG_REACT_APP_REDIRECTURI=http://localhost:3000/ --build-arg ARG_REACT_APP_KEYCLOAK_REALM=demo --build-arg ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID=pandora-demo --build-arg ARG_REACT_APP_KEYCLOAK_FLOW=standard --build-arg ARG_REACT_APP_KEYCLOAK_ONLOAD=check-sso --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME=false --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK=false --build-arg ARG_REACT_APP_KEYCLOAK_PKCE_METHOD=S256 --no-cache .
 ```
 
 The _build_ command build all images as defined in the docker-compose file. The _--no-cache_ option forces a new
