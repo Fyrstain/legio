@@ -1,5 +1,5 @@
-# Application name
-Description : 
+# Legio
+Description : React front application for cohorting and datamart. 
 
 ## Prerequisites
 

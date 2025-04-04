@@ -1,26 +1,34 @@
 // React
 import { FunctionComponent } from "react";
 // Library
-import { Title } from "@fyrstain/fhir-front-library";
+import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ApplicationPage from "../../components/ApplicationPage/ApplicationPage";
-// Styles
-import styles from "./Home.module.css";
+import LegioPage from "../../components/LegioPage/LegioPage";
+// Translation
+import i18n from "i18next";
 
 const Home: FunctionComponent = () => {
     return (
-        <ApplicationPage loading={false} fitFooter={true} needsLogin={false}>
+        <LegioPage loading={false} fitFooter={true} needsLogin={false}>
             <>
-                <div className={styles.mainHomeContainer}>
-                    <img
-                        className={styles.homeimageIcon}
-                        alt="Home_image"
-                        src="/assets/home.jpg"
-                    />
-                    <Title level={1} prefix={'Application'} />
+                <div className='h-100 d-flex justify-content-center align-items-center flex-md-row flex-column gap-3'>
+                    <div>
+                        <img
+                            className='home-image-icon'
+                            alt='Home_image'
+                            src={(process.env.PUBLIC_URL ?? '') + '/assets/home.png'}
+                        />
+                    </div>
+                    <div>
+                        <Title
+                            level={1}
+                            prefix='Legio'
+                            content={i18n.t('title.cohortingdatamart')}
+                        />
+                    </div>
                 </div>
             </>
-        </ApplicationPage>
+        </LegioPage>
     );
 };
 

@@ -1,7 +1,7 @@
 {
     "navbar": {
         "items": {
-            "page": "PAGE"
+            "studies": "ÉTUDES"
         },
         "dropdown": {
             "login": "Connexion",
@@ -10,7 +10,16 @@
         }
     },
     "title": {
-        "page": "Page"
+        "cohortingdatamart": "Cohortes & Datamart",
+        "studies": "Études",
+        "error": {
+            "oops": "Oups !",
+            "problem": "Une erreur est survenue !"
+        },
+        "inprogress": {
+            "wip": "Travaux en cours !",
+            "comingsoon": "Bientôt disponible..."
+        }
     },
     "footer": {
         "items": {
