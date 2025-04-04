@@ -9,7 +9,7 @@ import i18n from "i18next";
 
 const Home: FunctionComponent = () => {
     return (
-        <LegioPage loading={false} fitFooter={true} needsLogin={false}>
+        <LegioPage loading={false} fitFooter={true}>
             <>
                 <div className='h-100 d-flex justify-content-center align-items-center flex-md-row flex-column gap-3'>
                     <div>

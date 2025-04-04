@@ -17,7 +17,7 @@ const LegioPage: FunctionComponent<{
     // Fit the footer to the bottom of the page
     fitFooter?: boolean;
     // If the page needs login or not
-    needsLogin: boolean;
+    needsLogin?: boolean;
     }> = (props) => {
 
     /////////////////////////////////

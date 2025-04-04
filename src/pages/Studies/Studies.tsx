@@ -5,7 +5,7 @@ import LegioPage from "../../components/LegioPage/LegioPage";
 
 const Studies: FunctionComponent = () => {
     return (
-        <LegioPage titleKey='title.studies' loading={false} fitFooter={true} needsLogin={false}>
+        <LegioPage titleKey='title.studies' loading={false} fitFooter={true}>
             <>
                 Add content here
             </>
