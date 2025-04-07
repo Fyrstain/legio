@@ -10,6 +10,7 @@ To preview and run the project on your device:
 2) In the terminal, run `npm install`
 3) Run `npm run build` to retrieve images from the library
 4) Run `npm start` to view project in browser
+5) Launch the browser in no-cors mode : perform the command windows + R and enter this line : chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security, then press the 'Enter' key
 
 For more information on integrating Nexus with our Maven, npm and Docker projects, please see the Nexus integration guide : <a href="https://github.com/Fyrstain/swf-infrastructure/blob/init/nexus/README.md">Nexus ReadMe</a>
 
