@@ -71,8 +71,12 @@ const Studies: FunctionComponent = () => {
               type: "select",
               placeholder: i18n.t("defaultvalue.phase"),
               options: [
+                { value: "n-a", label: "N/A" },
+                { value: "early-phase-1", label: "Early Phase 1" },
                 { value: "phase-1", label: "Phase 1" },
+                { value: "phase-1-phase-2", label: "Phase 1 - Phase 2" },
                 { value: "phase-2", label: "Phase 2" },
+                { value: "phase-2-phase-3", label: "Phase 2 - Phase 3" },
                 { value: "phase-3", label: "Phase 3" },
                 { value: "phase-4", label: "Phase 4" },
               ],
