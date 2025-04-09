@@ -44,7 +44,7 @@ const Studies: FunctionComponent = () => {
   //////////////////////////////
 
   return (
-    <LegioPage titleKey="Studies">
+    <LegioPage titleKey={i18n.t("title.studies")}>
       <SearchableTable
         searchCriteriaProperties={{
           title: i18n.t("title.searchcriteria"),
@@ -88,7 +88,7 @@ const Studies: FunctionComponent = () => {
           columns: [
             {
               header: "ID",
-              dataField: "id",
+              dataField: "Id",
               width: "25%",
             },
             {
@@ -110,7 +110,7 @@ const Studies: FunctionComponent = () => {
           ],
           mapResourceToData: (resource: any) => {
             return {
-              id: resource.id,
+              Id: resource.id,
               Name: resource.title,
               Phase: resource.phase.coding[0].display,
             };
