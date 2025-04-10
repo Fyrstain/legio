@@ -11,6 +11,7 @@
     },
     "title": {
         "cohortingdatamart": "Cohortes & Datamart",
+        "searchcriteria": "Critères de recherche",
         "studies": "Études",
         "error": {
             "oops": "Oups !",
@@ -27,5 +28,16 @@
             "contact": "Contact",
             "problemtracking": "Suivi de problème"
         }
+    },
+    "button": {
+        "search": "Rechercher",
+        "reset": "Réinitialiser",
+        "validate": "Envoyer"
+    },
+    "label": {
+        "name": "Nom"
+    },
+    "defaultvalue": {
+        "phase": "-- Merci de choisir une phase --"
     }
 }
