@@ -15,6 +15,7 @@ import Home from "./pages/Home/Home";
 import Studies from "./pages/Studies/Studies";
 import Error from "./pages/Error/Error";
 import InProgress from "./pages/InProgress/InProgress";
+import StudyDetails from './pages/StudyDetails/StudyDetails';
 
 require('dayjs/locale/fr');
 
@@ -67,6 +68,10 @@ function App() {
         title = "Studies";
         metaDescription = "";
         break;
+      case "/Study/:studyId":
+        title = "Study Details";
+        metaDescription = "";
+        break;
     }
 
     if (title) {
@@ -105,6 +110,10 @@ function App() {
       <Route
         path="/Studies"
         element={<Studies />}
+      /> 
+      <Route
+        path="/Study/:studyId"
+        element={<StudyDetails />}
       />
       <Route
         path="/Error"

@@ -48,17 +48,12 @@ const Studies: FunctionComponent = () => {
 
   const navigate = useNavigate();
 
-  //   const onDetails = useCallback(
-  //     (id: string) => {
-  //       navigate("/Study/" + id);
-  //     },
-  //     [navigate]
-  //   );
-
-  // TODO Replace by onDetails when we'll need the Study Detail Page
-  const viewInProgress = useCallback(() => {
-    navigate("/InProgress");
-  }, [navigate]);
+  const onDetails = useCallback(
+    (id: string) => {
+      navigate("/Study/" + id);
+    },
+    [navigate]
+  );
 
   /////////////////////////////////////
   //          Page Loading           //
@@ -117,72 +112,72 @@ const Studies: FunctionComponent = () => {
   return (
     <LegioPage loading={loading} titleKey={i18n.t("title.studies")}>
         <SearchableTable
-          searchCriteriaProperties={{
+            searchCriteriaProperties={{
             title: i18n.t("title.searchcriteria"),
             submitButtonLabel: i18n.t("button.search"),
             resetButtonLabel: i18n.t("button.reset"),
             language: i18n.t,
             fixedParameters: {
-              _elements: "id,title,phase",
-              _sort: "-_lastUpdated",
+                _elements: "id,title,phase",
+                _sort: "-_lastUpdated",
             },
             inputs: [
-              {
+                {
                 label: "ID",
                 type: "text",
                 searchParamsName: "_id",
-              },
-              {
+                },
+                {
                 label: i18n.t("label.name"),
                 type: "text",
                 searchParamsName: "title:contains",
-              },
-              {
+                },
+                {
                 label: "Phase",
                 type: "select",
                 placeholder: i18n.t("defaultvalue.phase"),
                 options: researchStudyPhases.map(getOption),
                 searchParamsName: "phase",
-              },
+                },
             ],
-          }}
-          paginatedTableProperties={{
+            }}
+            paginatedTableProperties={{
             columns: [
-              {
+                {
                 header: "ID",
-                dataField: "Id",
+                dataField: "id",
                 width: "25%",
-              },
-              {
+                },
+                {
                 header: i18n.t("label.name"),
-                dataField: "Name",
+                dataField: "name",
                 width: "40%",
-              },
-              {
+                },
+                {
                 header: "Phase",
-                dataField: "Phase",
+                dataField: "phase",
                 width: "25%",
-              },
+                },
             ],
             action: [
-              {
+                {
                 icon: faEye,
-                onClick: viewInProgress,
-              },
+                onClick: onDetails,
+                },
             ],
             mapResourceToData: (resource: any) => {
-              return {
-                Id: resource.id,
-                Name: resource.title,
-                Phase: resource.phase.coding[0].display,
-              };
+                return {
+                id: resource.id,
+                name: resource.title,
+                phase: resource.phase.coding[0].display,
+                };
             },
             searchProperties: {
-              serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-              resourceType: "ResearchStudy",
+                serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+                resourceType: "ResearchStudy",
             },
             onError: onError,
-          }}
+            }}
         />
     </LegioPage>
   );

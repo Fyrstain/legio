@@ -20,7 +20,8 @@
         "inprogress": {
             "wip": "Travaux en cours !",
             "comingsoon": "Bientôt disponible..."
-        }
+        },
+        "studydetails": "Détail de l'Étude"
     },
     "footer": {
         "items": {
