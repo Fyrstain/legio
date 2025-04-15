@@ -182,11 +182,6 @@ p {
     color: var(--primary-color);
 }
 
-li:hover {
-    background-color: var(--gray);
-    cursor: pointer;
-}
-
 .footerContainer {
     bottom: 0;
     position: absolute;

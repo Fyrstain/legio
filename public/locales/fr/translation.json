@@ -36,7 +36,14 @@
         "validate": "Envoyer"
     },
     "label": {
-        "name": "Nom"
+        "name": "Nom",
+        "status": "Statut",
+        "generaldescription": "Description générale",
+        "title": "Titre",
+        "nctid": "ID NCT",
+        "localcontact": "Contact local",
+        "studysponsorcontact": "Contact du promoteur de l'étude",
+        "studydesign": "Conception de l'étude"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
