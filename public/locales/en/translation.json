@@ -36,7 +36,14 @@
         "validate": "Submit"
     },
     "label": {
-        "name": "Name"
+        "name": "Name",
+        "status": "Status",
+        "generaldescription": "General description",
+        "title": "Title",
+        "nctid": "NCT ID",
+        "localcontact": "Local contact",
+        "studysponsorcontact": "Study sponsor contact",
+        "studydesign": "Study design"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
