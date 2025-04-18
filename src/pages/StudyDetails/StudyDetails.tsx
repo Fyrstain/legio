@@ -3,10 +3,11 @@ import { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // Components
 import LegioPage from "../../components/LegioPage/LegioPage";
-import InformationSection from "../../components/LegioPage/InformationSection/InformationSection";
+import InformationSection from "../../components/InformationSection/InformationSection";
 import StudyService from "../../services/StudyService";
+import EvidenceVariableSection from "../../components/EvidenceVariableSection/EvidenceVariableSection";
 // Resources
-import { ResearchStudy } from "fhir/r5";
+import { Bundle, EvidenceVariable, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
 
@@ -33,6 +34,22 @@ const StudyDetails: FunctionComponent = () => {
     studyDesign: [] as string[],
   });
 
+  // Inclusion criteria array
+  const [inclusionCriteria, setInclusionCriteria] = useState<
+    Array<{
+      title: string;
+      description: string;
+    }>
+  >([]);
+
+  // Study variables array
+  const [studyVariables, setStudyVariables] = useState<
+    Array<{
+      title: string;
+      description: string;
+    }>
+  >([]);
+
   //////////////////////////////
   //           Error          //
   //////////////////////////////
@@ -50,6 +67,8 @@ const StudyDetails: FunctionComponent = () => {
 
   useEffect(() => {
     loadStudy();
+    loadEvidenceVariables("inclusion");
+    loadEvidenceVariables("study");
   }, []);
 
   /**
@@ -93,59 +112,104 @@ const StudyDetails: FunctionComponent = () => {
     }
   }
 
+  /**
+   * Load the Evidence variables from the back to populate the fields using the include and separate them by type. 
+   */
+  async function loadEvidenceVariables(type: "inclusion" | "study") {
+    const serviceMethod =
+      type === "inclusion"
+        ? StudyService.loadInclusionCriteria
+        : StudyService.loadStudyVariables;
+    try {
+      const response = await serviceMethod(studyId ?? "");
+      const evidenceVariablesBundle = response as Bundle;
+      const evidenceVariables =
+        evidenceVariablesBundle.entry
+          ?.filter((item) => item.resource?.resourceType === "EvidenceVariable")
+          .map((item) => {
+            const evidenceVariable = item.resource as EvidenceVariable;
+            return {
+              title: evidenceVariable.title ?? "N/A",
+              description: evidenceVariable.description ?? "N/A",
+            };
+          }) ?? [];
+      if (type === "inclusion") {
+        setInclusionCriteria(evidenceVariables);
+      } else {
+        setStudyVariables(evidenceVariables);
+      }
+    } catch (error) {
+      onError();
+    }
+  }
+
+  /////////////////////////////////////////////
+  //                Content                  //
+  /////////////////////////////////////////////
+
   return (
     <LegioPage titleKey="title.studydetails" loading={loading}>
-      <InformationSection
-        fields={[
-          {
-            label: "ID",
-            value: studyId,
-          },
-          {
-            label: i18n.t("label.name"),
-            value: studyDetails.name,
-          },
-          {
-            label: i18n.t("label.title"),
-            value: studyDetails.title,
-          },
-          {
-            label: i18n.t("label.status"),
-            value: studyDetails.status,
-            type: "status",
-          },
-          {
-            label: i18n.t("label.generaldescription"),
-            value: studyDetails.description,
-          },
-          {
-            label: i18n.t("label.nctid"),
-            value: studyDetails.nctId,
-          },
-          {
-            label: i18n.t("label.localcontact"),
-            value: studyDetails.localContact,
-          },
-          {
-            label: i18n.t("label.studysponsorcontact"),
-            value: studyDetails.studySponsorContact,
-          },
-          {
-            label: "Phase",
-            value: studyDetails.phase,
-          },
-          {
-            label: i18n.t("label.studydesign"),
-            value: (
-              <ul>
-                {studyDetails.studyDesign.map((design, index) => (
-                  <li key={index}>{design}</li>
-                ))}
-              </ul>
-            ),
-          },
-        ]}
-      />
+      <>
+        <InformationSection
+          fields={[
+            {
+              label: "ID",
+              value: studyId,
+            },
+            {
+              label: i18n.t("label.name"),
+              value: studyDetails.name,
+            },
+            {
+              label: i18n.t("label.title"),
+              value: studyDetails.title,
+            },
+            {
+              label: i18n.t("label.status"),
+              value: studyDetails.status,
+              type: "status",
+            },
+            {
+              label: i18n.t("label.generaldescription"),
+              value: studyDetails.description,
+            },
+            {
+              label: i18n.t("label.nctid"),
+              value: studyDetails.nctId,
+            },
+            {
+              label: i18n.t("label.localcontact"),
+              value: studyDetails.localContact,
+            },
+            {
+              label: i18n.t("label.studysponsorcontact"),
+              value: studyDetails.studySponsorContact,
+            },
+            {
+              label: "Phase",
+              value: studyDetails.phase,
+            },
+            {
+              label: i18n.t("label.studydesign"),
+              value: (
+                <ul>
+                  {studyDetails.studyDesign.map((design, index) => (
+                    <li key={index}>{design}</li>
+                  ))}
+                </ul>
+              ),
+            },
+          ]}
+        />
+        <EvidenceVariableSection
+          evidenceVariables={inclusionCriteria}
+          type="inclusion"
+        />
+        <EvidenceVariableSection
+          evidenceVariables={studyVariables}
+          type="study"
+        />
+      </>
     </LegioPage>
   );
 };

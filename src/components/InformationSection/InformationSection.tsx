@@ -28,7 +28,7 @@ const InformationSection: FunctionComponent<InformationSectionProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-4 mb-4">
       <Card>
         <Card.Header>
           <Title level={2} content="Informations" />

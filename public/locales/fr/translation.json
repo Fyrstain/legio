@@ -21,7 +21,9 @@
             "wip": "Travaux en cours !",
             "comingsoon": "Bientôt disponible..."
         },
-        "studydetails": "Détails de l'Étude"
+        "studydetails": "Détails de l'Étude",
+        "inclusioncriteria": "Critères d'inclusion",
+        "studyvariables": "Variables d'Étude"
     },
     "footer": {
         "items": {
@@ -47,5 +49,9 @@
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
+    },
+    "errormessage": {
+        "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
+        "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude."
     }
 }
