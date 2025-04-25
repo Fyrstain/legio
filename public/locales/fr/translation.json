@@ -35,7 +35,8 @@
     "button": {
         "search": "Rechercher",
         "reset": "Réinitialiser",
-        "validate": "Envoyer"
+        "validate": "Envoyer",
+        "generate": "Générer"
     },
     "label": {
         "name": "Nom",
@@ -45,13 +46,15 @@
         "nctid": "ID NCT",
         "localcontact": "Contact local",
         "studysponsorcontact": "Contact du promoteur de l'étude",
-        "studydesign": "Conception de l'étude"
+        "studydesign": "Conception de l'étude",
+        "generateddatamart": "Datamart généré"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
     },
     "errormessage": {
         "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
-        "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude."
+        "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
+        "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée."
     }
 }
