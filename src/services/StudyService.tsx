@@ -25,34 +25,6 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
 }
 
 /**
- * Load a List resource by its ID.
- *
- * @param listId The ID of the list to load
- * @returns A promise of the List resource
- */
-async function loadListById(listId: string): Promise<List> {
-  return fhirClient.read({
-    resourceType: "List",
-    id: listId ?? "",
-  }) as Promise<List>;
-}
-
-/**
- * This function searches for Parameters resources that are associated with a specific List ID.
- * 
- * @param listId is the ID of the List resource to search for.
- * @returns a promise of a Bundle containing the Parameters resources associated with the List ID.
- */
-async function searchParametersByListId(listId: string): Promise<Bundle> {
-  return fhirClient.search({
-    resourceType: "Parameters",
-    searchParams: {
-      "_has:List:item:_id": listId,
-    },
-  }) as Promise<Bundle>;
-}
-
-/**
  *  Load the inclusion criteria for a study.
  *
  * @param studyId The study id to load the inclusion criteria for.
@@ -60,10 +32,9 @@ async function searchParametersByListId(listId: string): Promise<Bundle> {
  */
 async function loadInclusionCriteria(studyId: string): Promise<Bundle> {
   return fhirClient.search({
-    resourceType: "ResearchStudy",
+    resourceType: "EvidenceVariable",
     searchParams: {
-      _id: studyId ?? "",
-      _include: "ResearchStudy:eligibility",
+      "_has:ResearchStudy:eligibility:_id": studyId,
     },
   }) as Promise<Bundle>;
 }
@@ -76,12 +47,41 @@ async function loadInclusionCriteria(studyId: string): Promise<Bundle> {
  */
 async function loadStudyVariables(studyId: string): Promise<Bundle> {
   return fhirClient.search({
-    resourceType: "ResearchStudy",
+    resourceType: "EvidenceVariable",
     searchParams: {
-      _id: studyId ?? "",
-      _include: "ResearchStudy:study-variables",
+      "_has:ResearchStudy:study-variables:_id": studyId,
     },
   }) as Promise<Bundle>;
+}
+
+/**
+ * Read an EvidenceVariable by its canonical URL.
+ *
+ * @param canonicalUrl The canonical URL of the EvidenceVariable to load
+ * @returns A promise of a Bundle containing the requested EvidenceVariable
+ */
+async function readEvidenceVariableByUrl(
+  canonicalUrl: string
+): Promise<Bundle> {
+  return fhirClient.search({
+    resourceType: "EvidenceVariable",
+    searchParams: {
+      url: canonicalUrl,
+    },
+  }) as Promise<Bundle>;
+}
+
+/**
+ * Load a List resource by its ID.
+ *
+ * @param listId The ID of the list to load
+ * @returns A promise of the List resource
+ */
+async function loadListById(listId: string): Promise<List> {
+  return fhirClient.read({
+    resourceType: "List",
+    id: listId ?? "",
+  }) as Promise<List>;
 }
 
 /**
@@ -264,7 +264,6 @@ async function generateCohortAndDatamart(
     const datamartResult = await executeGenerateDatamart(studyId);
     return { cohortingResult, datamartResult };
   } catch (error) {
-    console.error("Error during cohorting and datamart generation:", error);
     throw error;
   }
 }
@@ -276,9 +275,9 @@ async function generateCohortAndDatamart(
 const StudyService = {
   loadStudy,
   loadListById,
-  searchParametersByListId,
   loadInclusionCriteria,
   loadStudyVariables,
+  readEvidenceVariableByUrl,
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,
