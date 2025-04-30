@@ -1,5 +1,5 @@
 // Resources
-import { Bundle, ResearchStudy, Parameters, Group, List } from "fhir/r5";
+import { Bundle, ResearchStudy, Parameters, Group, List, EvidenceVariable } from "fhir/r5";
 // FHIR
 import { createFhirClient } from "./FhirClientFactory";
 // Mock FHIR
@@ -22,6 +22,45 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
     resourceType: "ResearchStudy",
     id: studyId ?? "",
   }) as Promise<ResearchStudy>;
+}
+
+/**
+ * Load the datamart for a study if it exists
+ *
+ * @param study The ResearchStudy resource
+ * @returns a promise with the datamart list or null if it doesn't exist
+ */
+async function loadDatamartForStudy(
+  study: ResearchStudy
+): Promise<List | null> {
+  // Find the datamart extension
+  const datamartExtension = study.extension?.find(
+    (extension) =>
+      extension.url ===
+      "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+  );
+  // Check if the datamart extension exists and has a valueReference
+  if (datamartExtension) {
+    const evaluationExt = datamartExtension.extension?.find(
+      (ext) => ext.url === "evaluation"
+    );
+    if (evaluationExt?.valueReference?.reference) {
+      // Extract the ID
+      const reference = evaluationExt.valueReference.reference;
+      const listId = reference.includes("/")
+        ? reference.split("/")[1]
+        : reference;
+      try {
+        // Load the list using the ID
+        const list = await loadListById(listId);
+        return list;
+      } catch (error) {
+        throw new Error("Error loading datamart list: " + error);
+      }
+    }
+  }
+  // If the datamart extension doesn't exist or has no valueReference, return null
+  return null;
 }
 
 /**
@@ -69,6 +108,104 @@ async function readEvidenceVariableByUrl(
       url: canonicalUrl,
     },
   }) as Promise<Bundle>;
+}
+
+/**
+ * A function to load evidence variables for a study.
+ *
+ * @param studyId The study ID to load the evidence variables.
+ * @param type The type of evidence variables to load (can be "inclusion" for Inclusion Criteria or "study" for Study Variable).
+ * @returns A promise of an array of evidence variables.
+ */
+async function loadEvidenceVariables(
+  studyId: string,
+  type: "inclusion" | "study"
+) {
+  const serviceMethod =
+    type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
+  try {
+    // Load the evidence variables using the service method, first level of EvidenceVariable
+    const response = await serviceMethod(studyId ?? "");
+    const bundle = response as Bundle;
+    const evidencesVariables: Array<{
+      title: string;
+      description: string;
+      expression?: string;
+    }> = [];
+    if (bundle.entry) {
+      const canonicalUrls: string[] = [];
+      // Extract canonical URLs from the EvidenceVariable resources
+      bundle.entry.forEach((entry) => {
+        if (entry.resource?.resourceType === "EvidenceVariable") {
+          const evidenceVariable = entry.resource as EvidenceVariable;
+          evidenceVariable.characteristic?.forEach((characteristic) => {
+            if (characteristic.definitionByCombination?.characteristic) {
+              characteristic.definitionByCombination.characteristic.forEach(
+                (subCharacteristic) => {
+                  if (subCharacteristic.definitionCanonical) {
+                    canonicalUrls.push(subCharacteristic.definitionCanonical);
+                  }
+                }
+              );
+            }
+          });
+        }
+      });
+      // If canonical URLs were found, load the EvidenceVariable resources using the URLs
+      if (canonicalUrls.length > 0) {
+        const canonicalResults = await Promise.all(
+          canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
+        );
+        canonicalResults.forEach((result) => {
+          if (
+            result.entry?.[0]?.resource?.resourceType === "EvidenceVariable"
+          ) {
+            const evidenceVariable = result.entry[0]
+              .resource as EvidenceVariable;
+            const details = extractEvidenceVariableDetails(evidenceVariable);
+            evidencesVariables.push(details);
+          }
+        });
+      } else {
+        // If no canonical URLs were found, use the original bundle entries
+        // TODO : We'll need to delete this part for the V1 when the canonical URLs will be always present
+        bundle.entry.forEach((entry) => {
+          if (entry.resource?.resourceType === "EvidenceVariable") {
+            const evidenceVariable = entry.resource as EvidenceVariable;
+            const details = extractEvidenceVariableDetails(evidenceVariable);
+            evidencesVariables.push(details);
+          }
+        });
+      }
+    }
+    return evidencesVariables;
+  } catch (error) {
+    throw new Error("Error loading evidence variables: " + error);
+  }
+}
+
+/**
+ * Function to extract the details from an EvidenceVariable resource.
+ *
+ * @param evidenceVariable The EvidenceVariable resource to extract data from
+ * @returns An object containing the title, description, and expression of the EvidenceVariable
+ */
+function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
+  let expressionValue: string | undefined;
+  if (evidenceVariable.characteristic) {
+    evidenceVariable.characteristic.forEach((characteristic) => {
+      if (characteristic.definitionByCombination) {
+        expressionValue =
+          characteristic.definitionByCombination?.characteristic?.[0]
+            ?.definitionExpression?.expression;
+      }
+    });
+  }
+  return {
+    title: evidenceVariable.title ?? "",
+    description: evidenceVariable.description ?? "",
+    expression: expressionValue,
+  };
 }
 
 /**
@@ -223,7 +360,7 @@ async function executeFhirOperation<T>(
 ): Promise<any> {
   const study = await loadStudy(studyId);
   if (!study) {
-    throw new Error("Study not found");
+    throw new Error("Study not found with ID: " + studyId);
   }
   const parameters: Parameters = createParameters(study.url ?? "");
   return mockFhirClient.operation({
@@ -264,7 +401,7 @@ async function generateCohortAndDatamart(
     const datamartResult = await executeGenerateDatamart(studyId);
     return { cohortingResult, datamartResult };
   } catch (error) {
-    throw error;
+    throw new Error("Error while generating cohort and datamart: " + error);
   }
 }
 
@@ -274,10 +411,12 @@ async function generateCohortAndDatamart(
 
 const StudyService = {
   loadStudy,
+  loadDatamartForStudy,
   loadListById,
   loadInclusionCriteria,
   loadStudyVariables,
   readEvidenceVariableByUrl,
+  loadEvidenceVariables,
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,

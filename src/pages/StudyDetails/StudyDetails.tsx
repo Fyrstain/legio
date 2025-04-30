@@ -8,7 +8,7 @@ import EvidenceVariableSection from "../../components/EvidenceVariableSection/Ev
 // Services
 import StudyService from "../../services/StudyService";
 // Resources
-import { Bundle, EvidenceVariable, List, ResearchStudy } from "fhir/r5";
+import { List, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
 // React
@@ -17,7 +17,7 @@ import { Button } from "react-bootstrap";
 import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
 
 const StudyDetails: FunctionComponent = () => {
-
+    
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -80,8 +80,8 @@ const StudyDetails: FunctionComponent = () => {
 
   useEffect(() => {
     loadStudy();
-    loadEvidenceVariables("inclusion");
-    loadEvidenceVariables("study");
+    loadEvidenceVariablesHandler("inclusion");
+    loadEvidenceVariablesHandler("study");
   }, []);
 
   ////////////////////////////////
@@ -108,7 +108,7 @@ const StudyDetails: FunctionComponent = () => {
           (party) => party.role?.coding?.[0]?.code === "sponsor"
         )?.name ?? "N/A";
       // Load the datamart for the study
-      loadDatamartForStudy(study);
+      loadDatamartForStudyHandler(study);
       // The data to display
       const studyData = {
         name: study.name ?? "N/A",
@@ -135,39 +135,18 @@ const StudyDetails: FunctionComponent = () => {
    * Load the datamart for a study if it exists
    *
    * @param study The ResearchStudy resource
-   * @returns a promise with the datamart list or null if it doesn't exist
    */
-  async function loadDatamartForStudy(study: ResearchStudy): Promise<void> {
-    // Find the datamart extension
-    const datamartExtension = study.extension?.find(
-      (extension) =>
-        extension.url ===
-        "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
-    );
-    // Check if the datamart extension exists and has a valueReference
-    if (datamartExtension) {
-      const evaluationExt = datamartExtension.extension?.find(
-        (ext) => ext.url === "evaluation"
-      );
-      if (evaluationExt?.valueReference?.reference) {
-        // Extract the ID
-        const reference = evaluationExt.valueReference.reference;
-        const listId = reference.includes("/")
-          ? reference.split("/")[1]
-          : reference;
+  async function loadDatamartForStudyHandler(study: ResearchStudy) {
+    try {
+      const datamartList = await StudyService.loadDatamartForStudy(study);
+      if (datamartList) {
+        setDatamartResult(datamartList);
         setIsExistingDatamartListId(true);
-        try {
-          // Load the list using the ID
-          const list = await StudyService.loadListById(listId);
-          setDatamartResult(list);
-        } catch (error) {
-          onError();
-        }
       } else {
         setIsExistingDatamartListId(false);
       }
-    } else {
-      setIsExistingDatamartListId(false);
+    } catch (error) {
+      onError();
     }
   }
 
@@ -176,68 +155,12 @@ const StudyDetails: FunctionComponent = () => {
    *
    * @param type The type of evidence variable to load (inclusion or study)
    */
-  async function loadEvidenceVariables(type: "inclusion" | "study") {
-    const serviceMethod =
-      type === "inclusion"
-        ? StudyService.loadInclusionCriteria
-        : StudyService.loadStudyVariables;
+  async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
     try {
-      // Load the evidence variables using the service method, first level of EvidenceVariable
-      const response = await serviceMethod(studyId ?? "");
-      const bundle = response as Bundle;
-      const evidencesVariables: Array<{
-        title: string;
-        description: string;
-        expression?: string;
-      }> = [];
-      if (bundle.entry) {
-        const canonicalUrls: string[] = [];
-        // Extract canonical URLs from the EvidenceVariable resources
-        bundle.entry.forEach((entry) => {
-          if (entry.resource?.resourceType === "EvidenceVariable") {
-            const evidenceVariable = entry.resource as EvidenceVariable;
-            evidenceVariable.characteristic?.forEach((characteristic) => {
-              if (characteristic.definitionByCombination?.characteristic) {
-                characteristic.definitionByCombination.characteristic.forEach(
-                  (subCharacteristic) => {
-                    if (subCharacteristic.definitionCanonical) {
-                      canonicalUrls.push(subCharacteristic.definitionCanonical);
-                    }
-                  }
-                );
-              }
-            });
-          }
-        });
-        // If canonical URLs were found, load the EvidenceVariable resources using the URLs
-        if (canonicalUrls.length > 0) {
-          const canonicalResults = await Promise.all(
-            canonicalUrls.map((url) =>
-              StudyService.readEvidenceVariableByUrl(url)
-            )
-          );
-          canonicalResults.forEach((result) => {
-            if (
-              result.entry?.[0]?.resource?.resourceType === "EvidenceVariable"
-            ) {
-              const evidenceVariable = result.entry[0]
-                .resource as EvidenceVariable;
-              const details = extractEvidenceVariableDetails(evidenceVariable);
-              evidencesVariables.push(details);
-            }
-          });
-        } else {
-          // If no canonical URLs were found, use the original bundle entries
-          // TODO : We'll need to delete this part for the V1 when the canonical URLs will be always present
-          bundle.entry.forEach((entry) => {
-            if (entry.resource?.resourceType === "EvidenceVariable") {
-              const evidenceVariable = entry.resource as EvidenceVariable;
-              const details = extractEvidenceVariableDetails(evidenceVariable);
-              evidencesVariables.push(details);
-            }
-          });
-        }
-      }
+      const evidencesVariables = await StudyService.loadEvidenceVariables(
+        studyId ?? "",
+        type
+      );
       if (type === "inclusion") {
         setInclusionCriteria(evidencesVariables);
       } else {
@@ -246,30 +169,6 @@ const StudyDetails: FunctionComponent = () => {
     } catch (error) {
       onError();
     }
-  }
-
-  /**
-   * Function to extract the details from an EvidenceVariable resource.
-   *
-   * @param evidenceVariable The EvidenceVariable resource to extract data from
-   * @returns An object containing the title, description, and expression of the EvidenceVariable
-   */
-  function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
-    let expressionValue: string | undefined;
-    if (evidenceVariable.characteristic) {
-      evidenceVariable.characteristic.forEach((characteristic) => {
-        if (characteristic.definitionByCombination) {
-          expressionValue =
-            characteristic.definitionByCombination?.characteristic?.[0]
-              ?.definitionExpression?.expression;
-        }
-      });
-    }
-    return {
-      title: evidenceVariable.title ?? "",
-      description: evidenceVariable.description ?? "",
-      expression: expressionValue,
-    };
   }
 
   /**
