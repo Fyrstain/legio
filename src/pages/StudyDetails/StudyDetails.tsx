@@ -4,15 +4,20 @@ import { useNavigate, useParams } from "react-router-dom";
 // Components
 import LegioPage from "../../components/LegioPage/LegioPage";
 import InformationSection from "../../components/InformationSection/InformationSection";
-import StudyService from "../../services/StudyService";
 import EvidenceVariableSection from "../../components/EvidenceVariableSection/EvidenceVariableSection";
+// Services
+import StudyService from "../../services/StudyService";
 // Resources
-import { Bundle, EvidenceVariable, ResearchStudy } from "fhir/r5";
+import { List, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
+// React
+import { Button } from "react-bootstrap";
+// HL7 Front Library
+import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
 
 const StudyDetails: FunctionComponent = () => {
-
+    
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -47,8 +52,16 @@ const StudyDetails: FunctionComponent = () => {
     Array<{
       title: string;
       description: string;
+      expression?: string;
     }>
   >([]);
+
+  // Cohorting and datamart generation result
+  const [datamartResult, setDatamartResult] = useState<List | undefined>();
+
+  // Existing datamart list ID, used to check if a datamart already exists for the study
+  const [isExistingDatamartListId, setIsExistingDatamartListId] =
+    useState<boolean>(false);
 
   //////////////////////////////
   //           Error          //
@@ -62,14 +75,18 @@ const StudyDetails: FunctionComponent = () => {
   }, [navigate]);
 
   ////////////////////////////////
-  //           Actions          //
+  //          Lifecyle          //
   ////////////////////////////////
 
   useEffect(() => {
     loadStudy();
-    loadEvidenceVariables("inclusion");
-    loadEvidenceVariables("study");
+    loadEvidenceVariablesHandler("inclusion");
+    loadEvidenceVariablesHandler("study");
   }, []);
+
+  ////////////////////////////////
+  //           Actions          //
+  ////////////////////////////////
 
   /**
    * Load Study from the back to populate the fields.
@@ -90,6 +107,8 @@ const StudyDetails: FunctionComponent = () => {
         study.associatedParty?.find(
           (party) => party.role?.coding?.[0]?.code === "sponsor"
         )?.name ?? "N/A";
+      // Load the datamart for the study
+      loadDatamartForStudyHandler(study);
       // The data to display
       const studyData = {
         name: study.name ?? "N/A",
@@ -113,34 +132,85 @@ const StudyDetails: FunctionComponent = () => {
   }
 
   /**
-   * Load the Evidence variables from the back to populate the fields using the include and separate them by type. 
+   * Load the datamart for a study if it exists
+   *
+   * @param study The ResearchStudy resource
    */
-  async function loadEvidenceVariables(type: "inclusion" | "study") {
-    const serviceMethod =
-      type === "inclusion"
-        ? StudyService.loadInclusionCriteria
-        : StudyService.loadStudyVariables;
+  async function loadDatamartForStudyHandler(study: ResearchStudy) {
     try {
-      const response = await serviceMethod(studyId ?? "");
-      const evidenceVariablesBundle = response as Bundle;
-      const evidenceVariables =
-        evidenceVariablesBundle.entry
-          ?.filter((item) => item.resource?.resourceType === "EvidenceVariable")
-          .map((item) => {
-            const evidenceVariable = item.resource as EvidenceVariable;
-            return {
-              title: evidenceVariable.title ?? "N/A",
-              description: evidenceVariable.description ?? "N/A",
-            };
-          }) ?? [];
-      if (type === "inclusion") {
-        setInclusionCriteria(evidenceVariables);
+      const datamartList = await StudyService.loadDatamartForStudy(study);
+      if (datamartList) {
+        setDatamartResult(datamartList);
+        setIsExistingDatamartListId(true);
       } else {
-        setStudyVariables(evidenceVariables);
+        setIsExistingDatamartListId(false);
       }
     } catch (error) {
       onError();
     }
+  }
+
+  /**
+   * Function to load evidence variables (inclusion criteria or study variables) from the backend.
+   *
+   * @param type The type of evidence variable to load (inclusion or study)
+   */
+  async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
+    try {
+      const evidencesVariables = await StudyService.loadEvidenceVariables(
+        studyId ?? "",
+        type
+      );
+      if (type === "inclusion") {
+        setInclusionCriteria(evidencesVariables);
+      } else {
+        setStudyVariables(evidencesVariables);
+      }
+    } catch (error) {
+      onError();
+    }
+  }
+
+  /**
+   * Get the expression of the study variables.
+   * This is used to display the datamart table headers.
+   */
+  const studyVariablesExpressions = studyVariables.map(
+    (studyVariable) => studyVariable.expression
+  );
+
+  /**
+   * Handle the cohorting and datamart generation.
+   * This function is called when the user clicks on the "Generate" button.
+   */
+  const handleCohortingAndDatamart = async () => {
+    setLoading(true);
+    try {
+      const response = await StudyService.generateCohortAndDatamart(
+        studyId ?? ""
+      );
+      setDatamartResult(response.datamartResult);
+      setIsExistingDatamartListId(true);
+    } catch (error) {
+      onError();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * A function to get the value of a parameter.
+   *
+   * @param param The parameter to get the value from
+   * @returns The value of the parameter as a string
+   */
+  function getParameterValue(param: any): string {
+    if (!param) return "";
+    if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
+    if (param.valueString) return param.valueString;
+    if (param.valueInteger !== undefined) return param.valueInteger.toString();
+    if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
+    return "";
   }
 
   /////////////////////////////////////////////
@@ -150,6 +220,7 @@ const StudyDetails: FunctionComponent = () => {
   return (
     <LegioPage titleKey="title.studydetails" loading={loading}>
       <>
+        {/* Section with the ResearchStudy details  */}
         <InformationSection
           fields={[
             {
@@ -201,6 +272,8 @@ const StudyDetails: FunctionComponent = () => {
             },
           ]}
         />
+
+        {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
         <EvidenceVariableSection
           evidenceVariables={inclusionCriteria}
           type="inclusion"
@@ -209,6 +282,81 @@ const StudyDetails: FunctionComponent = () => {
           evidenceVariables={studyVariables}
           type="study"
         />
+
+        {/* Button to generate the datamart */}
+        <div className="d-flex justify-content-end mt-3">
+          <Button
+            variant="primary"
+            onClick={handleCohortingAndDatamart}
+            disabled={isExistingDatamartListId}
+          >
+            {i18n.t("button.generate")}
+          </Button>
+        </div>
+
+        {/* Section to show the table with the generated datamart  */}
+        {datamartResult && (
+          <div className="mt-4">
+            {studyVariablesExpressions.length > 0 ? (
+              <>
+                <Title
+                  level={3}
+                  content={i18n.t("label.generateddatamart")}
+                ></Title>
+                <PaginatedTable
+                  columns={[
+                    {
+                      header: "Patient",
+                      dataField: "subjectId",
+                      width: "30%",
+                    },
+                    ...studyVariables.map((studyVariable) => ({
+                      header: studyVariable.expression ?? "N/A",
+                      dataField: studyVariable.expression ?? "N/A",
+                      width: "25%",
+                    })),
+                  ]}
+                  mapResourceToData={(resource: any) => {
+                    const data: any = {};
+                    // Extract Patient reference
+                    const subjectParam = resource.parameter.find(
+                      (parameter: {
+                        name: string;
+                        valueReference?: { reference: string };
+                      }) => parameter.name === "Patient"
+                    );
+                    data.subjectId =
+                      subjectParam?.valueReference?.reference ?? "N/A";
+                    // Extract all other parameters and set them to "N/A" if not found
+                    studyVariables.forEach((studyVariable) => {
+                      const paramName = studyVariable.expression ?? "N/A";
+                      data[paramName] = "N/A";
+                    }); 
+                    resource.parameter.forEach((param: any) => {
+                      if (param.name !== "Patient") {
+                        data[param.name] = getParameterValue(param);
+                      }
+                    });
+                    return data;
+                  }}
+                  searchProperties={{
+                    serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+                    resourceType: "Parameters",
+                    searchParameters: {
+                      "_has:List:item:_id": datamartResult.id ?? "",
+                    },
+                  }}
+                  onError={onError}
+                />
+              </>
+            ) : (
+              <Title
+                level={4}
+                content={i18n.t("errormessage.nogenerateddatamart")}
+              ></Title>
+            )}
+          </div>
+        )}
       </>
     </LegioPage>
   );

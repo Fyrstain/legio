@@ -35,7 +35,8 @@
     "button": {
         "search": "Search",
         "reset": "Reset",
-        "validate": "Submit"
+        "validate": "Submit",
+        "generate": "Generate"
     },
     "label": {
         "name": "Name",
@@ -45,14 +46,16 @@
         "nctid": "NCT ID",
         "localcontact": "Local contact",
         "studysponsorcontact": "Study sponsor contact",
-        "studydesign": "Study design"
+        "studydesign": "Study design",
+        "generateddatamart": "Generated Datamart"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
     },
     "errormessage": {
         "noinclusioncriteria": "No inclusion criteria found for this study.",
-        "nostudyvariables": "No study variables found for this study."
+        "nostudyvariables": "No study variables found for this study.",
+        "nogenerateddatamart": "No datamart generation possible, no study variable has been found."
     }
 
 }
