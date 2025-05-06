@@ -15,6 +15,11 @@ import i18n from "i18next";
 import { Button } from "react-bootstrap";
 // HL7 Front Library
 import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
+// Buffer
+import { Buffer } from "buffer";
+// Font awesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 const StudyDetails: FunctionComponent = () => {
     
@@ -213,6 +218,40 @@ const StudyDetails: FunctionComponent = () => {
     return "";
   }
 
+  /**
+   * Handle the export of the datamart.
+   * This function is called when the user clicks on the "Export" button.
+   */
+  const handleExportDatamart = async () => {
+    setLoading(true);
+    try {
+      const response = await StudyService.executeExportDatamart(studyId ?? "");
+      // csvData is base64 encoded, so we need to decode it
+      let csvData = Buffer.from(response.data, "base64").toString();
+      let type = "text/csv";
+      // Create a blob from the csvData and create a URL for it
+      let responseStrigified = new Blob([csvData], { type });
+      // Create a link to download the file
+      let csvUrl = URL.createObjectURL(responseStrigified);
+      // Create a link element
+      let link = document.createElement("a");
+      // Set the link attributes
+      link.href = csvUrl;
+      // Set the file name and type
+      link.download = `datamart_${studyId}.csv`;
+      // Set the link to be invisible
+      document.body.appendChild(link);
+      // Click the link to download the file
+      link.click();
+      // Remove the link from the document
+      document.body.removeChild(link);
+    } catch (error) {
+      onError();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -283,14 +322,30 @@ const StudyDetails: FunctionComponent = () => {
           type="study"
         />
 
-        {/* Button to generate the datamart */}
+        {/* Buttons*/}
         <div className="d-flex justify-content-end mt-3">
+          {/* Button to generate the datamart*/}
           <Button
             variant="primary"
             onClick={handleCohortingAndDatamart}
-            disabled={isExistingDatamartListId}
+            disabled={
+              isExistingDatamartListId && studyVariablesExpressions.length > 0
+            }
           >
             {i18n.t("button.generate")}
+          </Button>
+          {/* Button to export the datamart*/}
+          <Button
+            variant="primary"
+            onClick={handleExportDatamart}
+            disabled={
+              !isExistingDatamartListId ||
+              studyVariablesExpressions.length === 0
+            }
+            className="ms-2"
+          >
+            <FontAwesomeIcon icon={faDownload} className="me-2" />
+            {i18n.t("button.export")}
           </Button>
         </div>
 

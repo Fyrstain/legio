@@ -33,10 +33,11 @@
         }
     },
     "button": {
-        "search": "Search",
-        "reset": "Reset",
-        "validate": "Submit",
-        "generate": "Generate"
+      "search": "Search",
+      "reset": "Reset",
+      "validate": "Submit",
+      "generate": "Generate",
+      "export": "Export CSV"
     },
     "label": {
         "name": "Name",
