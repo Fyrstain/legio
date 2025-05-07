@@ -12,14 +12,14 @@ import { List, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
 // React
-import { Button } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 // HL7 Front Library
 import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
 // Buffer
 import { Buffer } from "buffer";
 // Font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faWarning } from "@fortawesome/free-solid-svg-icons";
 
 const StudyDetails: FunctionComponent = () => {
     
@@ -322,15 +322,21 @@ const StudyDetails: FunctionComponent = () => {
           type="study"
         />
 
+        {/* Warning message if no study variables are found */}
+        {studyVariables.length === 0 && (
+          <Alert variant="warning" className="mt-3">
+            <FontAwesomeIcon icon={faWarning} className="me-2" />
+            {i18n.t("errormessage.nogenerateddatamart")}
+          </Alert>
+        )}
+
         {/* Buttons*/}
         <div className="d-flex justify-content-end mt-3">
           {/* Button to generate the datamart*/}
           <Button
             variant="primary"
             onClick={handleCohortingAndDatamart}
-            disabled={
-              isExistingDatamartListId && studyVariablesExpressions.length > 0
-            }
+            disabled={isExistingDatamartListId || studyVariables.length === 0}
           >
             {i18n.t("button.generate")}
           </Button>
@@ -352,7 +358,7 @@ const StudyDetails: FunctionComponent = () => {
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
-            {studyVariablesExpressions.length > 0 ? (
+            {studyVariablesExpressions.length > 0 && (
               <>
                 <Title
                   level={3}
@@ -404,11 +410,6 @@ const StudyDetails: FunctionComponent = () => {
                   onError={onError}
                 />
               </>
-            ) : (
-              <Title
-                level={4}
-                content={i18n.t("errormessage.nogenerateddatamart")}
-              ></Title>
             )}
           </div>
         )}

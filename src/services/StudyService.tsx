@@ -435,6 +435,12 @@ async function generateCohortAndDatamart(
   }
 }
 
+/**
+ * A function to execute the datamart export operation.
+ * 
+ * @param studyId The ID of the study to export the datamart for.
+ * @returns a promise of the operation result. A datamart containing the data for the study.
+ */
 async function executeExportDatamart(studyId: string): Promise<any> {
   const study = await loadStudy(studyId);
   if (!study) {
