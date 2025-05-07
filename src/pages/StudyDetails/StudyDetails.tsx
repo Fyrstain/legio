@@ -12,9 +12,14 @@ import { List, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
 // React
-import { Button } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 // HL7 Front Library
 import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
+// Buffer
+import { Buffer } from "buffer";
+// Font awesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload, faWarning } from "@fortawesome/free-solid-svg-icons";
 
 const StudyDetails: FunctionComponent = () => {
     
@@ -213,6 +218,40 @@ const StudyDetails: FunctionComponent = () => {
     return "";
   }
 
+  /**
+   * Handle the export of the datamart.
+   * This function is called when the user clicks on the "Export" button.
+   */
+  const handleExportDatamart = async () => {
+    setLoading(true);
+    try {
+      const response = await StudyService.executeExportDatamart(studyId ?? "");
+      // csvData is base64 encoded, so we need to decode it
+      let csvData = Buffer.from(response.data, "base64").toString();
+      let type = "text/csv";
+      // Create a blob from the csvData and create a URL for it
+      let responseStrigified = new Blob([csvData], { type });
+      // Create a link to download the file
+      let csvUrl = URL.createObjectURL(responseStrigified);
+      // Create a link element
+      let link = document.createElement("a");
+      // Set the link attributes
+      link.href = csvUrl;
+      // Set the file name and type
+      link.download = `datamart_${studyId}.csv`;
+      // Set the link to be invisible
+      document.body.appendChild(link);
+      // Click the link to download the file
+      link.click();
+      // Remove the link from the document
+      document.body.removeChild(link);
+    } catch (error) {
+      onError();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -283,21 +322,43 @@ const StudyDetails: FunctionComponent = () => {
           type="study"
         />
 
-        {/* Button to generate the datamart */}
+        {/* Warning message if no study variables are found */}
+        {studyVariables.length === 0 && (
+          <Alert variant="warning" className="mt-3">
+            <FontAwesomeIcon icon={faWarning} className="me-2" />
+            {i18n.t("errormessage.nogenerateddatamart")}
+          </Alert>
+        )}
+
+        {/* Buttons*/}
         <div className="d-flex justify-content-end mt-3">
+          {/* Button to generate the datamart*/}
           <Button
             variant="primary"
             onClick={handleCohortingAndDatamart}
-            disabled={isExistingDatamartListId}
+            disabled={isExistingDatamartListId || studyVariables.length === 0}
           >
             {i18n.t("button.generate")}
+          </Button>
+          {/* Button to export the datamart*/}
+          <Button
+            variant="primary"
+            onClick={handleExportDatamart}
+            disabled={
+              !isExistingDatamartListId ||
+              studyVariablesExpressions.length === 0
+            }
+            className="ms-2"
+          >
+            <FontAwesomeIcon icon={faDownload} className="me-2" />
+            {i18n.t("button.export")}
           </Button>
         </div>
 
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
-            {studyVariablesExpressions.length > 0 ? (
+            {studyVariablesExpressions.length > 0 && (
               <>
                 <Title
                   level={3}
@@ -326,7 +387,7 @@ const StudyDetails: FunctionComponent = () => {
                       }) => parameter.name === "Patient"
                     );
                     data.subjectId =
-                      subjectParam?.valueReference?.reference ?? "N/A";
+                      subjectParam?.valueIdentifier?.value ?? "N/A";
                     // Extract all other parameters and set them to "N/A" if not found
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.expression ?? "N/A";
@@ -349,11 +410,6 @@ const StudyDetails: FunctionComponent = () => {
                   onError={onError}
                 />
               </>
-            ) : (
-              <Title
-                level={4}
-                content={i18n.t("errormessage.nogenerateddatamart")}
-              ></Title>
             )}
           </div>
         )}

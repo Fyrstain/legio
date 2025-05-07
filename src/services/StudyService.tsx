@@ -1,5 +1,12 @@
 // Resources
-import { Bundle, ResearchStudy, Parameters, Group, List, EvidenceVariable } from "fhir/r5";
+import {
+  Bundle,
+  ResearchStudy,
+  Parameters,
+  Group,
+  List,
+  EvidenceVariable,
+} from "fhir/r5";
 // FHIR
 import { createFhirClient } from "./FhirClientFactory";
 // Mock FHIR
@@ -348,6 +355,29 @@ function createParameters(studyURL: string): Parameters {
 }
 
 /**
+ * This function creates the parameters for the datamart export operation using the createParameters function.
+ * 
+ * @param studyURL The study id to create the parameters for.
+ * @returns a Parameters object containing the parameters for the datamart export operation.
+ */
+function createParametersForExportDatamart(studyURL: string): Parameters {
+  const baseParameters = createParameters(studyURL);
+  baseParameters.parameter = baseParameters.parameter || [];
+  baseParameters.parameter.push(
+    {
+      name: "type",
+      valueCode: "CSV",
+    },
+    {
+      name: "structureMapUrl",
+      valueCanonical:
+        "https://www.centreantoinelacassagne.org/StructureMap/SM-ListParams-2-CSV",
+    }
+  );
+  return baseParameters;
+}
+
+/**
  * A generic function to execute FHIR operations.
  *
  * @param studyId The ID of the study.
@@ -405,6 +435,27 @@ async function generateCohortAndDatamart(
   }
 }
 
+/**
+ * A function to execute the datamart export operation.
+ * 
+ * @param studyId The ID of the study to export the datamart for.
+ * @returns a promise of the operation result. A datamart containing the data for the study.
+ */
+async function executeExportDatamart(studyId: string): Promise<any> {
+  const study = await loadStudy(studyId);
+  if (!study) {
+    throw new Error("Study not found with ID: " + studyId);
+  }
+  const parameters: Parameters = createParametersForExportDatamart(
+    study.url ?? ""
+  );
+  return mockFhirClient.operation({
+    resourceType: "ResearchStudy",
+    name: "$export-datamart",
+    input: parameters,
+  }) as Promise<any>;
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -420,6 +471,7 @@ const StudyService = {
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,
+  executeExportDatamart,
 };
 
 export default StudyService;
