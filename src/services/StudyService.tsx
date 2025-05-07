@@ -5,12 +5,28 @@ import { createFhirClient } from "./FhirClientFactory";
 // Mock FHIR
 import { createMockFhirClient } from "./MockFhirClientFactory";
 
+import Client from "fhir-kit-client";
+
 /////////////////////////////////////
 //             Client              //
 /////////////////////////////////////
 
-const fhirClient = createFhirClient();
+const fhirClient = new Client({
+  baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+});
 const mockFhirClient = createMockFhirClient();
+
+const fhirKnowledgeClient = new Client({
+  baseUrl: process.env.REACT_APP_KNOWLEDGE_URL ?? "fhir",
+});
+
+const fhirDatamartEngineClient = new Client({
+  baseUrl: process.env.REACT_APP_DATAMART_URL ?? "fhir",
+});
+
+const fhirCohortingEngineClient = new Client({
+  baseUrl: process.env.REACT_APP_COHORTING_URL ?? "fhir",
+});
 
 /**
  * Load Study from the back to populate the fields.
@@ -70,7 +86,7 @@ async function loadDatamartForStudy(
  * @returns A promise of a Bundle containing the inclusion criteria.
  */
 async function loadInclusionCriteria(studyId: string): Promise<Bundle> {
-  return fhirClient.search({
+  return fhirKnowledgeClient.search({
     resourceType: "EvidenceVariable",
     searchParams: {
       "_has:ResearchStudy:eligibility:_id": studyId,
@@ -85,7 +101,7 @@ async function loadInclusionCriteria(studyId: string): Promise<Bundle> {
  * @returns A promise of a Bundle containing the study variables.
  */
 async function loadStudyVariables(studyId: string): Promise<Bundle> {
-  return fhirClient.search({
+  return fhirKnowledgeClient.search({
     resourceType: "EvidenceVariable",
     searchParams: {
       "_has:ResearchStudy:study-variables:_id": studyId,
@@ -102,7 +118,7 @@ async function loadStudyVariables(studyId: string): Promise<Bundle> {
 async function readEvidenceVariableByUrl(
   canonicalUrl: string
 ): Promise<Bundle> {
-  return fhirClient.search({
+  return fhirKnowledgeClient.search({
     resourceType: "EvidenceVariable",
     searchParams: {
       url: canonicalUrl,
@@ -267,7 +283,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: "http://localhost:8081/fhir",
+          address: process.env.REACT_APP_KNOWLEDGE_URL,
           header: ["Content-Type: application/json"],
         },
       },
@@ -303,7 +319,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: "http://localhost:8081/fhir",
+          address: process.env.REACT_APP_FHIR_URL,
           header: ["Content-Type: application/json"],
         },
       },
@@ -339,7 +355,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: "https://hapi.fhir.org/baseR5",
+          address: process.env.REACT_APP_TERMINOLOGY_URL,
           header: ["Content-Type: application/json"],
         },
       },
@@ -356,14 +372,15 @@ function createParameters(studyURL: string): Parameters {
  */
 async function executeFhirOperation<T>(
   studyId: string,
-  operationName: string
+  operationName: string,
+  client: Client
 ): Promise<any> {
   const study = await loadStudy(studyId);
   if (!study) {
     throw new Error("Study not found with ID: " + studyId);
   }
   const parameters: Parameters = createParameters(study.url ?? "");
-  return mockFhirClient.operation({
+  return client.operation({
     resourceType: "ResearchStudy",
     name: operationName,
     input: parameters,
@@ -376,7 +393,7 @@ async function executeFhirOperation<T>(
  * @returns The promise of the operation result. A list of people that are eligible for the study.
  */
 async function executeCohorting(studyId: string): Promise<Group> {
-  return executeFhirOperation<Group>(studyId, "$cohorting");
+  return executeFhirOperation<Group>(studyId, "$cohorting", fhirCohortingEngineClient);
 }
 
 /**
@@ -385,7 +402,7 @@ async function executeCohorting(studyId: string): Promise<Group> {
  * @returns The promise of the operation result. A datamart containing the data for the study.
  */
 async function executeGenerateDatamart(studyId: string): Promise<List> {
-  return executeFhirOperation<List>(studyId, "$generate-datamart");
+  return executeFhirOperation<List>(studyId, "$generate-datamart", fhirDatamartEngineClient);
 }
 
 /**

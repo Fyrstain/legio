@@ -37,7 +37,7 @@ const Studies: FunctionComponent = () => {
   /////////////////////////////////////
 
   const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
   });
 
   const valueSetLoader = new ValueSetLoader(fhirClient);
