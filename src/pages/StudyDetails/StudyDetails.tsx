@@ -387,7 +387,7 @@ const StudyDetails: FunctionComponent = () => {
                       }) => parameter.name === "Patient"
                     );
                     data.subjectId =
-                      subjectParam?.valueReference?.reference ?? "N/A";
+                      subjectParam?.valueIdentifier?.value ?? "N/A";
                     // Extract all other parameters and set them to "N/A" if not found
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.expression ?? "N/A";
