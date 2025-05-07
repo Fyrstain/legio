@@ -36,7 +36,8 @@
         "search": "Rechercher",
         "reset": "Réinitialiser",
         "validate": "Envoyer",
-        "generate": "Générer"
+        "generate": "Générer",
+        "export": "Exporter CSV"
     },
     "label": {
         "name": "Nom",
