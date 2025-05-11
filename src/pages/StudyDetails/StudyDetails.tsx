@@ -211,10 +211,12 @@ const StudyDetails: FunctionComponent = () => {
    */
   function getParameterValue(param: any): string {
     if (!param) return "";
+    if (param.valueAge !== undefined) return param.valueAge.value;
     if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
     if (param.valueString) return param.valueString;
     if (param.valueInteger !== undefined) return param.valueInteger.toString();
     if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
+    if (param.valueQuantity !== undefined) return param.valueQuantity.value + " " + param.valueQuantity.unit;
     return "";
   }
 
@@ -374,7 +376,6 @@ const StudyDetails: FunctionComponent = () => {
                     ...studyVariables.map((studyVariable) => ({
                       header: studyVariable.expression ?? "N/A",
                       dataField: studyVariable.expression ?? "N/A",
-                      width: "25%",
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {
@@ -404,7 +405,7 @@ const StudyDetails: FunctionComponent = () => {
                     serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
                     resourceType: "Parameters",
                     searchParameters: {
-                      "_has:List:item:_id": datamartResult.id ?? "",
+                      "_has:List:itembis:_id": datamartResult.id ?? "",
                     },
                   }}
                   onError={onError}

@@ -7,10 +7,6 @@ import {
   List,
   EvidenceVariable,
 } from "fhir/r5";
-// FHIR
-import { createFhirClient } from "./FhirClientFactory";
-// Mock FHIR
-import { createMockFhirClient } from "./MockFhirClientFactory";
 
 import Client from "fhir-kit-client";
 
@@ -21,7 +17,6 @@ import Client from "fhir-kit-client";
 const fhirClient = new Client({
   baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
 });
-const mockFhirClient = createMockFhirClient();
 
 const fhirKnowledgeClient = new Client({
   baseUrl: process.env.REACT_APP_KNOWLEDGE_URL ?? "fhir",
@@ -217,10 +212,9 @@ function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
   let expressionValue: string | undefined;
   if (evidenceVariable.characteristic) {
     evidenceVariable.characteristic.forEach((characteristic) => {
-      if (characteristic.definitionByCombination) {
+      if (characteristic.definitionExpression) {
         expressionValue =
-          characteristic.definitionByCombination?.characteristic?.[0]
-            ?.definitionExpression?.expression;
+          characteristic.definitionExpression?.expression;
       }
     });
   }
@@ -366,6 +360,42 @@ function createParameters(studyURL: string): Parameters {
           header: ["Content-Type: application/json"],
         },
       },
+      {
+        name: "cqlEngineEndpoint",
+        resource: {
+          resourceType: "Endpoint",
+          status: "active",
+          connectionType: [
+            {
+              coding: [
+                {
+                  system:
+                    "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                  code: "hl7-fhir-rest",
+                },
+              ],
+            },
+          ],
+          payload: [
+            {
+              type: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                      code: "hl7-fhir-rest",
+                      display: "HL7 FHIR",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          address: process.env.REACT_APP_CQL_URL || "",
+          header: ["Content-Type: application/json"],
+        },
+      },
     ],
   };
 }
@@ -466,7 +496,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
   const parameters: Parameters = createParametersForExportDatamart(
     study.url ?? ""
   );
-  return mockFhirClient.operation({
+  return fhirDatamartEngineClient.operation({
     resourceType: "ResearchStudy",
     name: "$export-datamart",
     input: parameters,
