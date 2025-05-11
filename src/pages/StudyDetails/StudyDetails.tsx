@@ -123,7 +123,7 @@ const StudyDetails: FunctionComponent = () => {
         nctId: study.identifier?.[0]?.value ?? "N/A",
         localContact: localContact,
         studySponsorContact: studySponsorContact,
-        phase: study.phase?.coding?.[0]?.display ?? "N/A",
+        phase: study.phase?.coding?.[0]?.display ?? study.phase?.coding?.[0]?.code ?? "N/A",
         studyDesign: study.studyDesign?.map(
           (design) => design.coding?.[0]?.display ?? "N/A"
         ) ?? ["N/A"],
@@ -338,7 +338,7 @@ const StudyDetails: FunctionComponent = () => {
           <Button
             variant="primary"
             onClick={handleCohortingAndDatamart}
-            disabled={isExistingDatamartListId || studyVariables.length === 0}
+            disabled={studyVariables.length === 0}
           >
             {i18n.t("button.generate")}
           </Button>

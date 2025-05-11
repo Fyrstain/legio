@@ -169,7 +169,7 @@ const Studies: FunctionComponent = () => {
                 return {
                 id: resource.id,
                 name: resource.title,
-                phase: resource.phase.coding[0].display,
+                phase: resource.phase.coding[0].display ?? resource.phase.coding[0].code,
                 };
             },
             searchProperties: {
