@@ -149,3 +149,14 @@ The import is then made into your Keycloak with the `docker-compose.yml`:
 ```
 
 You should be able to use the users of the realm after the import.
+
+## ECMAScript Lint (ESLint)
+
+Run the following commands in a PowerShell terminal at the root of your project:
+
+- To analyze your whole project:  
+  `npm run lint`
+- To automatically fix simple errors:  
+  `npx eslint . --fix`
+- To automatically fix simple prettier errors if they are not resolved with the previous command:
+  `npx prettier --write .`
