@@ -384,7 +384,7 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
  * @param operationName The name of the FHIR operation to execute.
  * @returns The promise of the operation result.
  */
-async function executeFhirOperation<T>(
+async function executeFhirOperation(
   studyId: string,
   operationName: string
 ): Promise<any> {
@@ -406,7 +406,7 @@ async function executeFhirOperation<T>(
  * @returns The promise of the operation result. A list of people that are eligible for the study.
  */
 async function executeCohorting(studyId: string): Promise<Group> {
-  return executeFhirOperation<Group>(studyId, "$cohorting");
+  return executeFhirOperation(studyId, "$cohorting");
 }
 
 /**
@@ -415,7 +415,7 @@ async function executeCohorting(studyId: string): Promise<Group> {
  * @returns The promise of the operation result. A datamart containing the data for the study.
  */
 async function executeGenerateDatamart(studyId: string): Promise<List> {
-  return executeFhirOperation<List>(studyId, "$generate-datamart");
+  return executeFhirOperation(studyId, "$generate-datamart");
 }
 
 /**
