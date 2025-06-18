@@ -22,7 +22,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faWarning } from "@fortawesome/free-solid-svg-icons";
 
 const StudyDetails: FunctionComponent = () => {
-    
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -80,25 +79,37 @@ const StudyDetails: FunctionComponent = () => {
   }, [navigate]);
 
   ////////////////////////////////
-  //          Lifecyle          //
-  ////////////////////////////////
-
-  useEffect(() => {
-    loadStudy();
-    loadEvidenceVariablesHandler("inclusion");
-    loadEvidenceVariablesHandler("study");
-  }, []);
-
-  ////////////////////////////////
   //           Actions          //
   ////////////////////////////////
+
+  /**
+   * Load the datamart for a study if it exists
+   *
+   * @param study The ResearchStudy resource
+   */
+  const loadDatamartForStudyHandler = useCallback(
+    async (study: ResearchStudy) => {
+      try {
+        const datamartList = await StudyService.loadDatamartForStudy(study);
+        if (datamartList) {
+          setDatamartResult(datamartList);
+          setIsExistingDatamartListId(true);
+        } else {
+          setIsExistingDatamartListId(false);
+        }
+      } catch (error) {
+        onError();
+      }
+    },
+    [onError, setDatamartResult, setIsExistingDatamartListId],
+  );
 
   /**
    * Load Study from the back to populate the fields.
    *
    * @returns the promise of a Study.
    */
-  async function loadStudy() {
+  const loadStudy = useCallback(async () => {
     setLoading(true);
     try {
       const response = await StudyService.loadStudy(studyId ?? "");
@@ -106,11 +117,11 @@ const StudyDetails: FunctionComponent = () => {
       // Find the local contact and study sponsor contact by the role code
       const localContact =
         study.associatedParty?.find(
-          (party) => party.role?.coding?.[0]?.code === "general-contact"
+          (party) => party.role?.coding?.[0]?.code === "general-contact",
         )?.name ?? "N/A";
       const studySponsorContact =
         study.associatedParty?.find(
-          (party) => party.role?.coding?.[0]?.code === "sponsor"
+          (party) => party.role?.coding?.[0]?.code === "sponsor",
         )?.name ?? "N/A";
       // Load the datamart for the study
       loadDatamartForStudyHandler(study);
@@ -125,7 +136,7 @@ const StudyDetails: FunctionComponent = () => {
         studySponsorContact: studySponsorContact,
         phase: study.phase?.coding?.[0]?.display ?? "N/A",
         studyDesign: study.studyDesign?.map(
-          (design) => design.coding?.[0]?.display ?? "N/A"
+          (design) => design.coding?.[0]?.display ?? "N/A",
         ) ?? ["N/A"],
       };
       setStudyDetails(studyData);
@@ -134,54 +145,44 @@ const StudyDetails: FunctionComponent = () => {
     } finally {
       setLoading(false);
     }
-  }
-
-  /**
-   * Load the datamart for a study if it exists
-   *
-   * @param study The ResearchStudy resource
-   */
-  async function loadDatamartForStudyHandler(study: ResearchStudy) {
-    try {
-      const datamartList = await StudyService.loadDatamartForStudy(study);
-      if (datamartList) {
-        setDatamartResult(datamartList);
-        setIsExistingDatamartListId(true);
-      } else {
-        setIsExistingDatamartListId(false);
-      }
-    } catch (error) {
-      onError();
-    }
-  }
+  }, [
+    studyId,
+    onError,
+    setLoading,
+    setStudyDetails,
+    loadDatamartForStudyHandler,
+  ]);
 
   /**
    * Function to load evidence variables (inclusion criteria or study variables) from the backend.
    *
    * @param type The type of evidence variable to load (inclusion or study)
    */
-  async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
-    try {
-      const evidencesVariables = await StudyService.loadEvidenceVariables(
-        studyId ?? "",
-        type
-      );
-      if (type === "inclusion") {
-        setInclusionCriteria(evidencesVariables);
-      } else {
-        setStudyVariables(evidencesVariables);
+  const loadEvidenceVariablesHandler = useCallback(
+    async (type: "inclusion" | "study") => {
+      try {
+        const evidencesVariables = await StudyService.loadEvidenceVariables(
+          studyId ?? "",
+          type,
+        );
+        if (type === "inclusion") {
+          setInclusionCriteria(evidencesVariables);
+        } else {
+          setStudyVariables(evidencesVariables);
+        }
+      } catch (error) {
+        onError();
       }
-    } catch (error) {
-      onError();
-    }
-  }
+    },
+    [studyId, onError, setInclusionCriteria, setStudyVariables],
+  );
 
   /**
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
   const studyVariablesExpressions = studyVariables.map(
-    (studyVariable) => studyVariable.expression
+    (studyVariable) => studyVariable.expression,
   );
 
   /**
@@ -192,7 +193,7 @@ const StudyDetails: FunctionComponent = () => {
     setLoading(true);
     try {
       const response = await StudyService.generateCohortAndDatamart(
-        studyId ?? ""
+        studyId ?? "",
       );
       setDatamartResult(response.datamartResult);
       setIsExistingDatamartListId(true);
@@ -251,6 +252,19 @@ const StudyDetails: FunctionComponent = () => {
       setLoading(false);
     }
   };
+
+  ////////////////////////////////
+  //          Lifecyle          //
+  ////////////////////////////////
+
+  /**
+   * Load the study details and evidence variables when the component mounts or when the studyId changes.
+   */
+  useEffect(() => {
+    loadStudy();
+    loadEvidenceVariablesHandler("inclusion");
+    loadEvidenceVariablesHandler("study");
+  }, [studyId, loadStudy, loadEvidenceVariablesHandler]);
 
   /////////////////////////////////////////////
   //                Content                  //
@@ -384,7 +398,7 @@ const StudyDetails: FunctionComponent = () => {
                       (parameter: {
                         name: string;
                         valueReference?: { reference: string };
-                      }) => parameter.name === "Patient"
+                      }) => parameter.name === "Patient",
                     );
                     data.subjectId =
                       subjectParam?.valueIdentifier?.value ?? "N/A";
@@ -392,7 +406,7 @@ const StudyDetails: FunctionComponent = () => {
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.expression ?? "N/A";
                       data[paramName] = "N/A";
-                    }); 
+                    });
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
                         data[param.name] = getParameterValue(param);

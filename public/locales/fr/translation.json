@@ -1,61 +1,61 @@
 {
-    "navbar": {
-        "items": {
-            "studies": "ÉTUDES"
-        },
-        "dropdown": {
-            "login": "Connexion",
-            "logout": "Déconnexion",
-            "admin": "Admin"
-        }
+  "navbar": {
+    "items": {
+      "studies": "ÉTUDES"
     },
-    "title": {
-        "cohortingdatamart": "Cohortes & Datamart",
-        "searchcriteria": "Critères de recherche",
-        "studies": "Études",
-        "error": {
-            "oops": "Oups !",
-            "problem": "Une erreur est survenue !"
-        },
-        "inprogress": {
-            "wip": "Travaux en cours !",
-            "comingsoon": "Bientôt disponible..."
-        },
-        "studydetails": "Détails de l'Étude",
-        "inclusioncriteria": "Critères d'Inclusion",
-        "studyvariables": "Variables d'Étude"
-    },
-    "footer": {
-        "items": {
-            "about": "A propos",
-            "contact": "Contact",
-            "problemtracking": "Suivi de problème"
-        }
-    },
-    "button": {
-        "search": "Rechercher",
-        "reset": "Réinitialiser",
-        "validate": "Envoyer",
-        "generate": "Générer",
-        "export": "Exporter CSV"
-    },
-    "label": {
-        "name": "Nom",
-        "status": "Statut",
-        "generaldescription": "Description générale",
-        "title": "Titre",
-        "nctid": "ID NCT",
-        "localcontact": "Contact local",
-        "studysponsorcontact": "Contact du promoteur de l'étude",
-        "studydesign": "Conception de l'étude",
-        "generateddatamart": "Datamart généré"
-    },
-    "defaultvalue": {
-        "phase": "-- Merci de choisir une phase --"
-    },
-    "errormessage": {
-        "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
-        "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
-        "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée."
+    "dropdown": {
+      "login": "Connexion",
+      "logout": "Déconnexion",
+      "admin": "Admin"
     }
+  },
+  "title": {
+    "cohortingdatamart": "Cohortes & Datamart",
+    "searchcriteria": "Critères de recherche",
+    "studies": "Études",
+    "error": {
+      "oops": "Oups !",
+      "problem": "Une erreur est survenue !"
+    },
+    "inprogress": {
+      "wip": "Travaux en cours !",
+      "comingsoon": "Bientôt disponible..."
+    },
+    "studydetails": "Détails de l'Étude",
+    "inclusioncriteria": "Critères d'Inclusion",
+    "studyvariables": "Variables d'Étude"
+  },
+  "footer": {
+    "items": {
+      "about": "A propos",
+      "contact": "Contact",
+      "problemtracking": "Suivi de problème"
+    }
+  },
+  "button": {
+    "search": "Rechercher",
+    "reset": "Réinitialiser",
+    "validate": "Envoyer",
+    "generate": "Générer",
+    "export": "Exporter CSV"
+  },
+  "label": {
+    "name": "Nom",
+    "status": "Statut",
+    "generaldescription": "Description générale",
+    "title": "Titre",
+    "nctid": "ID NCT",
+    "localcontact": "Contact local",
+    "studysponsorcontact": "Contact du promoteur de l'étude",
+    "studydesign": "Conception de l'étude",
+    "generateddatamart": "Datamart généré"
+  },
+  "defaultvalue": {
+    "phase": "-- Merci de choisir une phase --"
+  },
+  "errormessage": {
+    "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
+    "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
+    "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée."
+  }
 }

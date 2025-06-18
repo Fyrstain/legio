@@ -22,7 +22,6 @@ export interface InformationSectionProps {
 const InformationSection: FunctionComponent<InformationSectionProps> = ({
   fields,
 }) => {
-    
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////

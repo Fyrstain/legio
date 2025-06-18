@@ -1,19 +1,19 @@
 // Keycloak
-import Keycloak, {
-  KeycloakFlow,
-  KeycloakOnLoad,
-  KeycloakPkceMethod,
-} from "keycloak-js";
+// import Keycloak, {
+//   KeycloakFlow,
+//   KeycloakOnLoad,
+//   KeycloakPkceMethod,
+// } from "keycloak-js";
 
 // Keycloak configuration
-const keycloakConfig = {
-  url: process.env.REACT_APP_KEYCLOAK_URL as string,
-  realm: process.env.REACT_APP_KEYCLOAK_REALM as string,
-  clientId: process.env.REACT_APP_KEYCLOAK_REALM_CLIENT_ID as string,
-};
+// const keycloakConfig = {
+//   url: process.env.REACT_APP_KEYCLOAK_URL as string,
+//   realm: process.env.REACT_APP_KEYCLOAK_REALM as string,
+//   clientId: process.env.REACT_APP_KEYCLOAK_REALM_CLIENT_ID as string,
+// };
 
 // Keycloak instance
-const keycloak = new Keycloak(keycloakConfig);
+// const keycloak = new Keycloak(keycloakConfig);
 
 ///////////////////////////////
 //        functions          //

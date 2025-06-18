@@ -1,36 +1,39 @@
 # Legio
-Description : React front application for cohorting and datamart. 
+
+Description : React front application for cohorting and datamart.
 
 ## Prerequisites
 
 Note: Please ensure you have installed <code><a href="https://nodejs.org/en/download/">node js</a></code>
 
 To preview and run the project on your device:
-1) Open project folder in <a href="https://code.visualstudio.com/download">Visual Studio Code</a>
-2) In the terminal, run `npm install`
-3) Run `npm run build` to retrieve images from the library
-4) Run `npm start` to view project in browser
-5) Launch the browser in no-cors mode : perform the command windows + R and enter this line : chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security, then press the 'Enter' key
+
+1. Open project folder in <a href="https://code.visualstudio.com/download">Visual Studio Code</a>
+2. In the terminal, run `npm install`
+3. Run `npm run build` to retrieve images from the library
+4. Run `npm start` to view project in browser
+5. Launch the browser in no-cors mode : perform the command windows + R and enter this line : chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security, then press the 'Enter' key
 
 For more information on integrating Nexus with our Maven, npm and Docker projects, please see the Nexus integration guide : <a href="https://github.com/Fyrstain/swf-infrastructure/blob/init/nexus/README.md">Nexus ReadMe</a>
 
 ## Retrieving a component added to the library
 
 When a component has just been added to the library to be able to use it :
-1) In the package.json file put the same version as in the library (@fyrstain/hl7-front-library)
-2) In the terminal, run `npm i --force`
-3) Run `npm start` to view project in browser
+
+1. In the package.json file put the same version as in the library (@fyrstain/hl7-front-library)
+2. In the terminal, run `npm i --force`
+3. Run `npm start` to view project in browser
 
 ## Modify the style of a library component
 
-1) Add the corresponding className in the component use in the page (See the one proposed by the component in the library)
-2) Adding the class to the corresponding css file
+1. Add the corresponding className in the component use in the page (See the one proposed by the component in the library)
+2. Adding the class to the corresponding css file
 
 ## Change the value of css variables
 
-1) Open the style.css file
-2) change the value of the variables.
-  
+1. Open the style.css file
+2. change the value of the variables.
+
 ## Configuration via environment variables
 
 The following environment variables are available to configure the application :
@@ -78,6 +81,7 @@ values for environment variables inside each Docker image ℹ️
 ### docker-compose files
 
 This project contains two docker-compose files :
+
 - `docker-compose.yml`
 - `docker-compose-kc-only.yml`
 
@@ -96,7 +100,7 @@ be found at root level of the project. The file is designed to build the Docker 
 The command to use in order to start the application is the following :
 
 ```bash
-docker compose up -d 
+docker compose up -d
 ```
 
 The _up_ command start all the container defined in your docker-compose. The _-d_ option makes it so that is
@@ -114,7 +118,7 @@ build without using the cache.
 If you want to use the development server to access hot reload, you can use the `docker-compose-kc-only.yml` to deploy your Keycloak using the command :
 
 ```bash
-docker compose -f docker-compose-kc-only.yml up -d 
+docker compose -f docker-compose-kc-only.yml up -d
 ```
 
 And then, deploy the application with the usual :
@@ -125,20 +129,22 @@ npm run start
 
 ## Deployed images
 
-Deployed images are composed of the front application front available on http://localhost:3000 and the Keycloak which is accessible on http://localhost:8999. 
+Deployed images are composed of the front application front available on http://localhost:3000 and the Keycloak which is accessible on http://localhost:8999.
 The default credentials for the administration console are :
-- Username: `admin` 
+
+- Username: `admin`
 - Password: `admin`
 
 ### Import / Export Realm with KC
 
 It is recommended when you test a specific environment, that you export/import realm + users json file so you can better reproduce this environment behavior.
-Once the realm is exported, the json file is to be put in the `import` folder. 
+Once the realm is exported, the json file is to be put in the `import` folder.
 
 ℹ️ By default a demo realm import is made with 1 verified user already created :
-- Username: `john.doe@gmail.com` 
+
+- Username: `john.doe@gmail.com`
 - Password: `azerty`.
- ℹ️
+  ℹ️
 
 The import is then made into your Keycloak with the `docker-compose.yml`:
 
@@ -149,3 +155,14 @@ The import is then made into your Keycloak with the `docker-compose.yml`:
 ```
 
 You should be able to use the users of the realm after the import.
+
+## ECMAScript Lint (ESLint)
+
+Run the following commands in a PowerShell terminal at the root of your project:
+
+- To analyze your whole project:  
+  `npm run lint`
+- To automatically fix simple errors:  
+  `npx eslint . --fix`
+- To automatically fix simple prettier errors if they are not resolved with the previous command:
+  `npx prettier --write .`

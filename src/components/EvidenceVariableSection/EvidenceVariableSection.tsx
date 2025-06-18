@@ -28,7 +28,6 @@ export interface EvidenceVariableSectionProps {
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps
 > = ({ evidenceVariables, type }) => {
-    
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////

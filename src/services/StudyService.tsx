@@ -38,18 +38,18 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
  * @returns a promise with the datamart list or null if it doesn't exist
  */
 async function loadDatamartForStudy(
-  study: ResearchStudy
+  study: ResearchStudy,
 ): Promise<List | null> {
   // Find the datamart extension
   const datamartExtension = study.extension?.find(
     (extension) =>
       extension.url ===
-      "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+      "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart",
   );
   // Check if the datamart extension exists and has a valueReference
   if (datamartExtension) {
     const evaluationExt = datamartExtension.extension?.find(
-      (ext) => ext.url === "evaluation"
+      (ext) => ext.url === "evaluation",
     );
     if (evaluationExt?.valueReference?.reference) {
       // Extract the ID
@@ -107,7 +107,7 @@ async function loadStudyVariables(studyId: string): Promise<Bundle> {
  * @returns A promise of a Bundle containing the requested EvidenceVariable
  */
 async function readEvidenceVariableByUrl(
-  canonicalUrl: string
+  canonicalUrl: string,
 ): Promise<Bundle> {
   return fhirClient.search({
     resourceType: "EvidenceVariable",
@@ -126,7 +126,7 @@ async function readEvidenceVariableByUrl(
  */
 async function loadEvidenceVariables(
   studyId: string,
-  type: "inclusion" | "study"
+  type: "inclusion" | "study",
 ) {
   const serviceMethod =
     type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
@@ -152,7 +152,7 @@ async function loadEvidenceVariables(
                   if (subCharacteristic.definitionCanonical) {
                     canonicalUrls.push(subCharacteristic.definitionCanonical);
                   }
-                }
+                },
               );
             }
           });
@@ -161,7 +161,7 @@ async function loadEvidenceVariables(
       // If canonical URLs were found, load the EvidenceVariable resources using the URLs
       if (canonicalUrls.length > 0) {
         const canonicalResults = await Promise.all(
-          canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
+          canonicalUrls.map((url) => readEvidenceVariableByUrl(url)),
         );
         canonicalResults.forEach((result) => {
           if (
@@ -356,7 +356,7 @@ function createParameters(studyURL: string): Parameters {
 
 /**
  * This function creates the parameters for the datamart export operation using the createParameters function.
- * 
+ *
  * @param studyURL The study id to create the parameters for.
  * @returns a Parameters object containing the parameters for the datamart export operation.
  */
@@ -372,7 +372,7 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
       name: "structureMapUrl",
       valueCanonical:
         "https://www.centreantoinelacassagne.org/StructureMap/SM-ListParams-2-CSV",
-    }
+    },
   );
   return baseParameters;
 }
@@ -384,9 +384,9 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
  * @param operationName The name of the FHIR operation to execute.
  * @returns The promise of the operation result.
  */
-async function executeFhirOperation<T>(
+async function executeFhirOperation(
   studyId: string,
-  operationName: string
+  operationName: string,
 ): Promise<any> {
   const study = await loadStudy(studyId);
   if (!study) {
@@ -406,7 +406,7 @@ async function executeFhirOperation<T>(
  * @returns The promise of the operation result. A list of people that are eligible for the study.
  */
 async function executeCohorting(studyId: string): Promise<Group> {
-  return executeFhirOperation<Group>(studyId, "$cohorting");
+  return executeFhirOperation(studyId, "$cohorting");
 }
 
 /**
@@ -415,7 +415,7 @@ async function executeCohorting(studyId: string): Promise<Group> {
  * @returns The promise of the operation result. A datamart containing the data for the study.
  */
 async function executeGenerateDatamart(studyId: string): Promise<List> {
-  return executeFhirOperation<List>(studyId, "$generate-datamart");
+  return executeFhirOperation(studyId, "$generate-datamart");
 }
 
 /**
@@ -424,7 +424,7 @@ async function executeGenerateDatamart(studyId: string): Promise<List> {
  * @returns The result of the cohorting and datamart generation operation.
  */
 async function generateCohortAndDatamart(
-  studyId: string
+  studyId: string,
 ): Promise<{ cohortingResult: Group; datamartResult: List }> {
   try {
     const cohortingResult = await executeCohorting(studyId);
@@ -437,7 +437,7 @@ async function generateCohortAndDatamart(
 
 /**
  * A function to execute the datamart export operation.
- * 
+ *
  * @param studyId The ID of the study to export the datamart for.
  * @returns a promise of the operation result. A datamart containing the data for the study.
  */
@@ -447,7 +447,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
     throw new Error("Study not found with ID: " + studyId);
   }
   const parameters: Parameters = createParametersForExportDatamart(
-    study.url ?? ""
+    study.url ?? "",
   );
   return mockFhirClient.operation({
     resourceType: "ResearchStudy",
