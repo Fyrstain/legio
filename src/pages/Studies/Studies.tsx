@@ -8,14 +8,19 @@ import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // Translation
 import i18n from "i18next";
 // React
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 // Navigation
 import { useNavigate } from "react-router-dom";
 // Components
 import LegioPage from "../../components/LegioPage/LegioPage";
 
 const Studies: FunctionComponent = () => {
-
   /////////////////////////////////////
   //            Constants            //
   /////////////////////////////////////
@@ -29,18 +34,25 @@ const Studies: FunctionComponent = () => {
   /////////////////////////////////////
 
   const [researchStudyPhases, setResearchStudyPhases] = useState(
-    [] as SimpleCode[]
+    [] as SimpleCode[],
   );
 
   /////////////////////////////////////
   //             Client              //
   /////////////////////////////////////
 
-  const fhirClient = useMemo(() => new Client({
-    baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-  }), []);
+  const fhirClient = useMemo(
+    () =>
+      new Client({
+        baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+      }),
+    [],
+  );
 
-  const valueSetLoader = useMemo(() => new ValueSetLoader(fhirClient), [fhirClient]);
+  const valueSetLoader = useMemo(
+    () => new ValueSetLoader(fhirClient),
+    [fhirClient],
+  );
 
   //////////////////////////////
   //        Navigation        //
@@ -52,7 +64,7 @@ const Studies: FunctionComponent = () => {
     (id: string) => {
       navigate("/Study/" + id);
     },
-    [navigate]
+    [navigate],
   );
 
   /////////////////////////////////////
@@ -79,7 +91,7 @@ const Studies: FunctionComponent = () => {
     setLoading(true);
     try {
       setResearchStudyPhases(
-        await valueSetLoader.searchValueSet(researchStudyPhaseUrl)
+        await valueSetLoader.searchValueSet(researchStudyPhaseUrl),
       );
     } catch (error) {
       console.log(error);

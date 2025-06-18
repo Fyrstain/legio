@@ -1,8 +1,8 @@
 $darkGray: #333f4c;
 $red: #e40032;
 $white: #fff;
-$gray: #D9D9D9;
-$lightGray: #F7F6F7;
+$gray: #d9d9d9;
+$lightGray: #f7f6f7;
 
 // form-select, textarea and input border color when is not visited
 $input-border-color: $darkGray;
@@ -47,12 +47,12 @@ $blue: $gray;
 $form-check-input-checked-bg-color: $red;
 
 $theme-colors: (
-    "danger": $red,
-    "primary": $red,
-    "secondary": $darkGray,
-    "success": #8BC74E,
-    "warning": #ECAA07,
-    "info": #1581BF,
+  "danger": $red,
+  "primary": $red,
+  "secondary": $darkGray,
+  "success": #8bc74e,
+  "warning": #ecaa07,
+  "info": #1581bf,
 );
 
 @import "~bootstrap/scss/bootstrap";

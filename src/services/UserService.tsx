@@ -27,9 +27,9 @@ const initKeycloak = (onAuthenticatedCallback: any) => {
   onAuthenticatedCallback();
 };
 
-const doLogin = () => { };
+const doLogin = () => {};
 
-const doLogout = () => { };
+const doLogout = () => {};
 
 const getToken = () => null;
 
