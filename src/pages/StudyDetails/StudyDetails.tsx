@@ -405,7 +405,7 @@ const StudyDetails: FunctionComponent = () => {
                     serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
                     resourceType: "Parameters",
                     searchParameters: {
-                      "_has:List:itembis:_id": datamartResult.id ?? "",
+                      "_has:List:item:_id": datamartResult.id ?? "",
                     },
                   }}
                   onError={onError}
