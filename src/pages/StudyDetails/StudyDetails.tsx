@@ -19,7 +19,8 @@ import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
 import { Buffer } from "buffer";
 // Font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { version } from "os";
 
 const StudyDetails: FunctionComponent = () => {
     
@@ -37,6 +38,7 @@ const StudyDetails: FunctionComponent = () => {
     title: "",
     status: "",
     description: "",
+    version: "",
     nctId: "",
     localContact: "",
     studySponsorContact: "",
@@ -120,6 +122,7 @@ const StudyDetails: FunctionComponent = () => {
         title: study.title ?? "N/A",
         status: study.status ?? "N/A",
         description: study.description ?? "N/A",
+        version: study.version ?? "N/A",
         nctId: study.identifier?.[0]?.value ?? "N/A",
         localContact: localContact,
         studySponsorContact: studySponsorContact,
@@ -261,6 +264,9 @@ const StudyDetails: FunctionComponent = () => {
   return (
     <LegioPage titleKey="title.studydetails" loading={loading}>
       <>
+        <FontAwesomeIcon
+          icon={faPen}
+        />
         {/* Section with the ResearchStudy details  */}
         <InformationSection
           fields={[
@@ -284,6 +290,10 @@ const StudyDetails: FunctionComponent = () => {
             {
               label: i18n.t("label.generaldescription"),
               value: studyDetails.description,
+            },
+            {
+              label: "Version",
+              value: studyDetails.version ?? "N/A",
             },
             {
               label: i18n.t("label.nctid"),
@@ -393,7 +403,7 @@ const StudyDetails: FunctionComponent = () => {
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.expression ?? "N/A";
                       data[paramName] = "N/A";
-                    }); 
+                    });
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
                         data[param.name] = getParameterValue(param);
