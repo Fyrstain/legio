@@ -123,7 +123,7 @@ const StudyDetails: FunctionComponent = () => {
         nctId: study.identifier?.[0]?.value ?? "N/A",
         localContact: localContact,
         studySponsorContact: studySponsorContact,
-        phase: study.phase?.coding?.[0]?.display ?? "N/A",
+        phase: study.phase?.coding?.[0]?.display ?? study.phase?.coding?.[0]?.code ?? "N/A",
         studyDesign: study.studyDesign?.map(
           (design) => design.coding?.[0]?.display ?? "N/A"
         ) ?? ["N/A"],
@@ -211,10 +211,12 @@ const StudyDetails: FunctionComponent = () => {
    */
   function getParameterValue(param: any): string {
     if (!param) return "";
+    if (param.valueAge !== undefined) return param.valueAge.value;
     if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
     if (param.valueString) return param.valueString;
     if (param.valueInteger !== undefined) return param.valueInteger.toString();
     if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
+    if (param.valueQuantity !== undefined) return param.valueQuantity.value + " " + param.valueQuantity.unit;
     return "";
   }
 
@@ -336,7 +338,7 @@ const StudyDetails: FunctionComponent = () => {
           <Button
             variant="primary"
             onClick={handleCohortingAndDatamart}
-            disabled={isExistingDatamartListId || studyVariables.length === 0}
+            disabled={studyVariables.length === 0}
           >
             {i18n.t("button.generate")}
           </Button>
@@ -374,7 +376,6 @@ const StudyDetails: FunctionComponent = () => {
                     ...studyVariables.map((studyVariable) => ({
                       header: studyVariable.expression ?? "N/A",
                       dataField: studyVariable.expression ?? "N/A",
-                      width: "25%",
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {

@@ -106,22 +106,22 @@ const LegioPage: FunctionComponent<{
             ],
         },
         logo: [
-            {
-            logoLink:
-                "https://fyrstain.com/wp-content/uploads/2022/10/Logo_fyrstain_horyzontal.svg",
-            alt: "Horizontal logo type",
-            link: "https://fyrstain.com",
-            },
-            ...(process.env.REACT_APP_DISPLAY_CLIENT_LOGO === "true"
+            ...(process.env.REACT_APP_CLIENT_LOGO
             ? [
                 {
-                    logoLink:
-                    (process.env.PUBLIC_URL ?? "") + "/assets/HL7-EU-Logo.jpg",
+                    logoLink: process.env.REACT_APP_CLIENT_LOGO,
                     alt: "Horizontal logo type",
-                    link: "https://hl7.eu",
+                    link: (process.env.REACT_APP_CLIENT_LOGO_LINK ?? "/"),
                 },
                 ]
-            : []),
+            : [
+                {
+                    logoLink:
+                        "https://fyrstain.com/wp-content/uploads/2022/10/Logo_fyrstain_horyzontal.svg",
+                    alt: "Horizontal logo type",
+                    link: "https://fyrstain.com",
+                }
+            ]),
         ],
         // TODO : Uncomment the items when the footer is ready
         items: [
