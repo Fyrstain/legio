@@ -19,11 +19,13 @@ import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
 import { Buffer } from "buffer";
 // Font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
-import { version } from "os";
+import {
+  faDownload,
+  faPen,
+  faWarning,
+} from "@fortawesome/free-solid-svg-icons";
 
 const StudyDetails: FunctionComponent = () => {
-    
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -45,6 +47,9 @@ const StudyDetails: FunctionComponent = () => {
     phase: "",
     studyDesign: [] as string[],
   });
+
+  // State to manage editing mode
+  const [isEditingForm, setIsEditingForm] = useState(false);
 
   // Inclusion criteria array
   const [inclusionCriteria, setInclusionCriteria] = useState<
@@ -138,6 +143,31 @@ const StudyDetails: FunctionComponent = () => {
       setLoading(false);
     }
   }
+
+  /**
+   * Update the ResearchStudy resource with the new values.
+   *
+   * @param updatedValues The new values to update
+   */
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      console.log("Données à sauvegarder:", studyDetails);
+      // Update the ResearchStudy resource with the new values
+      await StudyService.updateStudy(studyId ?? "", studyDetails);
+      // Exit the editing mode
+      setIsEditingForm(false);
+      // Success message
+      // TODO : use a badge or a toast instead of an alert
+      alert("Étude mise à jour avec succès!");
+    } catch (error) {
+      // TODO : use a badge / toast instead of an alert
+      console.error("Erreur lors de la sauvegarde:", error);
+      alert("Erreur lors de la sauvegarde. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /**
    * Load the datamart for a study if it exists
@@ -262,54 +292,100 @@ const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////////////
 
   return (
-    <LegioPage titleKey="title.studydetails" loading={loading}>
-      <>
+    <LegioPage
+      titleKey="title.studydetails"
+      titleAction={
         <FontAwesomeIcon
           icon={faPen}
+          size="xl"
+          cursor={"pointer"}
+          onClick={() => setIsEditingForm(!isEditingForm)}
         />
+      }
+      loading={loading}
+    >
+      <>
         {/* Section with the ResearchStudy details  */}
         <InformationSection
+          isEditing={isEditingForm}
           fields={[
             {
               label: "ID",
               value: studyId,
+              editable: false,
             },
             {
               label: i18n.t("label.name"),
               value: studyDetails.name,
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, name: value }));
+              },
             },
             {
               label: i18n.t("label.title"),
               value: studyDetails.title,
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, title: value }));
+              },
             },
             {
               label: i18n.t("label.status"),
               value: studyDetails.status,
               type: "status",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, status: value }));
+              },
             },
             {
               label: i18n.t("label.generaldescription"),
               value: studyDetails.description,
+              type: "textarea",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, description: value }));
+              },
             },
             {
               label: "Version",
               value: studyDetails.version ?? "N/A",
+              // TODO, should be required
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, version: value }));
+              },
             },
             {
               label: i18n.t("label.nctid"),
               value: studyDetails.nctId,
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, nctId: value }));
+              },
             },
             {
               label: i18n.t("label.localcontact"),
               value: studyDetails.localContact,
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, localContact: value }));
+              },
             },
             {
               label: i18n.t("label.studysponsorcontact"),
               value: studyDetails.studySponsorContact,
+              type: "text",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({
+                  ...prev,
+                  studySponsorContact: value,
+                }));
+              },
             },
             {
               label: "Phase",
               value: studyDetails.phase,
+              editable: false,
             },
             {
               label: i18n.t("label.studydesign"),
@@ -423,6 +499,11 @@ const StudyDetails: FunctionComponent = () => {
               </>
             )}
           </div>
+        )}
+        {isEditingForm && (
+          <Button className="mt-3" onClick={handleSave}>
+            {i18n.t("button.save")}
+          </Button>
         )}
       </>
     </LegioPage>

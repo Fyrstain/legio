@@ -42,6 +42,42 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
   }) as Promise<ResearchStudy>;
 }
 
+async function updateStudy(studyId: string, updatedData: any): Promise<ResearchStudy> {
+    try {
+        // Load the existing study
+        const existingStudy = await loadStudy(studyId);
+        // Create the updated object
+        const updatedStudy = {
+          ...existingStudy,
+          name: updatedData.name || existingStudy.name,
+          title: updatedData.title || existingStudy.title,
+          status: updatedData.status || existingStudy.status,
+          description: updatedData.description || existingStudy.description,
+          version: updatedData.version || existingStudy.version,
+          nctId: updatedData.nctId || existingStudy.identifier?.[0]?.value,
+          localContact: updatedData.localContact || existingStudy.associatedParty?.find(
+            (party) => party.role?.coding?.[0]?.code === "general-contact"
+          )?.name,
+          studySponsorContact: updatedData.studySponsorContact || existingStudy.associatedParty?.find(
+            (party) => party.role?.coding?.[0]?.code === "sponsor"
+          )?.name,
+        //   studyDesign: updatedData.studyDesign || existingStudy.studyDesign,
+          // ... other fields
+        };
+
+        // Use the direct update method
+        const response = await fhirClient.update({
+            resourceType: 'ResearchStudy',
+            id: studyId,
+            body: updatedStudy
+        });
+
+        return response as ResearchStudy;
+    } catch (error) {
+        throw new Error(`Failed to update study: ${error}`);
+    }
+}
+
 /**
  * Load the datamart for a study if it exists
  *
@@ -509,6 +545,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
 
 const StudyService = {
   loadStudy,
+  updateStudy, 
   loadDatamartForStudy,
   loadListById,
   loadInclusionCriteria,
