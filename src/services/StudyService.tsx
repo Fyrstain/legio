@@ -30,6 +30,113 @@ const fhirCohortingEngineClient = new Client({
   baseUrl: process.env.REACT_APP_COHORTING_URL ?? "fhir",
 });
 
+/////////////////////////////////////
+//        Helper Functions         //
+/////////////////////////////////////
+
+/**
+ * Create a coding object
+ *
+ * @param system The system URL for the coding.
+ * @param code The code for the coding.
+ * @param display The display name for the coding.
+ * @returns The created coding object.
+ */
+const createCoding = (system: string, code: string, display?: string) => ({
+  system,
+  code,
+  display: display || code,
+});
+
+/**
+ * Update the name of an associated party in a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param roleCode The role code of the associated party to update.
+ * @param newName The new name to assign to the associated party.
+ */
+const updateAssociatedParty = (
+  existingStudy: ResearchStudy,
+  roleCode: string,
+  newName: string
+) => {
+  if (!existingStudy.associatedParty) {
+    existingStudy.associatedParty = [];
+  }
+  const associatedParty = existingStudy.associatedParty.find(
+    (party) => party.role?.coding?.[0]?.code === roleCode
+  );
+  if (associatedParty) {
+    associatedParty.name = newName;
+  } else if (newName) {
+    // Create a new associatedParty if it doesn't exist
+    existingStudy.associatedParty.push({
+      name: newName,
+      role: {
+        coding: [
+          createCoding(
+            "http://hl7.org/fhir/research-study-party-role",
+            roleCode,
+            roleCode === "general-contact" ? "general-contact" : "sponsor"
+          ),
+        ],
+      },
+    });
+  }
+};
+
+/**
+ * Update the NCT identifier of a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param newNctId The new NCT ID to assign to the study.
+ */
+const updateIdentifier = (existingStudy: ResearchStudy, newNctId: string) => {
+  if (!existingStudy.identifier) {
+    existingStudy.identifier = [];
+  }
+  const systemUrl = "http://clinicaltrials.gov";
+  // Find the existing NCT identifier
+  const nctIdentifier = existingStudy.identifier.find(
+    (id) => id.system === systemUrl
+  );
+  if (nctIdentifier) {
+    // Update the existing NCT identifier
+    nctIdentifier.value = newNctId;
+  } else {
+    // Add a new NCT identifier if it doesn't exist
+    existingStudy.identifier.push({
+      system: systemUrl,
+      value: newNctId,
+    });
+  }
+};
+
+/**
+ * Update the study design of a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param newStudyDesign The new study design to assign to the research study.
+ */
+const updateStudyDesign = (
+  existingStudy: ResearchStudy,
+  newStudyDesign: any[]
+) => {
+  if (Array.isArray(newStudyDesign) && newStudyDesign.length > 0) {
+    if (newStudyDesign[0].coding) {
+      existingStudy.studyDesign = newStudyDesign;
+    } else {
+      existingStudy.studyDesign = newStudyDesign.map((code) => ({
+        coding: [createCoding("http://hl7.org/fhir/study-design", code, code)],
+      }));
+    }
+  }
+};
+
+/////////////////////////////////////
+//             Actions             //
+/////////////////////////////////////
+
 /**
  * Load Study from the back to populate the fields.
  *
@@ -42,40 +149,63 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
   }) as Promise<ResearchStudy>;
 }
 
-async function updateStudy(studyId: string, updatedData: any): Promise<ResearchStudy> {
-    try {
-        // Load the existing study
-        const existingStudy = await loadStudy(studyId);
-        // Create the updated object
-        const updatedStudy = {
-          ...existingStudy,
-          name: updatedData.name || existingStudy.name,
-          title: updatedData.title || existingStudy.title,
-          status: updatedData.status || existingStudy.status,
-          description: updatedData.description || existingStudy.description,
-          version: updatedData.version || existingStudy.version,
-          nctId: updatedData.nctId || existingStudy.identifier?.[0]?.value,
-          localContact: updatedData.localContact || existingStudy.associatedParty?.find(
-            (party) => party.role?.coding?.[0]?.code === "general-contact"
-          )?.name,
-          studySponsorContact: updatedData.studySponsorContact || existingStudy.associatedParty?.find(
-            (party) => party.role?.coding?.[0]?.code === "sponsor"
-          )?.name,
-        //   studyDesign: updatedData.studyDesign || existingStudy.studyDesign,
-          // ... other fields
-        };
-
-        // Use the direct update method
-        const response = await fhirClient.update({
-            resourceType: 'ResearchStudy',
-            id: studyId,
-            body: updatedStudy
-        });
-
-        return response as ResearchStudy;
-    } catch (error) {
-        throw new Error(`Failed to update study: ${error}`);
+/**
+ * Update a ResearchStudy resource with the provided data.
+ *
+ * @param studyId The ID of the study to update.
+ * @param updatedData The new data to update the study with.
+ * @returns The updated ResearchStudy resource.
+ */
+async function updateStudy(
+  studyId: string,
+  updatedData: any
+): Promise<ResearchStudy> {
+  try {
+    // Load the existing study
+    const existingStudy = await loadStudy(studyId);
+    // Update identifier - check if the property exists
+    if (updatedData.hasOwnProperty("nctId")) {
+      updateIdentifier(existingStudy, updatedData.nctId);
     }
+    // Update associatedParty contacts - check if the properties exist
+    if (updatedData.hasOwnProperty("localContact")) {
+      updateAssociatedParty(
+        existingStudy,
+        "general-contact",
+        updatedData.localContact
+      );
+    }
+    if (updatedData.hasOwnProperty("studySponsorContact")) {
+      updateAssociatedParty(
+        existingStudy,
+        "sponsor",
+        updatedData.studySponsorContact
+      );
+    }
+    // Update studyDesign - check if the property exists
+    if (updatedData.hasOwnProperty("studyDesign")) {
+      updateStudyDesign(existingStudy, updatedData.studyDesign);
+    }
+    // Create the updated object
+    const updatedStudy = {
+      ...existingStudy,
+      // Update basic fields
+      name: updatedData.name ?? existingStudy.name,
+      title: updatedData.title ?? existingStudy.title,
+      status: updatedData.status ?? existingStudy.status,
+      description: updatedData.description ?? existingStudy.description,
+      version: updatedData.version ?? existingStudy.version,
+    };
+    // Use of the update method
+    const response = await fhirClient.update({
+      resourceType: "ResearchStudy",
+      id: studyId,
+      body: updatedStudy,
+    });
+    return response as ResearchStudy;
+  } catch (error) {
+    throw new Error(`Failed to update study: ${error}`);
+  }
 }
 
 /**
@@ -545,7 +675,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
 
 const StudyService = {
   loadStudy,
-  updateStudy, 
+  updateStudy,
   loadDatamartForStudy,
   loadListById,
   loadInclusionCriteria,

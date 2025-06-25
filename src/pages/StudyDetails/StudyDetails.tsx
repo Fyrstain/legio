@@ -14,7 +14,12 @@ import i18n from "i18next";
 // React
 import { Alert, Button } from "react-bootstrap";
 // HL7 Front Library
-import { PaginatedTable, Title } from "@fyrstain/hl7-front-library";
+import {
+  PaginatedTable,
+  SimpleCode,
+  Title,
+  ValueSetLoader,
+} from "@fyrstain/hl7-front-library";
 // Buffer
 import { Buffer } from "buffer";
 // Font awesome
@@ -23,12 +28,35 @@ import {
   faDownload,
   faPen,
   faWarning,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+// Fhir
+import Client from "fhir-kit-client";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
+  //             Client              //
+  /////////////////////////////////////
+
+  const fhirClient = new Client({
+    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+  });
+
+  const valueSetLoader = new ValueSetLoader(fhirClient);
+
+  /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
+
+  // URL for the ResearchStudy study design value set
+  const researchStudyStudyDesignUrl =
+    process.env.REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL ??
+    "http://hl7.org/fhir/ValueSet/study-design";
+
+  // State to manage the ResearchStudy study design value set
+  const [researchStudyStudyDesign, setResearchStudyStudyDesign] = useState(
+    [] as SimpleCode[]
+  );
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -47,6 +75,9 @@ const StudyDetails: FunctionComponent = () => {
     phase: "",
     studyDesign: [] as string[],
   });
+
+  // State to manage the actual version of the study
+  const [actualVersion, setActualVersion] = useState<string>("");
 
   // State to manage editing mode
   const [isEditingForm, setIsEditingForm] = useState(false);
@@ -108,6 +139,12 @@ const StudyDetails: FunctionComponent = () => {
   async function loadStudy() {
     setLoading(true);
     try {
+      // Load the value set for study design
+      const studyDesignValueSet = await valueSetLoader.searchValueSet(
+        researchStudyStudyDesignUrl
+      );
+      setResearchStudyStudyDesign(studyDesignValueSet);
+      // Load the ResearchStudy resource from the backend
       const response = await StudyService.loadStudy(studyId ?? "");
       const study: ResearchStudy = response as ResearchStudy;
       // Find the local contact and study sponsor contact by the role code
@@ -121,6 +158,19 @@ const StudyDetails: FunctionComponent = () => {
         )?.name ?? "N/A";
       // Load the datamart for the study
       loadDatamartForStudyHandler(study);
+      // Function to extract study design codes
+      const extractStudyDesignCodes = () => {
+        if (!study.studyDesign || study.studyDesign.length === 0) {
+          return [""];
+        }
+        const codes = study.studyDesign.map((design) => {
+          const code = design.coding?.[0]?.code || "";
+          return code;
+        });
+        return codes.filter((code) => code !== "");
+      };
+      // Extract study design codes
+      const studyDesignCodes = extractStudyDesignCodes();
       // The data to display
       const studyData = {
         name: study.name ?? "N/A",
@@ -131,12 +181,16 @@ const StudyDetails: FunctionComponent = () => {
         nctId: study.identifier?.[0]?.value ?? "N/A",
         localContact: localContact,
         studySponsorContact: studySponsorContact,
-        phase: study.phase?.coding?.[0]?.display ?? study.phase?.coding?.[0]?.code ?? "N/A",
-        studyDesign: study.studyDesign?.map(
-          (design) => design.coding?.[0]?.display ?? "N/A"
-        ) ?? ["N/A"],
+        phase:
+          study.phase?.coding?.[0]?.display ??
+          study.phase?.coding?.[0]?.code ??
+          "N/A",
+        studyDesign: studyDesignCodes,
       };
+      // Set the study details in the state
       setStudyDetails(studyData);
+      // Set the actual version of the study
+      setActualVersion(study.version ?? "");
     } catch (error) {
       onError();
     } finally {
@@ -145,27 +199,86 @@ const StudyDetails: FunctionComponent = () => {
   }
 
   /**
+   * Get the display values for the study design.
+   *
+   * @returns the display values for the study design.
+   */
+  const getStudyDesignDisplayValues = () => {
+    // If studyDesign is not defined or is empty, return "N/A"
+    if (!studyDetails.studyDesign || studyDetails.studyDesign.length === 0) {
+      return ["N/A"];
+    }
+    // Map the study design codes to their display values
+    return studyDetails.studyDesign.map((code) => {
+      const option = researchStudyStudyDesign.find(
+        (design) => design.code === code
+      );
+      return option?.display || code || "N/A";
+    });
+  };
+
+  /**
+   * Get the option element to represent the code in an Input Select.
+   * 
+   * @param code the code.
+   * @returns the option element.
+   */
+  function getOption(code: SimpleCode) {
+    return { value: code.code, label: code.display ?? code.code };
+  }
+
+  /**
+   * Get the validation state for the version field.
+   * 
+   * @returns the validation state.
+   */
+  const getVersionValidation = () => {
+    const version = studyDetails.version;
+    // Check if version is empty
+    if (!version || version.trim() === "") {
+      return {
+        isInvalid: true,
+        errorMessage: i18n.t("errormessage.requiredfield"),
+      };
+    }
+    // Check if version is the same as original
+    if (version === actualVersion) {
+      return {
+        isInvalid: true,
+        errorMessage: i18n.t("errormessage.versionalreadyexists"),
+      };
+    }
+    // If all checks pass, return valid state
+    return {
+      isInvalid: false,
+      errorMessage: "",
+    };
+  };
+
+  /**
    * Update the ResearchStudy resource with the new values.
    *
    * @param updatedValues The new values to update
    */
   const handleSave = async () => {
-    setLoading(true);
+    const versionValidation = getVersionValidation();
+    // If the version is invalid, show an alert and return
+    if (versionValidation.isInvalid) {
+      alert(versionValidation.errorMessage);
+      return;
+    }
     try {
-      console.log("Données à sauvegarder:", studyDetails);
       // Update the ResearchStudy resource with the new values
       await StudyService.updateStudy(studyId ?? "", studyDetails);
       // Exit the editing mode
       setIsEditingForm(false);
-      // Success message
-      // TODO : use a badge or a toast instead of an alert
-      alert("Étude mise à jour avec succès!");
+      // Success message if the update is successful
+      alert(i18n.t("message.studyupdated"));
+      // Reload the study to get the updated values
+      await loadStudy();
     } catch (error) {
-      // TODO : use a badge / toast instead of an alert
-      console.error("Erreur lors de la sauvegarde:", error);
-      alert("Erreur lors de la sauvegarde. Veuillez réessayer.");
-    } finally {
-      setLoading(false);
+      // Error message if the update fails
+      alert(i18n.t("errormessage.errorwhilesavingstudy"));
     }
   };
 
@@ -296,10 +409,18 @@ const StudyDetails: FunctionComponent = () => {
       titleKey="title.studydetails"
       titleAction={
         <FontAwesomeIcon
-          icon={faPen}
+          icon={isEditingForm ? faXmark : faPen}
+          className="repeat-cross"
           size="xl"
-          cursor={"pointer"}
-          onClick={() => setIsEditingForm(!isEditingForm)}
+          onClick={() => {
+            if (isEditingForm) {
+              setIsEditingForm(false);
+              loadStudy();
+            } else {
+              setIsEditingForm(true);
+            }
+          }}
+          title={i18n.t(isEditingForm ? "button.cancel" : "button.editstudy")}
         />
       }
       loading={loading}
@@ -312,7 +433,7 @@ const StudyDetails: FunctionComponent = () => {
             {
               label: "ID",
               value: studyId,
-              editable: false,
+              isEditable: false,
             },
             {
               label: i18n.t("label.name"),
@@ -339,20 +460,26 @@ const StudyDetails: FunctionComponent = () => {
               },
             },
             {
+              label: isEditingForm ? "Version *" : "Version",
+              value: studyDetails.version ?? "N/A",
+              type: "text",
+              isRequired: true,
+              isInvalid: isEditingForm
+                ? getVersionValidation().isInvalid
+                : false,
+              errorMessage: isEditingForm
+                ? getVersionValidation().errorMessage
+                : "",
+              onChange: (value: string) => {
+                setStudyDetails((prev) => ({ ...prev, version: value }));
+              },
+            },
+            {
               label: i18n.t("label.generaldescription"),
               value: studyDetails.description,
               type: "textarea",
               onChange: (value: string) => {
                 setStudyDetails((prev) => ({ ...prev, description: value }));
-              },
-            },
-            {
-              label: "Version",
-              value: studyDetails.version ?? "N/A",
-              // TODO, should be required
-              type: "text",
-              onChange: (value: string) => {
-                setStudyDetails((prev) => ({ ...prev, version: value }));
               },
             },
             {
@@ -385,21 +512,24 @@ const StudyDetails: FunctionComponent = () => {
             {
               label: "Phase",
               value: studyDetails.phase,
-              editable: false,
+              isEditable: false,
             },
             {
               label: i18n.t("label.studydesign"),
-              value: (
-                <ul>
-                  {studyDetails.studyDesign.map((design, index) => (
-                    <li key={index}>{design}</li>
-                  ))}
-                </ul>
-              ),
+              value: isEditingForm
+                ? studyDetails.studyDesign
+                : getStudyDesignDisplayValues(),
+              type: isEditingForm ? "select-list" : "list",
+              options: researchStudyStudyDesign.map(getOption),
+              onChange: (value: string[]) => {
+                setStudyDetails((prev) => ({
+                  ...prev,
+                  studyDesign: value,
+                }));
+              },
             },
           ]}
         />
-
         {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
         <EvidenceVariableSection
           evidenceVariables={inclusionCriteria}
@@ -409,7 +539,6 @@ const StudyDetails: FunctionComponent = () => {
           evidenceVariables={studyVariables}
           type="study"
         />
-
         {/* Warning message if no study variables are found */}
         {studyVariables.length === 0 && (
           <Alert variant="warning" className="mt-3">
@@ -417,7 +546,6 @@ const StudyDetails: FunctionComponent = () => {
             {i18n.t("errormessage.nogenerateddatamart")}
           </Alert>
         )}
-
         {/* Buttons*/}
         <div className="d-flex justify-content-end mt-3">
           {/* Button to generate the datamart*/}
@@ -442,7 +570,6 @@ const StudyDetails: FunctionComponent = () => {
             {i18n.t("button.export")}
           </Button>
         </div>
-
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">

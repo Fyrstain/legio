@@ -37,7 +37,11 @@
       "reset": "Reset",
       "validate": "Submit",
       "generate": "Generate",
-      "export": "Export CSV"
+      "export": "Export CSV",
+      "save": "Save Changes",
+      "add": "Add",
+      "cancel": "Cancel",
+      "editstudy": "Edit Study"
     },
     "label": {
         "name": "Name",
@@ -56,7 +60,15 @@
     "errormessage": {
         "noinclusioncriteria": "No inclusion criteria found for this study.",
         "nostudyvariables": "No study variables found for this study.",
-        "nogenerateddatamart": "No datamart generation possible, no study variable has been found."
+        "nogenerateddatamart": "No datamart generation possible, no study variable has been found.",
+        "requiredfield": "This field is required.",
+        "versionalreadyexists": "This version already exists. Please choose another one.",
+        "errorwhilesavingstudy": "Error while saving study. Please try again."
+    },
+    "message": {
+        "studyupdated": "Study updated successfully."
+    },
+    "placeholder": {
+        "selectstudydesign": "-- Select a study design --"
     }
-
 }
