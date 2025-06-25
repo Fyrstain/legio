@@ -12,7 +12,7 @@ import { FunctionComponent, useCallback, useEffect, useState } from "react";
 // Navigation
 import { useNavigate } from "react-router-dom";
 // Components
-import LegioPage from "../../components/LegioPage/LegioPage";
+import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 
 const Studies: FunctionComponent = () => {
 
