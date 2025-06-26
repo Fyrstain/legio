@@ -87,7 +87,7 @@ const LegioPage: FunctionComponent<{
         // the title of the page
         titleKey: props.titleKey,
         // the action of the title
-        titleAction: props.titleAction,
+        pageAction: props.titleAction,
         // the loading state of the page
         loading: props.loading,
         // the content of the page
