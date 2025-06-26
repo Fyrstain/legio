@@ -7,26 +7,13 @@ import i18n from "i18next";
 // HL7 Front library
 import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
-
-////////////////////////////////
-//         Interface          //
-////////////////////////////////
-
-interface EvidenceVariable {
-  title: string;
-  description: string;
-  status?: string;
-}
+import ObsolescenceFilter from "../../../../components/ObsolescenceFilter/ObsolescenceFilter";
+// Types 
+import { EvidenceVariableSectionProps } from "../../types/study.types";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
-
-export interface EvidenceVariableSectionProps {
-  evidenceVariables: EvidenceVariable[];
-  type: "inclusion" | "study";
-}
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps

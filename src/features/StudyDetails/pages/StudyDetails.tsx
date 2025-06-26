@@ -7,6 +7,11 @@ import InformationSection from "../components/InformationSection/InformationSect
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
 // Services
 import StudyService from "../services/StudyService";
+// Model
+import {
+  EvidenceVariableModel,
+  EvidenceVariableUtils,
+} from "../../../shared/models/EvidenceVariable.model";
 // Resources
 import { List, ResearchStudy } from "fhir/r5";
 // Translation
@@ -84,23 +89,14 @@ const StudyDetails: FunctionComponent = () => {
 
   // Inclusion criteria array
   const [inclusionCriteria, setInclusionCriteria] = useState<
-    Array<{
-      title: string;
-      description: string;
-      status?: string;
-    }>
+    EvidenceVariableModel[]
   >([]);
 
   // Study variables array
-  const [studyVariables, setStudyVariables] = useState<
-    Array<{
-      title: string;
-      description: string;
-      expression?: string;
-      status?: string;
-    }>
-  >([]);
-
+  const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
+    []
+  );
+  
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
 
@@ -317,9 +313,20 @@ const StudyDetails: FunctionComponent = () => {
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
-  const studyVariablesExpressions = studyVariables.map(
-    (studyVariable) => studyVariable.expression
-  );
+  const studyVariablesExpressions =
+    EvidenceVariableUtils.extractExpressions(studyVariables);
+
+  /**
+   * To display the Inclusion Criteria
+   */
+  const inclusionCriteriaDisplayObjects =
+    EvidenceVariableUtils.toDisplayObjects(inclusionCriteria);
+
+  /**
+   * To display the Study Variable
+   */
+  const studyVariablesDisplayObjects =
+    EvidenceVariableUtils.toDisplayObjects(studyVariables);
 
   /**
    * Handle the cohorting and datamart generation.
@@ -506,11 +513,11 @@ const StudyDetails: FunctionComponent = () => {
         />
         {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
         <EvidenceVariableSection
-          evidenceVariables={inclusionCriteria}
+          evidenceVariables={inclusionCriteriaDisplayObjects}
           type="inclusion"
         />
         <EvidenceVariableSection
-          evidenceVariables={studyVariables}
+          evidenceVariables={studyVariablesDisplayObjects}
           type="study"
         />
         {/* Warning message if no study variables are found */}
@@ -561,8 +568,8 @@ const StudyDetails: FunctionComponent = () => {
                       width: "30%",
                     },
                     ...studyVariables.map((studyVariable) => ({
-                      header: studyVariable.expression ?? "N/A",
-                      dataField: studyVariable.expression ?? "N/A",
+                      header: studyVariable.getExpression() ?? "N/A",
+                      dataField: studyVariable.getExpression() ?? "N/A",
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {
@@ -578,7 +585,7 @@ const StudyDetails: FunctionComponent = () => {
                       subjectParam?.valueIdentifier?.value ?? "N/A";
                     // Extract all other parameters and set them to "N/A" if not found
                     studyVariables.forEach((studyVariable) => {
-                      const paramName = studyVariable.expression ?? "N/A";
+                      const paramName = studyVariable.getExpression() ?? "N/A";
                       data[paramName] = "N/A";
                     });
                     resource.parameter.forEach((param: any) => {

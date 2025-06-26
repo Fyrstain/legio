@@ -1,14 +1,9 @@
 // Resources
-import {
-  Bundle,
-  ResearchStudy,
-  Parameters,
-  Group,
-  List,
-  EvidenceVariable,
-} from "fhir/r5";
+import { Bundle, ResearchStudy, Parameters, Group, List } from "fhir/r5";
 // Client
 import Client from "fhir-kit-client";
+// Model
+import { EvidenceVariableModel } from "../../../shared/models/EvidenceVariable.model";
 
 /////////////////////////////////////
 //             Client              //
@@ -321,93 +316,26 @@ async function readEvidenceVariableByUrl(
 async function loadEvidenceVariables(
   studyId: string,
   type: "inclusion" | "study"
-) {
+): Promise<EvidenceVariableModel[]> {
   const serviceMethod =
     type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
   try {
-    // Load the evidence variables using the service method, first level of EvidenceVariable
-    const response = await serviceMethod(studyId ?? "");
-    const bundle = response as Bundle;
-    const evidencesVariables: Array<{
-      title: string;
-      description: string;
-      expression?: string;
-      status?: string;
-    }> = [];
-    if (bundle.entry) {
-      const canonicalUrls: string[] = [];
-      // Extract canonical URLs from the EvidenceVariable resources
-      bundle.entry.forEach((entry) => {
-        if (entry.resource?.resourceType === "EvidenceVariable") {
-          const evidenceVariable = entry.resource as EvidenceVariable;
-          evidenceVariable.characteristic?.forEach((characteristic) => {
-            if (characteristic.definitionByCombination?.characteristic) {
-              characteristic.definitionByCombination.characteristic.forEach(
-                (subCharacteristic) => {
-                  if (subCharacteristic.definitionCanonical) {
-                    canonicalUrls.push(subCharacteristic.definitionCanonical);
-                  }
-                }
-              );
-            }
-          });
-        }
-      });
-      // If canonical URLs were found, load the EvidenceVariable resources using the URLs
-      if (canonicalUrls.length > 0) {
-        const canonicalResults = await Promise.all(
-          canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
-        );
-        canonicalResults.forEach((result) => {
-          if (
-            result.entry?.[0]?.resource?.resourceType === "EvidenceVariable"
-          ) {
-            const evidenceVariable = result.entry[0]
-              .resource as EvidenceVariable;
-            const details = extractEvidenceVariableDetails(evidenceVariable);
-            evidencesVariables.push(details);
-          }
-        });
-      } else {
-        // If no canonical URLs were found, use the original bundle entries
-        // TODO : We'll need to delete this part for the V1 when the canonical URLs will be always present
-        bundle.entry.forEach((entry) => {
-          if (entry.resource?.resourceType === "EvidenceVariable") {
-            const evidenceVariable = entry.resource as EvidenceVariable;
-            const details = extractEvidenceVariableDetails(evidenceVariable);
-            evidencesVariables.push(details);
-          }
-        });
-      }
+    // Load the bundle of evidence variables for the study
+    const bundle = await serviceMethod(studyId ?? "");
+    const { models, canonicalUrls } = EvidenceVariableModel.fromBundle(bundle);
+    // If canonical URLs were found, read the EvidenceVariables by their URLs
+    if (canonicalUrls.length > 0) {
+      const canonicalResults = await Promise.all(
+        canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
+      );
+      // Convert the canonical results to EvidenceVariableModel instances
+      return EvidenceVariableModel.fromCanonicalBundles(canonicalResults);
     }
-    return evidencesVariables;
+    // If no canonical URLs were found, return the models directly
+    return models;
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
-}
-
-/**
- * Function to extract the details from an EvidenceVariable resource.
- *
- * @param evidenceVariable The EvidenceVariable resource to extract data from
- * @returns An object containing the title, description, and expression of the EvidenceVariable
- */
-function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
-  let expressionValue: string | undefined;
-  if (evidenceVariable.characteristic) {
-    evidenceVariable.characteristic.forEach((characteristic) => {
-      if (characteristic.definitionExpression) {
-        expressionValue =
-          characteristic.definitionExpression?.expression;
-      }
-    });
-  }
-  return {
-    title: evidenceVariable.title ?? "",
-    description: evidenceVariable.description ?? "",
-    expression: expressionValue,
-    status: evidenceVariable.status ?? "",
-  };
 }
 
 /**
