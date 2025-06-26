@@ -7,6 +7,7 @@ import InformationSection from "../components/InformationSection/InformationSect
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
 // Services
 import StudyService from "../services/StudyService";
+import EvidenceVariableService from "../services/evidenceVariable.service";
 // Model
 import {
   EvidenceVariableModel,
@@ -295,7 +296,7 @@ const StudyDetails: FunctionComponent = () => {
    */
   async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
     try {
-      const evidencesVariables = await StudyService.loadEvidenceVariables(
+      const evidencesVariables = await EvidenceVariableService.loadEvidenceVariables(
         studyId ?? "",
         type
       );
