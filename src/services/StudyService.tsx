@@ -149,6 +149,23 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
   }) as Promise<ResearchStudy>;
 }
 
+ /**
+   * Is used to extract the study design codes from the ResearchStudy resource.
+   * 
+   * @param study The ResearchStudy resource to extract the study design codes from.
+   * @returns a list of study design codes.
+   */
+ const extractStudyDesignCodes = (study: ResearchStudy) => {
+    if (!study.studyDesign || study.studyDesign.length === 0) {
+      return [""];
+    }
+    const codes = study.studyDesign.map((design) => {
+      const code = design.coding?.[0]?.code || "";
+      return code;
+    });
+    return codes.filter((code) => code !== "");
+  };
+
 /**
  * Update a ResearchStudy resource with the provided data.
  *
@@ -648,6 +665,24 @@ async function generateCohortAndDatamart(
   }
 }
 
+  /**
+   * A function to get the value of a parameter.
+   *
+   * @param param The parameter to get the value from
+   * @returns The value of the parameter as a string
+   */
+  function getParameterValue(param: any): string {
+    if (!param) return "";
+    if (param.valueAge !== undefined) return param.valueAge.value;
+    if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
+    if (param.valueString) return param.valueString;
+    if (param.valueInteger !== undefined) return param.valueInteger.toString();
+    if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
+    if (param.valueQuantity !== undefined)
+      return param.valueQuantity.value + " " + param.valueQuantity.unit;
+    return "";
+  }
+
 /**
  * A function to execute the datamart export operation.
  * 
@@ -675,6 +710,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
 
 const StudyService = {
   loadStudy,
+  extractStudyDesignCodes,
   updateStudy,
   loadDatamartForStudy,
   loadListById,
@@ -685,6 +721,7 @@ const StudyService = {
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,
+  getParameterValue,
   executeExportDatamart,
 };
 

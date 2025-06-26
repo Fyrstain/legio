@@ -158,19 +158,8 @@ const StudyDetails: FunctionComponent = () => {
         )?.name ?? "N/A";
       // Load the datamart for the study
       loadDatamartForStudyHandler(study);
-      // Function to extract study design codes
-      const extractStudyDesignCodes = () => {
-        if (!study.studyDesign || study.studyDesign.length === 0) {
-          return [""];
-        }
-        const codes = study.studyDesign.map((design) => {
-          const code = design.coding?.[0]?.code || "";
-          return code;
-        });
-        return codes.filter((code) => code !== "");
-      };
       // Extract study design codes
-      const studyDesignCodes = extractStudyDesignCodes();
+      const studyDesignCodes = StudyService.extractStudyDesignCodes(study);
       // The data to display
       const studyData = {
         name: study.name ?? "N/A",
@@ -219,7 +208,7 @@ const StudyDetails: FunctionComponent = () => {
 
   /**
    * Get the option element to represent the code in an Input Select.
-   * 
+   *
    * @param code the code.
    * @returns the option element.
    */
@@ -229,7 +218,7 @@ const StudyDetails: FunctionComponent = () => {
 
   /**
    * Get the validation state for the version field.
-   * 
+   *
    * @returns the validation state.
    */
   const getVersionValidation = () => {
@@ -348,23 +337,6 @@ const StudyDetails: FunctionComponent = () => {
       setLoading(false);
     }
   };
-
-  /**
-   * A function to get the value of a parameter.
-   *
-   * @param param The parameter to get the value from
-   * @returns The value of the parameter as a string
-   */
-  function getParameterValue(param: any): string {
-    if (!param) return "";
-    if (param.valueAge !== undefined) return param.valueAge.value;
-    if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
-    if (param.valueString) return param.valueString;
-    if (param.valueInteger !== undefined) return param.valueInteger.toString();
-    if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
-    if (param.valueQuantity !== undefined) return param.valueQuantity.value + " " + param.valueQuantity.unit;
-    return "";
-  }
 
   /**
    * Handle the export of the datamart.
@@ -609,7 +581,7 @@ const StudyDetails: FunctionComponent = () => {
                     });
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
-                        data[param.name] = getParameterValue(param);
+                        data[param.name] = StudyService.getParameterValue(param);
                       }
                     });
                     return data;

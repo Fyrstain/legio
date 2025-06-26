@@ -3,8 +3,8 @@
   "version": "2.0.0",
   "private": true,
   "dependencies": {
-    "@fyrstain/hl7-front-library": "0.0.20-LEG-67",
-    "@fyrstain/fhir-front-library": "1.2.1-SNAPSHOT", 
+    "@fyrstain/hl7-front-library": "0.0.19-SNAPSHOT",
+    "@fyrstain/fhir-front-library": "1.2.0-FINAL", 
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
