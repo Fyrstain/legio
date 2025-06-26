@@ -379,7 +379,7 @@ const StudyDetails: FunctionComponent = () => {
   return (
     <LegioPage
       titleKey="title.studydetails"
-      titleAction={
+      pageAction={
         <FontAwesomeIcon
           icon={isEditingForm ? faXmark : faPen}
           className="repeat-cross"
