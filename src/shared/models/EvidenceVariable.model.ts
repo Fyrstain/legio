@@ -1,7 +1,7 @@
 // Resource
 import { Bundle, EvidenceVariable } from "fhir/r5";
 // Types
-import { EvidenceVariableProps } from "../../features/StudyDetails/types/study.types";
+import { EvidenceVariableProps } from "../../features/StudyDetails/types/evidenceVariable.types";
  
 /**
  * Class representing a FHIR EvidenceVariable resource

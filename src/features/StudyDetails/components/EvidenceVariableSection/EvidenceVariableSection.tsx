@@ -9,7 +9,7 @@ import { Title } from "@fyrstain/hl7-front-library";
 // Components
 import ObsolescenceFilter from "../../../../components/ObsolescenceFilter/ObsolescenceFilter";
 // Types 
-import { EvidenceVariableSectionProps } from "../../types/study.types";
+import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
 
 ////////////////////////////////
 //           Props            //

@@ -570,7 +570,9 @@ const [showModal, setShowModal] = useState(false);
         <CustomEvidenceVariableModal
           show={showModal}
           onHide={() => setShowModal(false)}
-          //   onSave={loadEvidenceVariablesHandler}
+          mode="create" // Mode can be "create" or "edit
+          logicType="AND" // Logic can be "AND", "OR", or "XOR"
+          evidenceVariableType="inclusion" // Type can be "inclusion" or "study"
         />
 
         {/* Section to show the table with the generated datamart  */}
@@ -632,7 +634,7 @@ const [showModal, setShowModal] = useState(false);
         )}
         {isEditingForm && (
           <Button className="mt-3" onClick={handleSave}>
-            {i18n.t("button.save")}
+            {i18n.t("button.savechanges")}
           </Button>
         )}
       </>

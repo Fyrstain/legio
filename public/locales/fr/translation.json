@@ -23,7 +23,11 @@
         },
         "studydetails": "Détails de l'Étude",
         "inclusioncriteria": "Critères d'Inclusion",
-        "studyvariables": "Variables d'Étude"
+        "studyvariables": "Variables d'Étude",
+        "add": "Ajouter",
+        "update": "Mettre à jour",
+        "aninclusioncriteria": "un Critère d'Inclusion",
+        "astudyvariable": "une Variable d'Étude"
     },
     "footer": {
         "items": {
@@ -38,7 +42,8 @@
         "validate": "Envoyer",
         "generate": "Générer",
         "export": "Exporter CSV",
-        "save": "Enregistrer les modifications",
+        "savechanges": "Enregistrer les modifications",
+        "save": "Enregistrer",
         "add": "Ajouter",
         "cancel": "Annuler",
         "editstudy": "Modifier l'étude",
@@ -56,7 +61,12 @@
         "generateddatamart": "Datamart généré",
         "obsolete": "Obsolète",
         "notobsolete": "Non-obsolète",
-        "clearfilter": "Effacer le filtre"
+        "clearfilter": "Effacer le filtre",
+        "generateddatamart": "Datamart généré",
+        "library": "Librairie",
+        "inclusioncriteriatype": "Type de critère d'inclusion",
+        "boolean": "Booléen",
+        "integer": "Entier"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -75,6 +85,11 @@
         "studyupdated": "Étude modifiée avec succès!"
     },
     "placeholder": {
-        "selectstudydesign": "-- Sélectionnez une conception de l'étude --"
+        "selectstudydesign": "-- Sélectionnez une conception de l'étude --",
+        "name": "Veuillez remplir le nom",
+        "description": "Veuillez remplir la description",
+        "library": "-- Sélectionnez une librairie --",
+        "expression": "-- Sélectionnez une expression --",
+        "criteriatype": "-- Sélectionnez un type de critère --"
     }
 }

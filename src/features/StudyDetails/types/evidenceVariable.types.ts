@@ -21,3 +21,18 @@ export interface EvidenceVariableSectionProps {
  * Type for the type of EvidenceVariable
  */
 export type EvidenceVariableType = "inclusion" | "study";
+
+/**
+ * Type for the Modal mode
+ */
+export type ModalMode = "create" | "update";
+
+/**
+ * Type for the logic type of EvidenceVariable
+ */
+export type EvidenceVariableLogicType = "XOR" | "OR" | "AND";
+
+/**
+ * Type for the inclusion criteria types
+ */
+export type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code"[];
