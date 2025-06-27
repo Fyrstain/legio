@@ -1,0 +1,17 @@
+.repeat-cross {
+    cursor: pointer;
+}
+
+.repeat-cross:hover {
+    border-color: var(--bs-primary) !important;
+    color: var(--bs-primary) !important;
+}
+
+.repeat-add {
+    cursor: pointer;
+}
+
+.repeat-add:hover {
+    border-color: var(--bs-primary) !important;
+    color: var(--bs-primary) !important;
+}

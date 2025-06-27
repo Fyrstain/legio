@@ -10,6 +10,8 @@ import i18n from "i18next";
 const LegioPage: FunctionComponent<{
     // The title of the page
     titleKey?: string;
+    // The action of the title 
+    pageAction?: ReactElement; 
     // The loading state of the page
     loading?: boolean;
     // The content of the page
@@ -84,6 +86,8 @@ const LegioPage: FunctionComponent<{
         },
         // the title of the page
         titleKey: props.titleKey,
+        // the action of the title
+        pageAction: props.pageAction,
         // the loading state of the page
         loading: props.loading,
         // the content of the page

@@ -30,6 +30,113 @@ const fhirCohortingEngineClient = new Client({
   baseUrl: process.env.REACT_APP_COHORTING_URL ?? "fhir",
 });
 
+/////////////////////////////////////
+//        Helper Functions         //
+/////////////////////////////////////
+
+/**
+ * Create a coding object
+ *
+ * @param system The system URL for the coding.
+ * @param code The code for the coding.
+ * @param display The display name for the coding.
+ * @returns The created coding object.
+ */
+const createCoding = (system: string, code: string, display?: string) => ({
+  system,
+  code,
+  display: display || code,
+});
+
+/**
+ * Update the name of an associated party in a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param roleCode The role code of the associated party to update.
+ * @param newName The new name to assign to the associated party.
+ */
+const updateAssociatedParty = (
+  existingStudy: ResearchStudy,
+  roleCode: string,
+  newName: string
+) => {
+  if (!existingStudy.associatedParty) {
+    existingStudy.associatedParty = [];
+  }
+  const associatedParty = existingStudy.associatedParty.find(
+    (party) => party.role?.coding?.[0]?.code === roleCode
+  );
+  if (associatedParty) {
+    associatedParty.name = newName;
+  } else if (newName) {
+    // Create a new associatedParty if it doesn't exist
+    existingStudy.associatedParty.push({
+      name: newName,
+      role: {
+        coding: [
+          createCoding(
+            "http://hl7.org/fhir/research-study-party-role",
+            roleCode,
+            roleCode === "general-contact" ? "general-contact" : "sponsor"
+          ),
+        ],
+      },
+    });
+  }
+};
+
+/**
+ * Update the NCT identifier of a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param newNctId The new NCT ID to assign to the study.
+ */
+const updateIdentifier = (existingStudy: ResearchStudy, newNctId: string) => {
+  if (!existingStudy.identifier) {
+    existingStudy.identifier = [];
+  }
+  const systemUrl = "http://clinicaltrials.gov";
+  // Find the existing NCT identifier
+  const nctIdentifier = existingStudy.identifier.find(
+    (id) => id.system === systemUrl
+  );
+  if (nctIdentifier) {
+    // Update the existing NCT identifier
+    nctIdentifier.value = newNctId;
+  } else {
+    // Add a new NCT identifier if it doesn't exist
+    existingStudy.identifier.push({
+      system: systemUrl,
+      value: newNctId,
+    });
+  }
+};
+
+/**
+ * Update the study design of a research study.
+ * 
+ * @param existingStudy The existing research study to update.
+ * @param newStudyDesign The new study design to assign to the research study.
+ */
+const updateStudyDesign = (
+  existingStudy: ResearchStudy,
+  newStudyDesign: any[]
+) => {
+  if (Array.isArray(newStudyDesign) && newStudyDesign.length > 0) {
+    if (newStudyDesign[0].coding) {
+      existingStudy.studyDesign = newStudyDesign;
+    } else {
+      existingStudy.studyDesign = newStudyDesign.map((code) => ({
+        coding: [createCoding("http://hl7.org/fhir/study-design", code, code)],
+      }));
+    }
+  }
+};
+
+/////////////////////////////////////
+//             Actions             //
+/////////////////////////////////////
+
 /**
  * Load Study from the back to populate the fields.
  *
@@ -40,6 +147,82 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
     resourceType: "ResearchStudy",
     id: studyId ?? "",
   }) as Promise<ResearchStudy>;
+}
+
+ /**
+   * Is used to extract the study design codes from the ResearchStudy resource.
+   * 
+   * @param study The ResearchStudy resource to extract the study design codes from.
+   * @returns a list of study design codes.
+   */
+ const extractStudyDesignCodes = (study: ResearchStudy) => {
+    if (!study.studyDesign || study.studyDesign.length === 0) {
+      return [""];
+    }
+    const codes = study.studyDesign.map((design) => {
+      const code = design.coding?.[0]?.code || "";
+      return code;
+    });
+    return codes.filter((code) => code !== "");
+  };
+
+/**
+ * Update a ResearchStudy resource with the provided data.
+ *
+ * @param studyId The ID of the study to update.
+ * @param updatedData The new data to update the study with.
+ * @returns The updated ResearchStudy resource.
+ */
+async function updateStudy(
+  studyId: string,
+  updatedData: any
+): Promise<ResearchStudy> {
+  try {
+    // Load the existing study
+    const existingStudy = await loadStudy(studyId);
+    // Update identifier - check if the property exists
+    if (updatedData.hasOwnProperty("nctId")) {
+      updateIdentifier(existingStudy, updatedData.nctId);
+    }
+    // Update associatedParty contacts - check if the properties exist
+    if (updatedData.hasOwnProperty("localContact")) {
+      updateAssociatedParty(
+        existingStudy,
+        "general-contact",
+        updatedData.localContact
+      );
+    }
+    if (updatedData.hasOwnProperty("studySponsorContact")) {
+      updateAssociatedParty(
+        existingStudy,
+        "sponsor",
+        updatedData.studySponsorContact
+      );
+    }
+    // Update studyDesign - check if the property exists
+    if (updatedData.hasOwnProperty("studyDesign")) {
+      updateStudyDesign(existingStudy, updatedData.studyDesign);
+    }
+    // Create the updated object
+    const updatedStudy = {
+      ...existingStudy,
+      // Update basic fields
+      name: updatedData.name ?? existingStudy.name,
+      title: updatedData.title ?? existingStudy.title,
+      status: updatedData.status ?? existingStudy.status,
+      description: updatedData.description ?? existingStudy.description,
+      version: updatedData.version ?? existingStudy.version,
+    };
+    // Use of the update method
+    const response = await fhirClient.update({
+      resourceType: "ResearchStudy",
+      id: studyId,
+      body: updatedStudy,
+    });
+    return response as ResearchStudy;
+  } catch (error) {
+    throw new Error(`Failed to update study: ${error}`);
+  }
 }
 
 /**
@@ -482,6 +665,24 @@ async function generateCohortAndDatamart(
   }
 }
 
+  /**
+   * A function to get the value of a parameter.
+   *
+   * @param param The parameter to get the value from
+   * @returns The value of the parameter as a string
+   */
+  function getParameterValue(param: any): string {
+    if (!param) return "";
+    if (param.valueAge !== undefined) return param.valueAge.value;
+    if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
+    if (param.valueString) return param.valueString;
+    if (param.valueInteger !== undefined) return param.valueInteger.toString();
+    if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
+    if (param.valueQuantity !== undefined)
+      return param.valueQuantity.value + " " + param.valueQuantity.unit;
+    return "";
+  }
+
 /**
  * A function to execute the datamart export operation.
  * 
@@ -509,6 +710,8 @@ async function executeExportDatamart(studyId: string): Promise<any> {
 
 const StudyService = {
   loadStudy,
+  extractStudyDesignCodes,
+  updateStudy,
   loadDatamartForStudy,
   loadListById,
   loadInclusionCriteria,
@@ -518,6 +721,7 @@ const StudyService = {
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,
+  getParameterValue,
   executeExportDatamart,
 };
 

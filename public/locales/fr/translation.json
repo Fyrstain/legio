@@ -37,7 +37,11 @@
         "reset": "Réinitialiser",
         "validate": "Envoyer",
         "generate": "Générer",
-        "export": "Exporter CSV"
+        "export": "Exporter CSV",
+        "save": "Enregistrer les modifications",
+        "add": "Ajouter",
+        "cancel": "Annuler",
+        "editstudy": "Modifier l'étude"
     },
     "label": {
         "name": "Nom",
@@ -56,6 +60,15 @@
     "errormessage": {
         "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
         "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
-        "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée."
+        "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée.",
+        "requiredfield": "Ce champ est requis.",
+        "versionalreadyexists": "Cette version existe déjà. Veuillez en choisir une autre.",
+        "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer."
+    },
+    "message": {
+        "studyupdated": "Étude modifiée avec succès!"
+    },
+    "placeholder": {
+        "selectstudydesign": "-- Sélectionnez une conception de l'étude --"
     }
 }
