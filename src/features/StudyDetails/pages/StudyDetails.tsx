@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
+import CustomEvidenceVariableModal from "../components/CustomEvidenceVariableModal/CustomEvidenceVariableModal";
 // Services
 import StudyService from "../services/StudyService";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -104,6 +105,10 @@ const StudyDetails: FunctionComponent = () => {
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
+
+  // To show or hide the modal
+const [showModal, setShowModal] = useState(false);
+
 
   //////////////////////////////
   //           Error          //
@@ -296,10 +301,11 @@ const StudyDetails: FunctionComponent = () => {
    */
   async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
     try {
-      const evidencesVariables = await EvidenceVariableService.loadEvidenceVariables(
-        studyId ?? "",
-        type
-      );
+      const evidencesVariables =
+        await EvidenceVariableService.loadEvidenceVariables(
+          studyId ?? "",
+          type
+        );
       if (type === "inclusion") {
         setInclusionCriteria(evidencesVariables);
       } else {
@@ -552,6 +558,21 @@ const StudyDetails: FunctionComponent = () => {
             {i18n.t("button.export")}
           </Button>
         </div>
+
+        <Button
+          variant="secondary"
+          className="mt-3"
+          onClick={() => setShowModal(true)}
+        >
+            TEST MODAL
+        </Button>
+
+        <CustomEvidenceVariableModal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          //   onSave={loadEvidenceVariablesHandler}
+        />
+
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
@@ -588,7 +609,7 @@ const StudyDetails: FunctionComponent = () => {
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.getExpression() ?? "N/A";
                       data[paramName] = "N/A";
-                    });
+                    }); 
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
                         data[param.name] = StudyService.getParameterValue(param);
