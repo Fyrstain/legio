@@ -66,7 +66,24 @@
         "library": "Librairie",
         "inclusioncriteriatype": "Type de critère d'inclusion",
         "boolean": "Booléen",
-        "integer": "Entier"
+        "integer": "Entier",
+        "date": "Date",
+        "code": "Code",
+        "true": "Vrai",
+        "false": "Faux",
+        "logicaloperator": "Opérateur logique",
+        "equals": "Égal",
+        "greaterthan": "Plus grand que",
+        "lessthan": "Plus petit que",
+        "greaterthanorequal": "Plus grand ou égal",
+        "lessthanorequal": "Plus petit ou égal",
+        "between": "Entre",
+        "value": "Valeur",
+        "comparisonoperator": "Opérateur de comparaison",
+        "before": "Avant",
+        "after": "Après",
+        "startdate": "Date de début",
+        "enddate": "Date de fin"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -79,7 +96,8 @@
         "versionalreadyexists": "Cette version existe déjà. Veuillez en choisir une autre.",
         "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer.",
         "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
-        "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude."
+        "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
+        "nocodesavailable": "Aucun code disponible pour ce ValueSet."
     },
     "message": {
         "studyupdated": "Étude modifiée avec succès!"
@@ -90,6 +108,14 @@
         "description": "Veuillez remplir la description",
         "library": "-- Sélectionnez une librairie --",
         "expression": "-- Sélectionnez une expression --",
-        "criteriatype": "-- Sélectionnez un type de critère --"
+        "criteriatype": "-- Sélectionnez un type de critère --",
+        "selectcriteriatype": "-- Sélectionnez un type de critère --",
+        "logicaloperator": "-- Sélectionnez un opérateur logique --",
+        "value": "Veuillez remplir avec une valeur",
+        "minvalue": "Valeur minimale",
+        "maxvalue": "Valeur maximale",
+        "comparisonoperator": "-- Sélectionnez un opérateur de comparaison --",
+        "valueset": "-- Sélectionnez un ValueSet --",
+        "selectcode": "-- Sélectionnez un code --"
     }
 }

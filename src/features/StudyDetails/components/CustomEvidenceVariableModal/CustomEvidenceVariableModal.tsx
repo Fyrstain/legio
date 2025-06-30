@@ -6,6 +6,8 @@ import { Modal, Button, Form } from "react-bootstrap";
 import i18n from "i18next";
 // HL7 Front library
 import { Title } from "@fyrstain/hl7-front-library";
+// Components
+import ConditionalFieldsContainer from "./ConditionalFieldsContainer";
 // Types
 import {
   EvidenceVariableProps,
@@ -48,9 +50,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
   mode,
   evidenceVariableType,
   logicType,
-  criteriaTypes,
 }) => {
-    
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -84,9 +84,13 @@ const CustomEvidenceVariableModal: FunctionComponent<
     name: string;
   } | null>(null);
 
-  const [selectedCriteriaType, setSelectedCriteriaType] = useState<
-    InclusionCriteriaTypes | ""
-  >();
+  const [criteriaValue, setCriteriaValue] = useState<{
+    type: InclusionCriteriaTypes;
+    value?: any;
+  }>({
+    type: "" as InclusionCriteriaTypes,
+    value: undefined,
+  });
 
   ////////////////////////////////
   //          Actions           //
@@ -99,12 +103,18 @@ const CustomEvidenceVariableModal: FunctionComponent<
     // Generate title based on mode, type, and logic
     const actionText =
       mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
-    const logicText = logicType ? ` ${logicType}` : "";
     const typeText =
       evidenceVariableType === "inclusion"
         ? i18n.t("title.aninclusioncriteria")
         : i18n.t("title.astudyvariable");
-    return `${actionText}${logicText ? ` ${typeText}` : " "} ${logicText}`;
+    
+    // If we have a logic type, include it in the title
+    if (logicType) {
+      return `${actionText} ${typeText} ${logicType}`;
+    }
+    
+    // Otherwise, just use action + type
+    return `${actionText} ${typeText}`;
   };
 
   /**
@@ -150,14 +160,17 @@ const CustomEvidenceVariableModal: FunctionComponent<
   };
 
   /**
-   * Function to handle criteria type selection change
-   * @param value is the selected criteria type value
+   * Function to handle criteria value change
+   * @param value is the new value for the criteria
    */
-  function handleCriteriaTypeChange(value: string): void {
-    setSelectedCriteriaType(value as InclusionCriteriaTypes);
+  function handleCriteriaValueChange(value: {
+    type: InclusionCriteriaTypes;
+    value?: any;
+  }): void {
+    setCriteriaValue(value);
     setFormData((prev) => ({
       ...prev,
-      criteriaType: value as InclusionCriteriaTypes,
+      criteriaValue: value,
     }));
   }
 
@@ -178,6 +191,28 @@ const CustomEvidenceVariableModal: FunctionComponent<
    */
   const handleClose = () => {
     onHide();
+  };
+
+  /**
+   * Function to handle reset action
+   * Resets the form data to the initial state or to the provided evidence variable
+   * @param event is the mouse event triggered by the reset button
+   */
+  const handleReset = () => {
+    setFormData({
+      title: "",
+      description: "",
+      expression: "",
+      id: "",
+    });
+    setLibrarySelected(null);
+    setSelectedExpression(null);
+    setCriteriaValue({
+      type: "" as InclusionCriteriaTypes,
+      value: undefined,
+    });
+    setLibraries([]);
+    setExpressions([]);
   };
 
   /////////////////////////////////////////////
@@ -255,28 +290,20 @@ const CustomEvidenceVariableModal: FunctionComponent<
 
           {/* Inclusion Criteria Type selection */}
           {evidenceVariableType === "inclusion" && (
-            <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.inclusioncriteriatype")}</Form.Label>
-              <Form.Select
-                value={selectedCriteriaType}
-                onChange={(e) => handleCriteriaTypeChange(e.target.value)}
-                disabled={expressions.length === 0}
-              >
-                <option value="">{i18n.t("placeholder.criteriatype")}</option>
-                <option value="boolean">{i18n.t("label.boolean")}</option>
-                <option value="integer">{i18n.t("label.integer")}</option>
-                <option value="date">Date</option>
-                <option value="code">Code</option>
-              </Form.Select>
-            </Form.Group>
+            <ConditionalFieldsContainer
+              value={criteriaValue}
+              onChange={handleCriteriaValueChange}
+            />
           )}
         </Form>
       </Modal.Body>
+
+      {/* Modal Footer with Save and Reset buttons */}
       <Modal.Footer>
         <Button variant="primary" onClick={handleSave}>
           {i18n.t("button.save")}
         </Button>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={handleReset}>
           {i18n.t("button.reset")}
         </Button>
       </Modal.Footer>

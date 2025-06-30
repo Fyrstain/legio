@@ -58,7 +58,6 @@
         "localcontact": "Local contact",
         "studysponsorcontact": "Study sponsor contact",
         "studydesign": "Study design",
-        "generateddatamart": "Generated Datamart",
         "obsolete": "Obsolete",
         "notobsolete": "Not Obsolete",
         "clearfilter": "Clear Filter",
@@ -66,7 +65,24 @@
         "library": "Library",
         "inclusioncriteriatype": "Inclusion Criteria Type",
         "boolean": "Boolean",
-        "integer": "Integer"
+        "integer": "Integer",
+        "date": "Date",
+        "code": "Code",
+        "true": "True",
+        "false": "False",
+        "logicaloperator": "Logical operator",
+        "equals" : "Equals",
+        "lessthan": "Less than",
+        "greaterthan": "Greater than",
+        "lessthanorequal": "Less than or equal",
+        "greaterthanorequal": "Greater than or equal",
+        "between": "Between",
+        "value": "Value",
+        "comparisonoperator": "Comparison operator",
+        "before": "Before",
+        "after": "After",
+        "startdate": "Start Date",
+        "enddate": "End Date"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -80,7 +96,8 @@
         "errorwhilesavingstudy": "Error while saving study. Please try again.",
         "nofilterresults": "No results for the selected filter.",
         "noobsoletevariables": "No obsolete variables found for this study.",
-        "nonotobsoletevariables": "No non-obsolete variables found for this study."
+        "nonotobsoletevariables": "No non-obsolete variables found for this study.",
+        "nocodesavailable": "No codes available for this ValueSet."
     },
     "message": {
         "studyupdated": "Study updated successfully."
@@ -91,6 +108,14 @@
         "description": "Please fill in the description",
         "library": "-- Select a library --",
         "expression": "-- Select an expression --",
-        "criteriatype": "-- Select a criteria type --"
+        "criteriatype": "-- Select a criteria type --",
+        "selectcriteriatype": "-- Select a criteria type --",
+        "logicaloperator": "-- Select a logical operator --",
+        "value": "Please fill in the value",
+        "minvalue": "Minimum value",
+        "maxvalue": "Maximum value",
+        "comparisonoperator": "-- Select a comparison operator --",
+        "valueset": "-- Select a ValueSet --",
+        "selectcode": "-- Select a code --"
     }
 }

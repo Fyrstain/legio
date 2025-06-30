@@ -1,18 +1,19 @@
 /**
  * Interface to display object of an EvidenceVariable
  */
-export interface EvidenceVariableProps {
-    title: string;
-    description: string;
-    expression?: string;
-    id?: string;
-    status?: string;
-  }
+interface EvidenceVariableProps {
+  title: string;
+  description: string;
+  expression?: string;
+  id?: string;
+  status?: string;
+  criteriaValue?: InclusionCriteriaValue;
+}
 
 /**
  * Interface for the props of the EvidenceVariableSection component
  */
-export interface EvidenceVariableSectionProps {
+interface EvidenceVariableSectionProps {
   evidenceVariables: EvidenceVariableProps[];
   type: "inclusion" | "study";
 }
@@ -20,19 +21,63 @@ export interface EvidenceVariableSectionProps {
 /**
  * Type for the type of EvidenceVariable
  */
-export type EvidenceVariableType = "inclusion" | "study";
+type EvidenceVariableType = "inclusion" | "study";
 
 /**
  * Type for the Modal mode
  */
-export type ModalMode = "create" | "update";
+type ModalMode = "create" | "update";
 
 /**
  * Type for the logic type of EvidenceVariable
  */
-export type EvidenceVariableLogicType = "XOR" | "OR" | "AND";
+type EvidenceVariableLogicType = "XOR" | "OR" | "AND";
 
 /**
  * Type for the inclusion criteria types
  */
-export type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code"[];
+type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code";
+
+/**
+ * Type for the operator types for different criteria
+ */
+type IntegerOperatorType =
+  | "equals"
+  | "greaterThan"
+  | "lessThan"
+  | "greaterThanOrEqual"
+  | "lessThanOrEqual"
+  | "between";
+
+/**
+ * Type for the operator types for date criteria
+ */
+type DateOperatorType = "equals" | "before" | "after" | "between";
+
+/**
+ * Interface for the value of the Inclusion Criteria
+ */
+interface InclusionCriteriaValue {
+  type: InclusionCriteriaTypes;
+  operator?: IntegerOperatorType | DateOperatorType;
+  value?: number | boolean | string | Date | string[];
+  minValue?: number | Date;
+  maxValue?: number | Date;
+  valueSetUrl?: string;
+}
+
+////////////////////////////
+//        Exports         //
+////////////////////////////
+
+export type {
+  EvidenceVariableProps,
+  EvidenceVariableSectionProps,
+  EvidenceVariableType,
+  ModalMode,
+  EvidenceVariableLogicType,
+  InclusionCriteriaTypes,
+  IntegerOperatorType,
+  DateOperatorType,
+  InclusionCriteriaValue,
+};

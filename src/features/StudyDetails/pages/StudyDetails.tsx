@@ -7,7 +7,7 @@ import InformationSection from "../components/InformationSection/InformationSect
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
 import CustomEvidenceVariableModal from "../components/CustomEvidenceVariableModal/CustomEvidenceVariableModal";
 // Services
-import StudyService from "../services/StudyService";
+import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
 // Model
 import {
@@ -570,8 +570,8 @@ const [showModal, setShowModal] = useState(false);
         <CustomEvidenceVariableModal
           show={showModal}
           onHide={() => setShowModal(false)}
-          mode="create" // Mode can be "create" or "edit
-          logicType="AND" // Logic can be "AND", "OR", or "XOR"
+          mode="update" // Mode can be "create" or "update"
+          logicType="OR" // Logic can be "AND", "OR", or "XOR"
           evidenceVariableType="inclusion" // Type can be "inclusion" or "study"
         />
 
