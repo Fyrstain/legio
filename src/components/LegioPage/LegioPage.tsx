@@ -53,17 +53,25 @@ const LegioPage: FunctionComponent<{
         logoLink: (process.env.PUBLIC_URL ?? "") + "/assets/Legiologo.png",
         alt: "Legio Logo",
         applicationItems: [
-            {
-              logoLink: process.env.REACT_APP_POLUS_LOGO ?? "",
-              link: process.env.REACT_APP_POLUS_LOGO_LINK ?? "/",
-              alt: "Polus Logo",
-            },
-            {
-              logoLink: process.env.REACT_APP_SPHINX_LOGO ?? "",
-              link: process.env.REACT_APP_SPHINX_LOGO_LINK ?? "/",
-              alt: "Sphinx Logo",
-            },
-        ],
+            ...(process.env.REACT_APP_POLUS_LOGO
+              ? [
+                  {
+                    logoLink: process.env.REACT_APP_POLUS_LOGO,
+                    link: process.env.REACT_APP_POLUS_LOGO_LINK ?? "/",
+                    alt: "Polus Logo",
+                  },
+                ]
+              : []),
+            ...(process.env.REACT_APP_SPHINX_LOGO
+              ? [
+                  {
+                    logoLink: process.env.REACT_APP_SPHINX_LOGO,
+                    link: process.env.REACT_APP_SPHINX_LOGO_LINK ?? "/",
+                    alt: "Sphinx Logo",
+                  },
+                ]
+              : []),
+          ],
         // Authentication
         //   authentication: {
         //     handleLogin: handleLogin,
