@@ -16,6 +16,7 @@ import {
   EvidenceVariableLogicType,
   InclusionCriteriaTypes,
 } from "../../types/evidenceVariable.types";
+// Hooks
 
 ////////////////////////////////
 //           Props            //
@@ -107,12 +108,10 @@ const CustomEvidenceVariableModal: FunctionComponent<
       evidenceVariableType === "inclusion"
         ? i18n.t("title.aninclusioncriteria")
         : i18n.t("title.astudyvariable");
-    
     // If we have a logic type, include it in the title
     if (logicType) {
       return `${actionText} ${typeText} ${logicType}`;
     }
-    
     // Otherwise, just use action + type
     return `${actionText} ${typeText}`;
   };
@@ -174,6 +173,20 @@ const CustomEvidenceVariableModal: FunctionComponent<
     }));
   }
 
+//   /**
+//    * Validate the form fields.
+//    * Returns true if either title or description is empty (invalid), otherwise false.
+//    */
+//   function validateForm(field: ): boolean {
+//     if (field === "title") {
+//       return !formData.title.trim();
+//     }
+//     if (field === "description") {
+//       return !formData.description.trim();
+//     }
+//     return !formData.title.trim() || !formData.description.trim();
+//   }
+
   /**
    * Handle form submission
    */
@@ -231,24 +244,34 @@ const CustomEvidenceVariableModal: FunctionComponent<
           {/* Title of the Evidence Variable */}
           <Form.Group className="mb-3">
             {/* We use the "title" field from FHIR, but we call it "name" */}
-            <Form.Label>{i18n.t("label.name")}</Form.Label>
+            <Form.Label>{i18n.t("label.name")} *</Form.Label>
             <Form.Control
               type="text"
               placeholder={i18n.t("placeholder.name")}
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
+              required
+            //   isInvalid={validateForm("title")}
             />
+            <Form.Control.Feedback type="invalid">
+              {i18n.t("errormessage.requiredfield")}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Description of the Evidence Variable */}
           <Form.Group className="mb-3">
-            <Form.Label>Description</Form.Label>
+            <Form.Label>Description *</Form.Label>
             <Form.Control
               as="textarea"
               placeholder={i18n.t("placeholder.description")}
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
+              required
+            //   isInvalid={validateForm("description")}
             />
+            <Form.Control.Feedback type="invalid">
+              {i18n.t("errormessage.requiredfield")}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Library selection */}

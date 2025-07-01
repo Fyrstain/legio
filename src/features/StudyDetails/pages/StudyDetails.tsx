@@ -564,15 +564,18 @@ const [showModal, setShowModal] = useState(false);
           className="mt-3"
           onClick={() => setShowModal(true)}
         >
-            TEST MODAL
+          TEST MODAL
         </Button>
 
         <CustomEvidenceVariableModal
           show={showModal}
           onHide={() => setShowModal(false)}
-          mode="update" // Mode can be "create" or "update"
-          logicType="OR" // Logic can be "AND", "OR", or "XOR"
-          evidenceVariableType="inclusion" // Type can be "inclusion" or "study"
+          // Mode can be "create" or "update"
+          mode="update"
+          // Logic can be "AND", "OR", or "XOR"
+          logicType="OR"
+          // Type can be "inclusion" or "study"
+          evidenceVariableType="inclusion"
         />
 
         {/* Section to show the table with the generated datamart  */}
@@ -611,10 +614,11 @@ const [showModal, setShowModal] = useState(false);
                     studyVariables.forEach((studyVariable) => {
                       const paramName = studyVariable.getExpression() ?? "N/A";
                       data[paramName] = "N/A";
-                    }); 
+                    });
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
-                        data[param.name] = StudyService.getParameterValue(param);
+                        data[param.name] =
+                          StudyService.getParameterValue(param);
                       }
                     });
                     return data;
