@@ -41,7 +41,8 @@
       "save": "Save Changes",
       "add": "Add",
       "cancel": "Cancel",
-      "editstudy": "Edit Study"
+      "editstudy": "Edit Study",
+      "filterobsolescence": "Filter by Obsolescence"
     },
     "label": {
         "name": "Name",
@@ -52,7 +53,10 @@
         "localcontact": "Local contact",
         "studysponsorcontact": "Study sponsor contact",
         "studydesign": "Study design",
-        "generateddatamart": "Generated Datamart"
+        "generateddatamart": "Generated Datamart",
+        "obsolete": "Obsolete",
+        "notobsolete": "Not Obsolete",
+        "clearfilter": "Clear Filter"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -63,7 +67,10 @@
         "nogenerateddatamart": "No datamart generation possible, no study variable has been found.",
         "requiredfield": "This field is required.",
         "versionalreadyexists": "This version already exists. Please choose another one.",
-        "errorwhilesavingstudy": "Error while saving study. Please try again."
+        "errorwhilesavingstudy": "Error while saving study. Please try again.",
+        "nofilterresults": "No results for the selected filter.",
+        "noobsoletevariables": "No obsolete variables found for this study.",
+        "nonotobsoletevariables": "No non-obsolete variables found for this study."
     },
     "message": {
         "studyupdated": "Study updated successfully."

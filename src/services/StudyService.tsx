@@ -332,6 +332,7 @@ async function loadEvidenceVariables(
       title: string;
       description: string;
       expression?: string;
+      status?: string;
     }> = [];
     if (bundle.entry) {
       const canonicalUrls: string[] = [];
@@ -405,6 +406,7 @@ function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
     title: evidenceVariable.title ?? "",
     description: evidenceVariable.description ?? "",
     expression: expressionValue,
+    status: evidenceVariable.status ?? "",
   };
 }
 

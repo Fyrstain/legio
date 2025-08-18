@@ -87,6 +87,7 @@ const StudyDetails: FunctionComponent = () => {
     Array<{
       title: string;
       description: string;
+      status?: string;
     }>
   >([]);
 
@@ -96,6 +97,7 @@ const StudyDetails: FunctionComponent = () => {
       title: string;
       description: string;
       expression?: string;
+      status?: string;
     }>
   >([]);
 
