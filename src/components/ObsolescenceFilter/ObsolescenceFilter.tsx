@@ -16,10 +16,6 @@ interface ObsolescenceFilterProps {
   onChange: (value: "obsolete" | "not-obsolete" | "all") => void;
 }
 
-////////////////////////////////
-//           Props            //
-////////////////////////////////
-
 const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value, onChange }) => {
 
   ////////////////////////////////
@@ -35,6 +31,42 @@ const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value,
     e.stopPropagation();
   };
 
+  /**
+   * Configuration for filter options
+   * This defines the available options for the obsolescence filter.
+   */
+    const filterOptions = [
+      {
+        value: "obsolete",
+        label: i18n.t("label.obsolete"),
+      },
+      {
+        value: "not-obsolete",
+        label: i18n.t("label.notobsolete"),
+      },
+      {
+        value: "all",
+        label: i18n.t("label.clearfilter"),
+      },
+    ] as const;
+
+  /**
+   * Get the display title based on current value
+   * This function returns the appropriate display title for the dropdown button
+   * based on the currently selected filter option.
+   */
+  const getDisplayTitle = () => {
+    if (value === "all") {
+      return i18n.t("button.filterobsolescence");
+    }
+    const currentOption = filterOptions.find(
+      (option) => option.value === value
+    );
+    return currentOption
+      ? currentOption.label
+      : i18n.t("button.filterobsolescence");
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -43,20 +75,20 @@ const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value,
     <div onClick={handleDropdownClick}>
       <DropdownButton
         id="dropdown-obsolescence-filter"
-        title={i18n.t("button.filterobsolescence")}
+        title={getDisplayTitle()}
         size="sm"
         variant="secondary"
         className={`ms-4 ${styles["dropdown-toggle"]}`}
       >
-        <Dropdown.Item onClick={() => onChange("obsolete")}>
-          {i18n.t("label.obsolete")}
-        </Dropdown.Item>
-        <Dropdown.Item onClick={() => onChange("not-obsolete")}>
-          {i18n.t("label.notobsolete")}
-        </Dropdown.Item>
-        <Dropdown.Item onClick={() => onChange("all")}>
-          {i18n.t("label.clearfilter")}
-        </Dropdown.Item>
+        {filterOptions.map((option) => (
+          <Dropdown.Item
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            active={value === option.value}
+          >
+            {option.label}
+          </Dropdown.Item>
+        ))}
       </DropdownButton>
     </div>
   );
