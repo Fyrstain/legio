@@ -2,7 +2,7 @@
 import { Bundle, EvidenceVariable } from "fhir/r5";
 // Types
 import { EvidenceVariableProps } from "../../features/StudyDetails/types/evidenceVariable.types";
- 
+
 /**
  * Class representing a FHIR EvidenceVariable resource
  * This class provides methods to access properties of the EvidenceVariable resource
@@ -13,7 +13,7 @@ export class EvidenceVariableModel {
 
   /**
    * Constructor for EvidenceVariableModel
-   * 
+   *
    * @param fhirResource is an instance of EvidenceVariable from FHIR R5
    * This constructor initializes the model with a FHIR EvidenceVariable resource.
    */
@@ -23,7 +23,7 @@ export class EvidenceVariableModel {
 
   /**
    * To get the ID of the EvidenceVariable
-   * 
+   *
    * @returns The ID of the EvidenceVariable, or undefined if not set
    */
   getId(): string | undefined {
@@ -32,7 +32,7 @@ export class EvidenceVariableModel {
 
   /**
    * To get the title of the EvidenceVariable
-   * 
+   *
    * @returns a string representing the title of the EvidenceVariable
    */
   getTitle(): string {
@@ -41,7 +41,7 @@ export class EvidenceVariableModel {
 
   /**
    * To get the description of the EvidenceVariable
-   * 
+   *
    * @returns  a string representing the description of the EvidenceVariable
    */
   getDescription(): string {
@@ -49,8 +49,60 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * To get the identifier of the EvidenceVariable
+   *
+   * @returns The identifier of the EvidenceVariable, or undefined if not set
+   */
+  getIdentifier(): string | undefined {
+    return this.fhirResource.identifier?.[0]?.value;
+  }
+
+  /**
+   * To get the status of the EvidenceVariable
+   *
+   * @returns The status of the EvidenceVariable, or undefined if not set
+   */
+  getStatus(): string | undefined {
+    return this.fhirResource.status;
+  }
+
+  /**
+   * To get the exclude flag of the EvidenceVariable
+   *
+   * @returns The exclude flag of the EvidenceVariable, or undefined if not set
+   */
+  getExclude(): boolean | undefined {
+    if (!this.fhirResource.characteristic) {
+      return undefined;
+    }
+    for (const characteristic of this.fhirResource.characteristic) {
+      if (characteristic.exclude) {
+        return characteristic.exclude;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Gets the characteristic description from the EvidenceVariable, used for the subGroup description
+   *
+   * @returns The characteristic description, or undefined if not set
+   */
+  getCharacteristicDescription(): string | undefined {
+    if (!this.fhirResource.characteristic) {
+      return undefined;
+    }
+    for (const characteristic of this.fhirResource.characteristic) {
+      if (characteristic.description) {
+        return characteristic.description;
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Extracts the expression from the EvidenceVariable
-   * 
+   *
    * @returns a string representing the expression, or undefined if not found
    */
   getExpression(): string | undefined {
@@ -68,13 +120,13 @@ export class EvidenceVariableModel {
   /**
    * A static method to create EvidenceVariableModel instances from a FHIR Bundle
    * This method extracts EvidenceVariable resources from the bundle and creates models.
-   * 
+   *
    * @param bundle is a FHIR Bundle containing EvidenceVariable resources
    * @returns An object containing an array of EvidenceVariableModel instances and an array of canonical URLs
    */
-  static fromBundle(bundle: Bundle): { 
-    models: EvidenceVariableModel[], 
-    canonicalUrls: string[] 
+  static fromBundle(bundle: Bundle): {
+    models: EvidenceVariableModel[];
+    canonicalUrls: string[];
   } {
     const models: EvidenceVariableModel[] = [];
     const canonicalUrls: string[] = [];
@@ -111,13 +163,15 @@ export class EvidenceVariableModel {
     return { models, canonicalUrls };
   }
 
-/**
- * A static method to create EvidenceVariableModel instances from an array of FHIR Bundles
- * 
- * @param canonicalResults is an array of FHIR Bundles containing EvidenceVariable resources
- * @returns a list of EvidenceVariableModel instances
- */
-  static fromCanonicalBundles(canonicalResults: Bundle[]): EvidenceVariableModel[] {
+  /**
+   * A static method to create EvidenceVariableModel instances from an array of FHIR Bundles
+   *
+   * @param canonicalResults is an array of FHIR Bundles containing EvidenceVariable resources
+   * @returns a list of EvidenceVariableModel instances
+   */
+  static fromCanonicalBundles(
+    canonicalResults: Bundle[]
+  ): EvidenceVariableModel[] {
     const models: EvidenceVariableModel[] = [];
     // Iterate through each bundle to extract EvidenceVariable resources
     canonicalResults.forEach((result) => {
@@ -132,7 +186,7 @@ export class EvidenceVariableModel {
 
   /**
    * Converts the EvidenceVariable to a display object
-   * 
+   *
    * @returns An object containing the title, description, status, expression, and ID of the EvidenceVariable
    */
   toDisplayObject(): EvidenceVariableProps {
@@ -140,7 +194,10 @@ export class EvidenceVariableModel {
       id: this.getId(),
       title: this.getTitle(),
       description: this.getDescription(),
-      expression: this.getExpression(),
+      identifier: this.getIdentifier(),
+      status: this.getStatus(),
+      isExcluded: this.getExclude(),
+      characteristicDescription: this.getCharacteristicDescription(),
     };
   }
 }
@@ -149,7 +206,6 @@ export class EvidenceVariableModel {
  * Utility class for handling EvidenceVariable models
  */
 export class EvidenceVariableUtils {
-
   /**
    * Extracts non-null expressions from an array of EvidenceVariableModel
    * This method filters out any EvidenceVariableModel instances that do not have a valid expression.
@@ -172,5 +228,4 @@ export class EvidenceVariableUtils {
   ): EvidenceVariableProps[] {
     return evidenceVariables.map((ev) => ev.toDisplayObject());
   }
-
 }

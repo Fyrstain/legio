@@ -1,12 +1,27 @@
+import { LibraryReference } from "./library.types";
+
 /**
  * Interface to display object of an EvidenceVariable
  */
 interface EvidenceVariableProps {
   title: string;
   description: string;
-  expression?: string;
   id?: string;
   status?: string;
+  identifier?: string;
+  isExcluded?: boolean;
+  characteristicDescription?: string;
+}
+
+/**
+ * Interface for form state during modal interaction
+ * Contains UI-specific fields that don't belong to EvidenceVariable directly
+ */
+interface EvidenceVariableFormData {
+  selectedLibrary?: LibraryReference;
+  selectedExpression?: string;
+  selectedParameter?: string;
+  selectedComparator?: string;
   criteriaValue?: InclusionCriteriaValue;
 }
 
@@ -22,6 +37,15 @@ interface EvidenceVariableSectionProps {
  * Type for the type of EvidenceVariable
  */
 type EvidenceVariableType = "inclusion" | "study";
+
+/**
+ * Type to distinguish between the three types of forms
+ *
+ * firstGroup = EvidenceVariable header
+ * inclusionCriteria = Inclusion Criteria simple
+ * subGroup = Subgroup created in the EV header
+ */
+type EvidenceVariableFormType = "firstGroup" | "inclusionCriteria" | "subGroup";
 
 /**
  * Type for the Modal mode
@@ -72,8 +96,10 @@ interface InclusionCriteriaValue {
 
 export type {
   EvidenceVariableProps,
+  EvidenceVariableFormData,
   EvidenceVariableSectionProps,
   EvidenceVariableType,
+  EvidenceVariableFormType,
   ModalMode,
   EvidenceVariableLogicType,
   InclusionCriteriaTypes,

@@ -15,8 +15,8 @@ import {
   ModalMode,
   EvidenceVariableLogicType,
   InclusionCriteriaTypes,
+  EvidenceVariableFormType
 } from "../../types/evidenceVariable.types";
-// Hooks
 
 ////////////////////////////////
 //           Props            //
@@ -35,10 +35,10 @@ interface CustomEvidenceVariableModalProps {
   mode?: ModalMode;
   // type of the evidence variable, either inclusion or study
   evidenceVariableType?: EvidenceVariableType;
+  // to distinguish between the different forms for the inclusion criteria (firstGroup, inclusionCriteria, subGroup)
+  formType?: EvidenceVariableFormType;
   // logic type for the evidence variable, either XOR, OR, or AND
   logicType?: EvidenceVariableLogicType;
-  // criteria types for the evidence variable, either boolean, integer, date, code[]
-  criteriaTypes?: InclusionCriteriaTypes;
 }
 
 const CustomEvidenceVariableModal: FunctionComponent<
@@ -50,6 +50,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
   evidenceVariable,
   mode,
   evidenceVariableType,
+  formType,
   logicType,
 }) => {
   /////////////////////////////////////
@@ -59,7 +60,6 @@ const CustomEvidenceVariableModal: FunctionComponent<
   const [formData, setFormData] = useState<EvidenceVariableProps>({
     title: evidenceVariable?.title || "",
     description: evidenceVariable?.description || "",
-    expression: evidenceVariable?.expression || "",
     id: evidenceVariable?.id || "",
   });
 
@@ -73,11 +73,6 @@ const CustomEvidenceVariableModal: FunctionComponent<
     id: string;
     name: string;
   } | null>(null);
-
-  // State for the list of expressions from the Library
-  const [expressions, setExpressions] = useState<
-    { id: string; name: string }[]
-  >([]);
 
   // State for the selected expression
   const [selectedExpression, setSelectedExpression] = useState<{
@@ -145,20 +140,6 @@ const CustomEvidenceVariableModal: FunctionComponent<
   };
 
   /**
-   * Function to handle expression selection change
-   * @param expressionId is the ID of the selected expression
-   */
-  const handleExpressionChange = (expressionId: string) => {
-    const expression =
-      expressions.find((expr) => expr.id === expressionId) || null;
-    setSelectedExpression(expression);
-    setFormData((prev) => ({
-      ...prev,
-      expression: expression ? expression.id : "",
-    }));
-  };
-
-  /**
    * Function to handle criteria value change
    * @param value is the new value for the criteria
    */
@@ -173,25 +154,25 @@ const CustomEvidenceVariableModal: FunctionComponent<
     }));
   }
 
-//   /**
-//    * Validate the form fields.
-//    * Returns true if either title or description is empty (invalid), otherwise false.
-//    */
-//   function validateForm(field: ): boolean {
-//     if (field === "title") {
-//       return !formData.title.trim();
-//     }
-//     if (field === "description") {
-//       return !formData.description.trim();
-//     }
-//     return !formData.title.trim() || !formData.description.trim();
-//   }
+  //   /**
+  //    * Validate the form fields.
+  //    * Returns true if either title or description is empty (invalid), otherwise false.
+  //    */
+  //   function validateForm(field: ): boolean {
+  //     if (field === "title") {
+  //       return !formData.title.trim();
+  //     }
+  //     if (field === "description") {
+  //       return !formData.description.trim();
+  //     }
+  //     return !formData.title.trim() || !formData.description.trim();
+  //   }
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (formData.title.trim() && formData.description.trim()) {
+    if (formData.title?.trim() && formData.description?.trim()) {
       if (onSave) {
         onSave(formData);
       }
@@ -215,7 +196,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
     setFormData({
       title: "",
       description: "",
-      expression: "",
+      //   expression: "",
       id: "",
     });
     setLibrarySelected(null);
@@ -225,7 +206,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
       value: undefined,
     });
     setLibraries([]);
-    setExpressions([]);
+    // setExpressions([]);
   };
 
   /////////////////////////////////////////////
@@ -251,7 +232,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
               required
-            //   isInvalid={validateForm("title")}
+              //   isInvalid={validateForm("title")}
             />
             <Form.Control.Feedback type="invalid">
               {i18n.t("errormessage.requiredfield")}
@@ -267,7 +248,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               required
-            //   isInvalid={validateForm("description")}
+              //   isInvalid={validateForm("description")}
             />
             <Form.Control.Feedback type="invalid">
               {i18n.t("errormessage.requiredfield")}
@@ -293,7 +274,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
           )}
 
           {/* Expression selection */}
-          {evidenceVariableType === "inclusion" && (
+          {/* {evidenceVariableType === "inclusion" && (
             <Form.Group className="mb-3">
               <Form.Label>Expression</Form.Label>
               <Form.Select
@@ -309,7 +290,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
                 ))}
               </Form.Select>
             </Form.Group>
-          )}
+          )} */}
 
           {/* Inclusion Criteria Type selection */}
           {evidenceVariableType === "inclusion" && (
