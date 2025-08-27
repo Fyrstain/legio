@@ -41,7 +41,8 @@
         "save": "Enregistrer les modifications",
         "add": "Ajouter",
         "cancel": "Annuler",
-        "editstudy": "Modifier l'étude"
+        "editstudy": "Modifier l'étude",
+        "filterobsolescence": "Filtrer par obsolescence"
     },
     "label": {
         "name": "Nom",
@@ -52,7 +53,10 @@
         "localcontact": "Contact local",
         "studysponsorcontact": "Contact du promoteur de l'étude",
         "studydesign": "Conception de l'étude",
-        "generateddatamart": "Datamart généré"
+        "generateddatamart": "Datamart généré",
+        "obsolete": "Obsolète",
+        "notobsolete": "Non-obsolète",
+        "clearfilter": "Effacer le filtre"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -63,7 +67,9 @@
         "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée.",
         "requiredfield": "Ce champ est requis.",
         "versionalreadyexists": "Cette version existe déjà. Veuillez en choisir une autre.",
-        "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer."
+        "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer.",
+        "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
+        "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude."
     },
     "message": {
         "studyupdated": "Étude modifiée avec succès!"

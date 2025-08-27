@@ -166,11 +166,18 @@ const Studies: FunctionComponent = () => {
                 },
             ],
             mapResourceToData: (resource: any) => {
-                return {
-                id: resource.id,
-                name: resource.title,
-                phase: resource.phase.coding[0].display ?? resource.phase.coding[0].code,
-                };
+                try {
+                    return {
+                    id: resource.id,
+                    name: resource.title,
+                    phase:
+                        resource.phase?.coding?.[0]?.display ??
+                        resource.phase?.coding?.[0]?.code,
+                    };
+                } catch (error) {
+                    console.error("Error mapping resource to data:", error);
+                    onError(); 
+                }
             },
             searchProperties: {
                 serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
