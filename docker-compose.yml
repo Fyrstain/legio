@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   front:
-    image: docker.registry.fyrstain.com/legio/front:LEG-40
+    image: docker.registry.fyrstain.com/legio/front:latest
     environment:
       - REACT_APP_FHIR_URL=${REACT_APP_FHIR_URL}
       - REACT_APP_COHORTING_URL=${REACT_APP_COHORTING_URL}
