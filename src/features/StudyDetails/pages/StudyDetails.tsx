@@ -109,6 +109,9 @@ const StudyDetails: FunctionComponent = () => {
   // To show or hide the modal
 const [showModal, setShowModal] = useState(false);
 
+const [showTestModal, setShowTestModal] = useState(false);
+
+
 
   //////////////////////////////
   //           Error          //
@@ -558,7 +561,6 @@ const [showModal, setShowModal] = useState(false);
             {i18n.t("button.export")}
           </Button>
         </div>
-
         <Button
           variant="secondary"
           className="mt-3"
@@ -566,7 +568,6 @@ const [showModal, setShowModal] = useState(false);
         >
           TEST MODAL
         </Button>
-
         <CustomEvidenceVariableModal
           show={showModal}
           onHide={() => setShowModal(false)}
@@ -578,6 +579,18 @@ const [showModal, setShowModal] = useState(false);
           evidenceVariableType="inclusion"
         />
 
+        <Button onClick={() => setShowTestModal(true)}>Test FirstGroup</Button>
+        <CustomEvidenceVariableModal
+          show={showTestModal}
+          onHide={() => setShowTestModal(false)}
+          // Logic can be "AND", "OR", or "XOR"
+          logicType="OR"
+          // Type can be "inclusion" or "study"
+          evidenceVariableType="inclusion"
+          formType="firstGroup"
+          mode="create"
+        />
+        
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">

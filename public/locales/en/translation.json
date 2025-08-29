@@ -63,7 +63,6 @@
         "clearfilter": "Clear Filter",
         "generateddatamart": "Generated Datamart",
         "library": "Library",
-        "inclusioncriteriatype": "Inclusion Criteria Type",
         "boolean": "Boolean",
         "integer": "Integer",
         "date": "Date",
@@ -82,7 +81,13 @@
         "before": "Before",
         "after": "After",
         "startdate": "Start Date",
-        "enddate": "End Date"
+        "enddate": "End Date",
+        "identifier": "Identifier",
+        "notobsolete": "Not Obsolete",
+        "obsolete": "Obsolete",
+        "criteriatype": "Choose the criteria type",
+        "parameter": "Parameter"
+
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -116,6 +121,9 @@
         "maxvalue": "Maximum value",
         "comparisonoperator": "-- Select a comparison operator --",
         "valueset": "-- Select a ValueSet --",
-        "selectcode": "-- Select a code --"
+        "selectcode": "-- Select a code --",
+        "choosestatus": "Choose a status",
+        "identifier": "Please fill in the identifier",
+        "parameter": "-- Select a parameter --"
     }
 }

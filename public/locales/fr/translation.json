@@ -64,7 +64,6 @@
         "clearfilter": "Effacer le filtre",
         "generateddatamart": "Datamart généré",
         "library": "Librairie",
-        "inclusioncriteriatype": "Type de critère d'inclusion",
         "boolean": "Booléen",
         "integer": "Entier",
         "date": "Date",
@@ -83,7 +82,12 @@
         "before": "Avant",
         "after": "Après",
         "startdate": "Date de début",
-        "enddate": "Date de fin"
+        "enddate": "Date de fin",
+        "identifier": "Identifiant",
+        "notobsolete": "Non obsolète",
+        "obsolete": "Obsolète",
+        "criteriatype": "Choisissez le type de critère",
+        "parameter": "Paramètre"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -116,6 +120,9 @@
         "maxvalue": "Valeur maximale",
         "comparisonoperator": "-- Sélectionnez un opérateur de comparaison --",
         "valueset": "-- Sélectionnez un ValueSet --",
-        "selectcode": "-- Sélectionnez un code --"
+        "selectcode": "-- Sélectionnez un code --",
+        "choosestatus": "Choisissez un statut",
+        "identifier": "Veuillez remplir l'identifiant",
+        "parameter": "-- Sélectionnez un paramètre --"
     }
 }

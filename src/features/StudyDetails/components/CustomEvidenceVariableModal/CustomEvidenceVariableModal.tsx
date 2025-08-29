@@ -17,6 +17,8 @@ import {
   InclusionCriteriaTypes,
   EvidenceVariableFormType
 } from "../../types/evidenceVariable.types";
+import FirstGroupForm from "./Forms/FirstGroupForm";
+import InclusionCriteriaForm from "./Forms/InclusionCriteriaForm";
 
 ////////////////////////////////
 //           Props            //
@@ -221,6 +223,12 @@ const CustomEvidenceVariableModal: FunctionComponent<
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
+          {formType === "firstGroup" ? (
+    <InclusionCriteriaForm
+      formType={formType}
+      initialEvidenceVariable={evidenceVariable}
+    />
+  ) : (
         <Form>
           {/* Title of the Evidence Variable */}
           <Form.Group className="mb-3">
@@ -300,6 +308,7 @@ const CustomEvidenceVariableModal: FunctionComponent<
             />
           )}
         </Form>
+  )}
       </Modal.Body>
 
       {/* Modal Footer with Save and Reset buttons */}

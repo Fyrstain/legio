@@ -124,7 +124,7 @@ export const useEvidenceVariableForm = (
    *
    * @param library is the new library reference
    */
-  const handleLibraryChange = (library: LibraryReference) => {
+  const handleLibraryChange = (library?: LibraryReference) => {
     setFormData((prev) => ({
       ...prev,
       selectedLibrary: library,
