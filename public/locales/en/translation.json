@@ -27,7 +27,8 @@
         "add": "Add",
         "update": "Update",
         "aninclusioncriteria": "an Inclusion Criteria",
-        "astudyvariable": "a Study Variable"
+        "astudyvariable": "a Study Variable",
+        "subgroup": "Sub-group"
     },
     "footer": {
         "items": {
@@ -86,8 +87,12 @@
         "notobsolete": "Not Obsolete",
         "obsolete": "Obsolete",
         "criteriatype": "Choose the criteria type",
-        "parameter": "Parameter"
-
+        "parameter": "Parameter",
+        "valueset": "ValueSet",
+        "has": "Has",
+        "hasnot": "Has Not",
+        "parametertype": "Parameter Type",
+        "filltheotherfields": "Fill the other fields"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -124,6 +129,7 @@
         "selectcode": "-- Select a code --",
         "choosestatus": "Choose a status",
         "identifier": "Please fill in the identifier",
-        "parameter": "-- Select a parameter --"
+        "parameter": "-- Select a parameter --",
+        "subgroupdescription": "Please fill in the subgroup description"
     }
 }

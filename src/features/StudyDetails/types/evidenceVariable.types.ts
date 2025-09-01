@@ -79,11 +79,16 @@ type IntegerOperatorType =
 type DateOperatorType = "equals" | "before" | "after" | "between";
 
 /**
+ * Type for the operator types for the codes in the ValueSets
+ */
+type CodeOperatorType = "equals" | "notEquals" | "in" | "notIn";
+
+/**
  * Interface for the value of the Inclusion Criteria
  */
 interface InclusionCriteriaValue {
   type: InclusionCriteriaTypes;
-  operator?: IntegerOperatorType | DateOperatorType;
+  operator?: IntegerOperatorType | DateOperatorType | CodeOperatorType;
   value?: number | boolean | string | Date | string[];
   minValue?: number | Date;
   maxValue?: number | Date;
@@ -105,5 +110,6 @@ export type {
   InclusionCriteriaTypes,
   IntegerOperatorType,
   DateOperatorType,
+  CodeOperatorType,
   InclusionCriteriaValue,
 };

@@ -1,10 +1,7 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import {
-  InclusionCriteriaTypes,
-  InclusionCriteriaValue,
-} from "../../types/evidenceVariable.types";
+import { InclusionCriteriaValue } from "../../types/evidenceVariable.types";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation
@@ -19,21 +16,6 @@ const ConditionalFieldsContainer: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
 }> = ({ value, onChange }) => {
-    
-  /////////////////////////////////////
-  //      Constants / ValueSet       //
-  /////////////////////////////////////
-
-  /**
-   * Constant for the inclusion criteria types
-   */
-  const inclusionCriteriaTypes: InclusionCriteriaTypes[] = [
-    "boolean",
-    "integer",
-    "date",
-    "code",
-  ];
-
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -64,23 +46,17 @@ const ConditionalFieldsContainer: FunctionComponent<{
   return (
     <>
       <Form.Group className="mb-3">
-        <Form.Label>{i18n.t("label.inclusioncriteriatype")}</Form.Label>
-        <Form.Select
-          value={value.type}
-          onChange={(e) =>
-            onChange({
-              ...value,
-              type: e.target.value as InclusionCriteriaTypes,
-            })
+        <Form.Label>{i18n.t("label.parametertype")}</Form.Label>
+        <Form.Control
+          type="text"
+          value={
+            value.type
+              ? i18n.t(`label.${value.type}`)
+              : i18n.t(`label.filltheotherfields`)
           }
-        >
-          <option value="">{i18n.t("placeholder.selectcriteriatype")}</option>
-          {inclusionCriteriaTypes.map((type) => (
-            <option key={type} value={type}>
-              {i18n.t(`label.${type}`)}
-            </option>
-          ))}
-        </Form.Select>
+          disabled
+          readOnly
+        />
       </Form.Group>
       {renderConditionalField()}
     </>

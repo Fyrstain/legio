@@ -37,7 +37,7 @@ export const useEvidenceVariableForm = (
           selectedExpression: "",
           selectedParameter: "",
           selectedComparator: "",
-          criteriaValue: { type: "boolean", value: "" },
+          criteriaValue: undefined,
         };
       case "subGroup":
         return {
@@ -45,7 +45,7 @@ export const useEvidenceVariableForm = (
           selectedExpression: "",
           selectedParameter: "",
           selectedComparator: "",
-          criteriaValue: { type: "boolean", value: "" },
+          criteriaValue: undefined,
         };
       default:
         return {};

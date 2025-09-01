@@ -27,7 +27,8 @@
         "add": "Ajouter",
         "update": "Mettre à jour",
         "aninclusioncriteria": "un Critère d'Inclusion",
-        "astudyvariable": "une Variable d'Étude"
+        "astudyvariable": "une Variable d'Étude",
+        "subgroup": "Sous-groupe"
     },
     "footer": {
         "items": {
@@ -87,7 +88,12 @@
         "notobsolete": "Non obsolète",
         "obsolete": "Obsolète",
         "criteriatype": "Choisissez le type de critère",
-        "parameter": "Paramètre"
+        "parameter": "Paramètre",
+        "valueset": "Jeux de valeurs",
+        "has": "Contient",
+        "hasnot": "Ne contient pas",
+        "parametertype": "Type de paramètre",
+        "filltheotherfields": "Remplissez les autres champs"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -123,6 +129,7 @@
         "selectcode": "-- Sélectionnez un code --",
         "choosestatus": "Choisissez un statut",
         "identifier": "Veuillez remplir l'identifiant",
-        "parameter": "-- Sélectionnez un paramètre --"
+        "parameter": "-- Sélectionnez un paramètre --",
+        "subgroupdescription": "Veuillez remplir la description du sous-groupe"
     }
 }

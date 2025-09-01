@@ -1,5 +1,6 @@
 //React
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 // Components
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // React Bootstrap
@@ -13,12 +14,17 @@ import i18n from "i18next";
 import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // FHIR
 import Client from "fhir-kit-client";
+// Types
+import { CodeOperatorType } from "../../../types/evidenceVariable.types";
+// Resources
+import { ValueSet } from "fhir/r5";
+// Services
+import ValueSetService from "../../../services/valueSet.service";
 
 const CodeField: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
 }> = ({ value, onChange }) => {
-
   /////////////////////////////////////
   //             Client              //
   /////////////////////////////////////
@@ -28,31 +34,53 @@ const CodeField: FunctionComponent<{
     baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
   });
 
+  // ValueSet Loader for fetching codes
   const valueSetLoader = new ValueSetLoader(fhirClient);
-
-  // TODO : Remove later, it's to test the component
-  const commonValueSets = [
-    {
-      url: "https://www.centreantoinelacassagne.org/ValueSet/VS-ResearchStudyPhase",
-      name: "Research Study Phase",
-    },
-    {
-      url: "http://hl7.org/fhir/ValueSet/study-design",
-      name: "Study Design",
-    },
-    {
-      url: "http://snomed.info/sct/ValueSet/disorders",
-      name: "SNOMED CT Disorders",
-    },
-  ];
 
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
 
+  const navigate = useNavigate();
+
+  const [valueSets, setValueSets] = useState<ValueSet[]>([]);
   const [selectedValueSet, setSelectedValueSet] = useState<string>("");
   const [availableCodes, setAvailableCodes] = useState<SimpleCode[]>([]);
   const [selectedCode, setSelectedCode] = useState<string>("");
+
+  // Code Operator Options with translation
+  const codeOperatorOptions = [
+    { value: "equals", labelKey: "label.has" },
+    { value: "notEquals", labelKey: "label.hasnot" },
+  ];
+
+  //////////////////////////////
+  //           Error          //
+  //////////////////////////////
+
+  /**
+   * Navigate to the error page.
+   */
+  const onError = useCallback(() => {
+    navigate("/Error");
+  }, [navigate]);
+
+  /////////////////////////////////////
+  //           LifeCycle             //
+  /////////////////////////////////////
+
+  // To load value sets data
+  useEffect(() => {
+    const loadValueSetsData = async () => {
+      try {
+        const valueSetsData = await ValueSetService.loadValueSets();
+        setValueSets(valueSetsData);
+      } catch (error) {
+        onError();
+      }
+    };
+    loadValueSetsData();
+  }, []);
 
   ////////////////////////////////
   //          Actions           //
@@ -97,23 +125,52 @@ const CodeField: FunctionComponent<{
     });
   };
 
+  /**
+   * Function to handle changes in the operator select input
+   * @param event - The change event from the select input
+   */
+  const handleOperatorChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    onChange({
+      ...value,
+      operator: event.target.value as CodeOperatorType,
+    });
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
 
   return (
     <>
+      {/* Operator Selection */}
+      <Form.Group className="mb-2">
+        <Form.Label>{i18n.t("label.comparisonoperator")}</Form.Label>
+        <Form.Select
+          value={value.operator || ""}
+          onChange={handleOperatorChange}
+        >
+          <option value="">{i18n.t("placeholder.logicaloperator")}</option>
+          {codeOperatorOptions.map((op) => (
+            <option key={op.value} value={op.value}>
+              {i18n.t(op.labelKey)}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
+
       {/* ValueSet Selection */}
       <Form.Group className="mb-2">
-        <Form.Label>ValueSet</Form.Label>
+        <Form.Label>{i18n.t("label.valueset")}</Form.Label>
         <Form.Select
           value={selectedValueSet}
           onChange={(e) => handleValueSetChange(e.target.value)}
         >
           <option value="">{i18n.t("placeholder.valueset")}</option>
-          {commonValueSets.map((vs) => (
-            <option key={vs.url} value={vs.url}>
-              {vs.name}
+          {valueSets.map((vs) => (
+            <option key={vs.url} value={vs.url} title={vs.description}>
+              {vs.name || vs.url}
             </option>
           ))}
         </Form.Select>

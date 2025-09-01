@@ -177,7 +177,6 @@ const InclusionCriteriaForm: FunctionComponent<InclusionCriteriaFormProps> = ({
   const handleParameterSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const parameterName = e.target.value;
     handleParameterChange(parameterName);
-
     if (parameterName && selectedLibrary) {
       const parameter = availableParameters.find(
         (p) => p.name === parameterName
@@ -325,7 +324,7 @@ const InclusionCriteriaForm: FunctionComponent<InclusionCriteriaFormProps> = ({
             <Form.Label>{i18n.t("label.parameter")}</Form.Label>
             <Form.Select
               value={formData.selectedParameter || ""}
-              onChange={(e) => handleParameterChange(e.target.value)}
+              onChange={handleParameterSelectChange}
               disabled={!selectedLibrary || availableParameters.length === 0}
             >
               <option value="">{i18n.t("placeholder.parameter")}</option>
@@ -341,13 +340,15 @@ const InclusionCriteriaForm: FunctionComponent<InclusionCriteriaFormProps> = ({
             </Form.Select>
           </Form.Group>
 
-          {/* Type field with existing conditional fields */}
-          <ConditionalFieldsContainer
-            value={
-              formData.criteriaValue || { type: "boolean", value: undefined }
-            }
-            onChange={handleConditionalFieldChange}
-          />
+          {/* Conditional Fields based on selected parameter */}
+          {formData.selectedParameter && (
+            <ConditionalFieldsContainer
+              value={
+                formData.criteriaValue || { type: "boolean", value: undefined }
+              }
+              onChange={handleConditionalFieldChange}
+            />
+          )}
         </Form>
       </Card.Body>
     </Card>
