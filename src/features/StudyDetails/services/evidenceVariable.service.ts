@@ -13,6 +13,12 @@ const fhirKnowledgeClient = new Client({
   baseUrl: process.env.REACT_APP_KNOWLEDGE_URL ?? "fhir",
 });
 
+async function loadAllEvidenceVariables(): Promise<Bundle> {
+  return fhirKnowledgeClient.search({
+    resourceType: "EvidenceVariable",
+  }) as Promise<Bundle>;
+}
+
 /**
  *  Load the inclusion criteria for a study.
  *
@@ -96,6 +102,7 @@ async function loadEvidenceVariables(
 //        Exports         //
 ////////////////////////////
 const EvidenceVariableService = {
+  loadAllEvidenceVariables,
   loadInclusionCriteria,
   loadStudyVariables,
   readEvidenceVariableByUrl,

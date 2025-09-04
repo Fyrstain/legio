@@ -28,7 +28,16 @@
         "update": "Update",
         "aninclusioncriteria": "an Inclusion Criteria",
         "astudyvariable": "a Study Variable",
-        "subgroup": "Sub-group"
+        "subgroup": "Sub-group",
+        "asubgroup": "a Sub-group",
+        "criteria": "Criteria",
+        "thefirstgroup": "the First Group",
+        "characteristicinclusion": "Characteristic Inclusion or Exclusion",
+        "combinationdefinition": "Combination Definition",
+        "acombination": "a Combination",
+        "anexpression": "an Expression",
+        "expressiondefinition": "Expression Definition",
+        "existingcanonicalcriteria": "Existing Canonical Criteria"
     },
     "footer": {
         "items": {
@@ -92,7 +101,12 @@
         "has": "Has",
         "hasnot": "Has Not",
         "parametertype": "Parameter Type",
-        "filltheotherfields": "Fill the other fields"
+        "filltheotherfields": "Fill the other fields",
+        "logictype": "Logic Type",
+        "and": "AND",
+        "or": "OR",
+        "xor": "XOR",
+        "criteria": "Criteria"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -107,10 +121,12 @@
         "nofilterresults": "No results for the selected filter.",
         "noobsoletevariables": "No obsolete variables found for this study.",
         "nonotobsoletevariables": "No non-obsolete variables found for this study.",
-        "nocodesavailable": "No codes available for this ValueSet."
+        "nocodesavailable": "No codes available for this ValueSet.",
+        "fillrequiredfields": "Please fill all required fields."
     },
     "message": {
-        "studyupdated": "Study updated successfully."
+        "studyupdated": "Study updated successfully.",
+        "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?"
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",
@@ -130,6 +146,9 @@
         "choosestatus": "Choose a status",
         "identifier": "Please fill in the identifier",
         "parameter": "-- Select a parameter --",
-        "subgroupdescription": "Please fill in the subgroup description"
+        "subgroupdescription": "Please fill in the subgroup description",
+        "url": "Please fill in the URL",
+        "id": "Please fill in the ID",
+        "selectcriteria": "-- Select a criteria --"
     }
 }

@@ -28,7 +28,16 @@
         "update": "Mettre à jour",
         "aninclusioncriteria": "un Critère d'Inclusion",
         "astudyvariable": "une Variable d'Étude",
-        "subgroup": "Sous-groupe"
+        "subgroup": "Sous-groupe",
+        "asubgroup": "un sous-groupe",
+        "criteria": "Critères",
+        "thefirstgroup": "le premier groupe",
+        "characteristicinclusion": "Inclusion ou Exclusion de Caractéristiques",
+        "combinationdefinition": "Définition de la Combinaison",
+        "acombination": "une Combinaison",
+        "anexpression": "une Expression",
+        "expressiondefinition": "Définition de l'Expression",
+        "existingcanonicalcriteria": "Critères Canoniques Existants"
     },
     "footer": {
         "items": {
@@ -59,7 +68,6 @@
         "localcontact": "Contact local",
         "studysponsorcontact": "Contact du promoteur de l'étude",
         "studydesign": "Conception de l'étude",
-        "generateddatamart": "Datamart généré",
         "obsolete": "Obsolète",
         "notobsolete": "Non-obsolète",
         "clearfilter": "Effacer le filtre",
@@ -93,7 +101,11 @@
         "has": "Contient",
         "hasnot": "Ne contient pas",
         "parametertype": "Type de paramètre",
-        "filltheotherfields": "Remplissez les autres champs"
+        "filltheotherfields": "Remplissez les autres champs",
+        "and": "ET",
+        "or": "OU",
+        "xor": "OU exclusif",
+        "criteria": "Critères"
     },
     "defaultvalue": {
         "phase": "-- Merci de choisir une phase --"
@@ -107,10 +119,12 @@
         "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer.",
         "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
         "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
-        "nocodesavailable": "Aucun code disponible pour ce ValueSet."
+        "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
+        "fillrequiredfields": "Veuillez remplir tous les champs requis."
     },
     "message": {
-        "studyupdated": "Étude modifiée avec succès!"
+        "studyupdated": "Étude modifiée avec succès!",
+        "unsavedchanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter sans enregistrer ?"
     },
     "placeholder": {
         "selectstudydesign": "-- Sélectionnez une conception de l'étude --",
@@ -130,6 +144,9 @@
         "choosestatus": "Choisissez un statut",
         "identifier": "Veuillez remplir l'identifiant",
         "parameter": "-- Sélectionnez un paramètre --",
-        "subgroupdescription": "Veuillez remplir la description du sous-groupe"
+        "subgroupdescription": "Veuillez remplir la description du sous-groupe",
+        "url": "Veuillez remplir l'URL",
+        "id": "Veuillez remplir l'ID",
+        "selectcriteria": "-- Sélectionnez un critère --"
     }
 }

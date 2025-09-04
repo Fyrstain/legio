@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
-import CustomEvidenceVariableModal from "../components/CustomEvidenceVariableModal/CustomEvidenceVariableModal";
+// import CustomEvidenceVariableModal from "../components/CustomEvidenceVariableModal/CustomEvidenceVariableModal";
 // Services
 import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -39,6 +39,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 // Fhir
 import Client from "fhir-kit-client";
+import StudyVariableModal from "../components/CustomEvidenceVariableModal/StudyVariableModal";
+import CombinationModal from "../components/CustomEvidenceVariableModal/CombinationModal";
+import ExpressionModal from "../components/CustomEvidenceVariableModal/ExpressionModal";
+import ExistingInclusionCriteriaModal from "../components/CustomEvidenceVariableModal/ExistingInclusionCriteriaModal";
+import NewCanonicalModal from "../components/CustomEvidenceVariableModal/NewCanonicalModal";
+import ExistingStudyVariableModal from "../components/CustomEvidenceVariableModal/ExistingStudyVariableModal";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -107,11 +113,16 @@ const StudyDetails: FunctionComponent = () => {
     useState<boolean>(false);
 
   // To show or hide the modal
-const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
-const [showTestModal, setShowTestModal] = useState(false);
-
-
+  // TODO : To test the modals
+  const [showExistingStudyVariableModal, setShowExistingStudyVariableModal] =
+    useState(false);
+  const [showStudyVariableModal, setShowStudyVariableModal] = useState(false);
+  const [showCombinationModal, setShowCombinationModal] = useState(false);
+  const [showExpressionModal, setShowExpressionModal] = useState(false);
+  const [showExistingCanonicalModal, setShowExistingCanonicalModal] = useState(false);
+  const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
 
   //////////////////////////////
   //           Error          //
@@ -561,7 +572,8 @@ const [showTestModal, setShowTestModal] = useState(false);
             {i18n.t("button.export")}
           </Button>
         </div>
-        <Button
+        {/* TODO : Delete this button, it's only to test the modal */}
+        {/* <Button
           variant="secondary"
           className="mt-3"
           onClick={() => setShowModal(true)}
@@ -572,25 +584,104 @@ const [showTestModal, setShowTestModal] = useState(false);
           show={showModal}
           onHide={() => setShowModal(false)}
           // Mode can be "create" or "update"
-          mode="update"
+          mode="create"
           // Logic can be "AND", "OR", or "XOR"
           logicType="OR"
           // Type can be "inclusion" or "study"
-          evidenceVariableType="inclusion"
-        />
+          evidenceVariableType="study"
+          // Can be "firstGroup", "inclusionCriteria", or "subGroup"
+          // study (RAS, je "save", la modal se ferme, ja la rouvre, je retrouve mes données)
+          // firstGroup (je clique sur save, ma modals se ferme, je la rouve, je ne retrouve pas mes données)
+          // subGroup, je clique sur save, rien ne se passe
+          // inclusionCriteria, clique sur save, rien ne se passe
+          formType="subGroup"
+        /> */}
 
-        <Button onClick={() => setShowTestModal(true)}>Test FirstGroup</Button>
-        <CustomEvidenceVariableModal
-          show={showTestModal}
-          onHide={() => setShowTestModal(false)}
-          // Logic can be "AND", "OR", or "XOR"
-          logicType="OR"
-          // Type can be "inclusion" or "study"
-          evidenceVariableType="inclusion"
-          formType="firstGroup"
+        {/* To test the ExistingStudyVariableForm modal */}
+        <Button onClick={() => setShowExistingStudyVariableModal(true)}>
+          Test Existing Study Variable Modal
+        </Button>
+        <ExistingStudyVariableModal
+          show={showExistingStudyVariableModal}
+          onHide={() => setShowExistingStudyVariableModal(false)}
+          onSave={(data) => {
+            console.log("Saving existing study variable:", data);
+            setShowExistingStudyVariableModal(false);
+          }}
           mode="create"
         />
-        
+
+        {/* To test the StudyVariableForm modal */}
+        <Button onClick={() => setShowStudyVariableModal(true)}>
+          Test Study Variable Modal
+        </Button>
+        <StudyVariableModal
+          show={showStudyVariableModal}
+          onHide={() => setShowStudyVariableModal(false)}
+          onSave={(data) => {
+            console.log("Saving study variable:", data);
+            setShowStudyVariableModal(false);
+          }}
+          mode="create"
+        />
+
+        {/* To test the CombinationForm modal */}
+        <Button onClick={() => setShowCombinationModal(true)}>
+          Test Combination Modal
+        </Button>
+        <CombinationModal
+          show={showCombinationModal}
+          onHide={() => setShowCombinationModal(false)}
+          onSave={(data) => {
+            console.log("Combination data:", data);
+            setShowCombinationModal(false);
+          }}
+          mode="create"
+        />
+
+        {/* To test the ExpressionForm modal */}
+        <Button onClick={() => setShowExpressionModal(true)}>
+          Test Expresion Modal
+        </Button>
+        <ExpressionModal
+          show={showExpressionModal}
+          onHide={() => setShowExpressionModal(false)}
+          onSave={(data) => {
+            console.log("Expression data:", data);
+            setShowExpressionModal(false);
+          }}
+          mode="create"
+        />
+
+        {/* To test the ExistingCanonicalModal */}
+        <Button onClick={() => setShowExistingCanonicalModal(true)}>
+          Test Existing Canonical Modal
+        </Button>
+        <ExistingInclusionCriteriaModal
+          show={showExistingCanonicalModal}
+          onHide={() => setShowExistingCanonicalModal(false)}
+          onSave={(data) => {
+            console.log("Existing Canonical data:", data);
+            setShowExistingCanonicalModal(false);
+          }}
+          mode="create"
+          isCanonical={false}
+        />
+
+        {/* To test the NewCanonicalModal */}
+        <Button onClick={() => setShowNewCanonicalModal(true)}>
+          Test New Canonical Modal
+        </Button>
+        <NewCanonicalModal
+          show={showNewCanonicalModal}
+          onHide={() => setShowNewCanonicalModal(false)}
+          onSave={(data) => {
+            console.log("New Canonical data:", data);
+            setShowNewCanonicalModal(false);
+          }}
+          mode="create"
+        />
+
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">

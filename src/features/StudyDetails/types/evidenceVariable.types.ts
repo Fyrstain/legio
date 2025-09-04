@@ -7,10 +7,13 @@ interface EvidenceVariableProps {
   title: string;
   description: string;
   id?: string;
-  status?: string;
   identifier?: string;
+  status?: string;
+  url?: string;
   isExcluded?: boolean;
   characteristicDescription?: string;
+  hasCharacteristic?: boolean;
+  libraryUrl?: string;
 }
 
 /**
@@ -24,6 +27,12 @@ interface EvidenceVariableFormData {
   selectedComparator?: string;
   criteriaValue?: InclusionCriteriaValue;
 }
+
+/**
+ * Type for the form data used in the EvidenceVariable form
+ */
+type FormEvidenceVariableData = EvidenceVariableProps &
+  EvidenceVariableFormData;
 
 /**
  * Interface for the props of the EvidenceVariableSection component
@@ -102,6 +111,7 @@ interface InclusionCriteriaValue {
 export type {
   EvidenceVariableProps,
   EvidenceVariableFormData,
+  FormEvidenceVariableData,
   EvidenceVariableSectionProps,
   EvidenceVariableType,
   EvidenceVariableFormType,

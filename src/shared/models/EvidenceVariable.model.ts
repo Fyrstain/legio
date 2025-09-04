@@ -67,6 +67,15 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * To get the URL of the EvidenceVariable
+   *
+   * @returns The URL of the EvidenceVariable, or undefined if not set
+   */
+  getUrl(): string | undefined {
+    return this.fhirResource.url;
+  }
+
+  /**
    * To get the exclude flag of the EvidenceVariable
    *
    * @returns The exclude flag of the EvidenceVariable, or undefined if not set
@@ -81,6 +90,16 @@ export class EvidenceVariableModel {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Get the library from cqf-library extension
+   */
+  getLibraryUrl(): string | undefined {
+    const extension = this.fhirResource.extension?.find(
+      (ext) => ext.url === "http://hl7.org/fhir/StructureDefinition/cqf-library"
+    );
+    return extension?.valueCanonical;
   }
 
   /**
@@ -115,6 +134,27 @@ export class EvidenceVariableModel {
       }
     }
     return undefined;
+  }
+
+  /**
+   * To get the first characteristic of the EvidenceVariable
+   *
+   * @returns The first characteristic of the EvidenceVariable, or undefined if not set
+   */
+  getCharacteristic(): any | undefined {
+    return this.fhirResource.characteristic?.[0];
+  }
+
+  /**
+   * To check if the EvidenceVariable has any characteristics
+   *
+   * @returns True if the EvidenceVariable has characteristics, false otherwise
+   */
+  hasCharacteristic(): boolean {
+    return !!(
+      this.fhirResource.characteristic &&
+      this.fhirResource.characteristic.length > 0
+    );
   }
 
   /**
@@ -196,8 +236,11 @@ export class EvidenceVariableModel {
       description: this.getDescription(),
       identifier: this.getIdentifier(),
       status: this.getStatus(),
+      url: this.getUrl(),
       isExcluded: this.getExclude(),
       characteristicDescription: this.getCharacteristicDescription(),
+      hasCharacteristic: this.hasCharacteristic(),
+      libraryUrl: this.getLibraryUrl(),
     };
   }
 }
