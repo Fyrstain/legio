@@ -15,6 +15,8 @@ import { LibraryReference } from "../../../types/library.types";
 import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
 import LibraryService from "../../../services/library.service";
+// Components
+import FieldError from "../shared/FieldError";
 
 ////////////////////////////////
 //           Props            //
@@ -33,6 +35,8 @@ interface BaseEvidenceVariableFormProps {
   mode?: "create" | "update";
   // Display value for the library when in readonly mode
   libraryDisplayValue?: string;
+  // Validation errors
+  errors?: { [field: string]: string };
 }
 
 //////////////////////////////////
@@ -53,7 +57,15 @@ type StatusOption = {
 
 const BaseEvidenceVariableForm: FunctionComponent<
   BaseEvidenceVariableFormProps
-> = ({ data, onChange, readonly = false, mode, libraryDisplayValue, type }) => {
+> = ({
+  data,
+  onChange,
+  readonly = false,
+  mode,
+  libraryDisplayValue,
+  type,
+  errors,
+}) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -176,6 +188,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
                 updateTypeTranslation=""
               />
             )}
+            <FieldError error={errors?.status} />
           </Form.Group>
         </Card.Header>
         <Card.Body>
@@ -200,7 +213,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
               value={data.title || ""}
               onChange={(e) => handleFieldChange("title", e.target.value)}
               disabled={readonly}
+              isInvalid={!!errors?.title}
             />
+            <FieldError error={errors?.title} />
           </Form.Group>
 
           {/* Description field */}
@@ -213,7 +228,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
               value={data.description || ""}
               onChange={(e) => handleFieldChange("description", e.target.value)}
               disabled={readonly}
+              isInvalid={!!errors?.description}
             />
+            <FieldError error={errors?.description} />
           </Form.Group>
 
           {/* URL field */}
@@ -225,7 +242,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
               value={data.url || ""}
               onChange={(e) => handleFieldChange("url", e.target.value)}
               disabled={readonly}
+              isInvalid={!!errors?.url}
             />
+            <FieldError error={errors?.url} />
           </Form.Group>
 
           {/* Library field */}
@@ -236,22 +255,22 @@ const BaseEvidenceVariableForm: FunctionComponent<
                 type="text"
                 value={libraryDisplayValue || "N/A"}
                 disabled={readonly}
+                isInvalid={!!errors?.selectedLibrary}
               />
             ) : (
-              <>
-                <Form.Select
-                  value={data.selectedLibrary?.id || ""}
-                  onChange={handleLibraryChange}
-                >
-                  <option value="">{i18n.t("placeholder.library")}</option>
-                  {libraries.map((library) => (
-                    <option key={library.getId()} value={library.getId()}>
-                      {library.getName()} - {library.getUrl()}
-                    </option>
-                  ))}
-                </Form.Select>
-              </>
+              <Form.Select
+                value={data.selectedLibrary?.id || ""}
+                onChange={handleLibraryChange}
+              >
+                <option value="">{i18n.t("placeholder.library")}</option>
+                {libraries.map((library) => (
+                  <option key={library.getId()} value={library.getId()}>
+                    {library.getName()} - {library.getUrl()}
+                  </option>
+                ))}
+              </Form.Select>
             )}
+            <FieldError error={errors?.selectedLibrary} />
           </Form.Group>
         </Card.Body>
       </Form>

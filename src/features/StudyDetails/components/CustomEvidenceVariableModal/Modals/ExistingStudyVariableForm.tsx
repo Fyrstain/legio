@@ -7,10 +7,13 @@ import i18n from "i18next";
 // Components
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
+import FieldError from "../shared/FieldError";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -49,6 +52,12 @@ const ExistingStudyVariableForm: FunctionComponent<
   >([]);
 
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -124,20 +133,26 @@ const ExistingStudyVariableForm: FunctionComponent<
   /**
    * Validate form data
    */
-  const validateForm = (): boolean => {
-    return !!formData.selectedStudyVariable;
+  const isFormValid = (): boolean => {
+    const selectSVError = validateField(
+      "selectedStudyVariable",
+      formData.selectedStudyVariable?.id,
+      true
+    );
+    return !selectSVError;
   };
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("Existing Study Variable Data to save:", formData);
-      onSave(formData);
-    } else {
-      alert(i18n.t("errormessage.selectstudyvariable"));
+    clearErrors();
+    if (!isFormValid()) {
+      alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("Existing Study Variable Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -169,13 +184,6 @@ const ExistingStudyVariableForm: FunctionComponent<
     setHasChanges(false);
   };
 
-  /**
-   * Check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -187,7 +195,6 @@ const ExistingStudyVariableForm: FunctionComponent<
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* Study Variable Selection Card */}
@@ -202,6 +209,7 @@ const ExistingStudyVariableForm: FunctionComponent<
             <Form.Select
               value={formData.selectedStudyVariable?.id || ""}
               onChange={handleDropdownChange}
+              isInvalid={!!errors.selectedStudyVariable}
             >
               <option value="">
                 {i18n.t("placeholder.selectstudyvariable")}
@@ -212,6 +220,7 @@ const ExistingStudyVariableForm: FunctionComponent<
                 </option>
               ))}
             </Form.Select>
+            <FieldError error={errors.selectedStudyVariable} />
           </Form.Group>
 
           {/* Display selected study variable details */}

@@ -123,7 +123,8 @@
         "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
         "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
         "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
-        "fillrequiredfields": "Veuillez remplir tous les champs requis."
+        "fillrequiredfields": "Veuillez remplir tous les champs requis.",
+        "invalidurl": "URL invalide."
     },
     "message": {
         "studyupdated": "Étude modifiée avec succès!",

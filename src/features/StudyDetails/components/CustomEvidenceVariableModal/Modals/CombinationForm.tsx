@@ -7,6 +7,9 @@ import i18n from "i18next";
 // Components
 import ExcludeCard from "../shared/ExcludeCard";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
+import FieldError from "../shared/FieldError";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -51,6 +54,12 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
   });
 
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -156,28 +165,27 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
   /**
    * Validate form data
    */
-  const validateForm = (): boolean => {
-    // Check required fields
-    if (!formData.combinationId?.trim()) {
-      return false;
-    }
-    if (!formData.code) {
-      return false;
-    }
-    return true;
+  const isFormValid = (): boolean => {
+    const idError = validateField(
+      "combinationId",
+      formData.combinationId,
+      true
+    );
+    const codeError = validateField("code", formData.code, true);
+    return !(idError || codeError);
   };
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("Combination Data to save:", formData);
-      onSave(formData);
-      // Modal will be closed by parent after processing
-    } else {
+    clearErrors();
+    if (!isFormValid()) {
       alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("Combination Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -215,13 +223,6 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
     setHasChanges(false);
   };
 
-  /**
-   * Check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -233,7 +234,6 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* First Card: Exclude settings */}
@@ -256,7 +256,9 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
                 onChange={(e) =>
                   handleFieldChange("combinationId", e.target.value)
                 }
+                isInvalid={!!errors?.combinationId}
               />
+              <FieldError error={errors?.combinationId} />
             </Form.Group>
 
             {/* Logic type selection */}
@@ -265,6 +267,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
               <Form.Select
                 value={getCurrentLogicType()}
                 onChange={handleLogicTypeChange}
+                isInvalid={!!errors?.code}
               >
                 <option value="" disabled hidden>
                   {i18n.t("placeholder.logicaloperator")}
@@ -275,6 +278,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
+              <FieldError error={errors?.code} />
             </Form.Group>
           </Form>
         </Card.Body>

@@ -7,10 +7,13 @@ import i18n from "i18next";
 // Components
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
+import FieldError from "../shared/FieldError";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -49,6 +52,12 @@ const ExistingCanonicalForm: FunctionComponent<
   >([]);
 
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -124,20 +133,26 @@ const ExistingCanonicalForm: FunctionComponent<
   /**
    * Validate form data
    */
-  const validateForm = (): boolean => {
-    return !!formData.selectedEvidenceVariable;
+  const isFormValid = (): boolean => {
+    const selectEVError = validateField(
+      "selectedEvidenceVariable",
+      formData.selectedEvidenceVariable?.id,
+      true
+    );
+    return !selectEVError;
   };
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("Existing Canonical Data to save:", formData);
-      onSave(formData);
-    } else {
-      alert(i18n.t("errormessage.selectevidencevariable"));
+    clearErrors();
+    if (!isFormValid()) {
+      alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("Existing Inclusion Criteria Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -169,13 +184,6 @@ const ExistingCanonicalForm: FunctionComponent<
     setHasChanges(false);
   };
 
-  /**
-   * Check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -187,7 +195,6 @@ const ExistingCanonicalForm: FunctionComponent<
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* Second Card: Evidence Variable Selection */}
@@ -202,6 +209,7 @@ const ExistingCanonicalForm: FunctionComponent<
             <Form.Select
               value={formData.selectedEvidenceVariable?.id || ""}
               onChange={handleDropdownChange}
+              isInvalid={!!errors.selectedEvidenceVariable}
             >
               <option value="">{i18n.t("placeholder.selectcriteria")}</option>
               {evidenceVariables.map((evidenceVariable) => (
@@ -210,7 +218,10 @@ const ExistingCanonicalForm: FunctionComponent<
                 </option>
               ))}
             </Form.Select>
+            <FieldError error={errors.selectedEvidenceVariable} />
           </Form.Group>
+
+          {/* Display selected evidence variable details */}
           {formData.selectedEvidenceVariable && (
             <BaseEvidenceVariableForm
               key={formData.selectedEvidenceVariable.id}

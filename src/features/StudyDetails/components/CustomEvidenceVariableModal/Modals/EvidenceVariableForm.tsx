@@ -7,6 +7,8 @@ import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -51,6 +53,12 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
 
   // State to track if there are unsaved changes
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -103,34 +111,31 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
   /**
    * To validate the form before saving
    */
-  const validateForm = (): boolean => {
-    // TODO : Implement validation logic and errors
-    // Basic validation, to be extended as needed
-    const requiredFields = ["title", "description", "status"];
-    for (const field of requiredFields) {
-      const value = formData[field as keyof FormEvidenceVariableData];
-      if (!value || (typeof value === "string" && !value.trim())) {
-        return false;
-      }
-    }
-    if (!formData.selectedLibrary) {
-      return false;
-    }
-    return true;
+  const isFormValid = (): boolean => {
+    const titleError = validateField("title", formData.title, true);
+    const descError = validateField("description", formData.description, true);
+    const statusError = validateField("status", formData.status, true);
+    const libError = validateField(
+      "selectedLibrary",
+      formData.selectedLibrary?.id,
+      true
+    );
+    const urlError = validateField("url", formData.url);
+    // Return true if no errors
+    return !(titleError || descError || statusError || libError || urlError);
   };
 
   /**
    * Handle save action
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("Study Variable Data to save:", formData);
-      onSave(formData);
-      // The modal will be closed by the parent after processing
-    } else {
-      // Show an error message or highlight missing fields
+    clearErrors();
+    if (!isFormValid()) {
       alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("EvidenceVariable Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -172,13 +177,6 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
     setHasChanges(false);
   };
 
-  /**
-   * To check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -190,7 +188,6 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* The component for the form using the base form */}
@@ -198,6 +195,7 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
         data={formData}
         onChange={handleFormChange}
         type={type}
+        errors={errors}
       />
     </BaseModalWrapper>
   );

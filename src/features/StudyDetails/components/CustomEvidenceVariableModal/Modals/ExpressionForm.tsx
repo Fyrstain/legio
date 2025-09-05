@@ -8,8 +8,12 @@ import i18n from "i18next";
 import ExcludeCard from "../shared/ExcludeCard";
 import ConditionalFieldsContainer from "../Forms/ConditionalFieldsContainer";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
+import FieldError from "../shared/FieldError";
 // Types
-import { LibraryReference, LibraryParameter } from "../../../types/library.types";
+import {
+  LibraryReference,
+  LibraryParameter,
+} from "../../../types/library.types";
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // Models
 import { LibraryModel } from "../../../../../shared/models/Library.model";
@@ -17,6 +21,8 @@ import { LibraryModel } from "../../../../../shared/models/Library.model";
 import LibraryService from "../../../services/library.service";
 // Utils
 import { getUITypeFromLibraryParameter } from "../../../../../shared/utils/libraryParameterMapping";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -79,7 +85,14 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
     LibraryParameter[]
   >([]);
   const [loadingLibraries, setLoadingLibraries] = useState(false);
+
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -250,33 +263,38 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
   /**
    * Validate form data
    */
-  const validateForm = (): boolean => {
-    // Check required fields
-    if (!formData.expressionDescription?.trim()) {
-      return false;
-    }
-
-    if (!formData.selectedLibrary) {
-      return false;
-    }
-
-    if (!formData.selectedExpression?.trim()) {
-      return false;
-    }
-
-    return true;
+  const isFormValid = (): boolean => {
+    // Check for validation errors
+    const descError = validateField(
+      "expressionDescription",
+      formData.expressionDescription,
+      true
+    );
+    const libError = validateField(
+      "selectedLibrary",
+      formData.selectedLibrary?.id,
+      true
+    );
+    const exprError = validateField(
+      "selectedExpression",
+      formData.selectedExpression,
+      true
+    );
+    // Return true if no errors
+    return !(descError || libError || exprError);
   };
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("Expression Data to save:", formData);
-      onSave(formData);
-    } else {
+    clearErrors();
+    if (!isFormValid()) {
       alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("Expression Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -305,13 +323,6 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
     setHasChanges(false);
   };
 
-  /**
-   * Check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -323,7 +334,6 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* First Card: Exclude settings */}
@@ -373,7 +383,9 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                 onChange={(e) =>
                   handleFieldChange("expressionDescription", e.target.value)
                 }
+                isInvalid={!!errors.expressionDescription}
               />
+              <FieldError error={errors.expressionDescription} />
             </Form.Group>
 
             {/* Library dropdown */}
@@ -383,6 +395,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                 value={formData.selectedLibrary?.id || ""}
                 onChange={handleLibrarySelectChange}
                 disabled={loadingLibraries}
+                isInvalid={!!errors.selectedLibrary}
               >
                 <option value="">{i18n.t("placeholder.library")}</option>
                 {libraries.map((library) => (
@@ -391,6 +404,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
+              <FieldError error={errors.selectedLibrary} />
             </Form.Group>
 
             {/* Expression dropdown */}
@@ -404,6 +418,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                 disabled={
                   !formData.selectedLibrary || availableExpressions.length === 0
                 }
+                isInvalid={!!errors.selectedExpression}
               >
                 <option value="">{i18n.t("placeholder.expression")}</option>
                 {availableExpressions.map((expression) => (
@@ -414,6 +429,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
+              <FieldError error={errors.selectedExpression} />
             </Form.Group>
 
             {/* Parameter dropdown */}

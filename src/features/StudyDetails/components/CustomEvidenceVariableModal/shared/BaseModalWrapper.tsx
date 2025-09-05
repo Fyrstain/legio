@@ -24,8 +24,6 @@ interface BaseModalWrapperProps {
   title: string;
   // Content to display in modal body
   children: ReactNode;
-  // Whether save button should be enabled
-  isSaveEnabled: boolean;
   // Modal size
   size?: "sm" | "lg" | "xl";
   // Custom close handler
@@ -39,7 +37,6 @@ const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = ({
   onReset,
   title,
   children,
-  isSaveEnabled,
   size = "lg",
   onClose,
 }) => {
@@ -73,7 +70,7 @@ const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = ({
       <Modal.Body>{children}</Modal.Body>
 
       <Modal.Footer>
-        <Button variant="primary" onClick={onSave} disabled={!isSaveEnabled}>
+        <Button variant="primary" onClick={onSave}>
           {i18n.t("button.save")}
         </Button>
         <Button variant="secondary" onClick={onReset}>

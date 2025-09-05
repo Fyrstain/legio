@@ -8,21 +8,23 @@ import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+// Hooks
+import { useSimpleValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
 interface CanonicalFormProps {
-  /** Afficher/masquer la modal */
+  // To show or hide the modal
   show: boolean;
-  /** Callback pour fermer la modal */
+  // Callback to hide the modal
   onHide: () => void;
-  /** Callback pour sauvegarder */
+  // Callback to save the data
   onSave: (data: CanonicalFormData) => void;
-  /** Mode de la modal */
+  // Modal mode
   mode: "create" | "update";
-  /** Données initiales (pour mode update) */
+  // Initial data (for update mode)
   initialData?: CanonicalFormData;
 }
 
@@ -54,7 +56,14 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
     },
   });
 
+  // State to track if there are unsaved changes
   const [hasChanges, setHasChanges] = useState(false);
+
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { errors, validateField, clearErrors } = useSimpleValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -115,35 +124,37 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
   };
 
   /**
-   * Validate form data
+   * Validate all fields and update errors state
+   * Returns true if the form is valid, false otherwise
    */
-  const validateForm = (): boolean => {
-    const { evidenceVariable } = formData;
-    // Check required fields for evidence variable
-    const requiredFields = ["title", "description", "status"];
-    for (const field of requiredFields) {
-      const value = evidenceVariable[field as keyof FormEvidenceVariableData];
-      if (!value || (typeof value === "string" && !value.trim())) {
-        return false;
-      }
-    }
-    // Check if library is selected
-    if (!evidenceVariable.selectedLibrary) {
-      return false;
-    }
-    return true;
+  const isFormValid = (): boolean => {
+    // To validate all fields, we need to access the evidenceVariable data
+    const ev = formData.evidenceVariable;
+    // Validate all fields
+    const titleError = validateField("title", ev.title, true);
+    const descError = validateField("description", ev.description, true);
+    const statusError = validateField("status", ev.status, true);
+    const libError = validateField(
+      "selectedLibrary",
+      ev.selectedLibrary?.id,
+      true
+    );
+    const urlError = validateField("url", ev.url);
+    // Return true if no errors
+    return !(titleError || descError || statusError || libError || urlError);
   };
 
   /**
    * Handle form submission
    */
   const handleSave = () => {
-    if (validateForm()) {
-      console.log("New Canonical Data to save:", formData);
-      onSave(formData);
-    } else {
+    clearErrors();
+    if (!isFormValid()) {
       alert(i18n.t("errormessage.fillrequiredfields"));
+      return;
     }
+    console.log("Canonical Data to save:", formData);
+    onSave(formData);
   };
 
   /**
@@ -191,13 +202,6 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
     setHasChanges(false);
   };
 
-  /**
-   * Check if save button should be enabled
-   */
-  const isSaveEnabled = (): boolean => {
-    return validateForm() && hasChanges;
-  };
-
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -209,7 +213,6 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
-      isSaveEnabled={isSaveEnabled()}
       onClose={handleClose}
     >
       {/* First Card: Exclude settings */}
@@ -221,6 +224,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
         onChange={handleEvidenceVariableChange}
         readonly={false}
         type="inclusion"
+        errors={errors}
       />
     </BaseModalWrapper>
   );

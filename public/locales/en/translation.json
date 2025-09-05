@@ -124,7 +124,8 @@
         "noobsoletevariables": "No obsolete variables found for this study.",
         "nonotobsoletevariables": "No non-obsolete variables found for this study.",
         "nocodesavailable": "No codes available for this ValueSet.",
-        "fillrequiredfields": "Please fill all required fields."
+        "fillrequiredfields": "Please fill all required fields.",
+        "invalidurl": "Invalid URL."
     },
     "message": {
         "studyupdated": "Study updated successfully.",
