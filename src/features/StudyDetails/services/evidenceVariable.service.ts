@@ -1,5 +1,5 @@
 // Resources
-import { Bundle } from "fhir/r5";
+import { Bundle, EvidenceVariable } from "fhir/r5";
 // Client
 import Client from "fhir-kit-client";
 // Model
@@ -13,10 +13,21 @@ const fhirKnowledgeClient = new Client({
   baseUrl: process.env.REACT_APP_KNOWLEDGE_URL ?? "fhir",
 });
 
-async function loadAllEvidenceVariables(): Promise<Bundle> {
-  return fhirKnowledgeClient.search({
-    resourceType: "EvidenceVariable",
-  }) as Promise<Bundle>;
+/**
+ * Load all available EvidenceVariables from the server
+ */
+async function loadAllEvidenceVariables(): Promise<EvidenceVariableModel[]> {
+  try {
+    const bundle = await fhirKnowledgeClient.search({
+      resourceType: "EvidenceVariable",
+    }) as Bundle;
+    
+    return bundle.entry?.map(
+      (entry) => new EvidenceVariableModel(entry.resource as EvidenceVariable)
+    ) || [];
+  } catch (error) {
+    throw new Error(`Error loading all evidence variables: ${error}`);
+  }
 }
 
 /**

@@ -1,23 +1,22 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Modal, Button, Form, Card } from "react-bootstrap";
+import { Form, Card } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import BaseEvidenceVariableForm from "./Forms/BaseEvidenceVariableForm";
+import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../types/evidenceVariable.types";
+import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
-import EvidenceVariableService from "../../services/evidenceVariable.service";
+import EvidenceVariableService from "../../../services/evidenceVariable.service";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface ExistingStudyVariableModalProps {
+interface ExistingStudyVariableFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
@@ -34,8 +33,8 @@ interface ExistingStudyVariableFormData {
   selectedStudyVariable?: FormEvidenceVariableData;
 }
 
-const ExistingStudyVariableModal: FunctionComponent<
-  ExistingStudyVariableModalProps
+const ExistingStudyVariableForm: FunctionComponent<
+  ExistingStudyVariableFormProps
 > = ({ show, onHide, onSave, mode = "create", initialData }) => {
   ////////////////////////////////
   //           State            //
@@ -73,20 +72,20 @@ const ExistingStudyVariableModal: FunctionComponent<
    * Load StudyVariable data on component mount.
    */
   useEffect(() => {
-    const loadStudyVariables = async () => {
-      try {
-        const models = await EvidenceVariableService.loadEvidenceVariables(
-          "",
-          "study"
-        );
-        const displayObjects = models.map((model) => model.toDisplayObject());
-        setStudyVariables(displayObjects);
-      } catch (error) {
-        console.error("Error loading study variables:", error);
-      }
-    };
-    loadStudyVariables();
-  }, []);
+    if (show) {
+      const loadStudyVariables = async () => {
+        try {
+          const models =
+            await EvidenceVariableService.loadAllEvidenceVariables();
+          const displayObjects = models.map((model) => model.toDisplayObject());
+          setStudyVariables(displayObjects);
+        } catch (error) {
+          console.error("Error loading study variables:", error);
+        }
+      };
+      loadStudyVariables();
+    }
+  }, [show]);
 
   ////////////////////////////////
   //          Actions           //
@@ -182,69 +181,56 @@ const ExistingStudyVariableModal: FunctionComponent<
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
-
-      <Modal.Body>
-        {/* Study Variable Selection Card */}
-        <Card>
-          <Card.Header>
-            <Card.Title>{i18n.t("title.studyvariable")}</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            {/* StudyVariable dropdown */}
-            <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.studyvariable")} *</Form.Label>
-              <Form.Select
-                value={formData.selectedStudyVariable?.id || ""}
-                onChange={handleDropdownChange}
-              >
-                <option value="">
-                  {i18n.t("placeholder.selectstudyvariable")}
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
+      {/* Study Variable Selection Card */}
+      <Card>
+        <Card.Header>
+          <Card.Title>{i18n.t("title.studyvariable")}</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          {/* StudyVariable dropdown */}
+          <Form.Group className="mb-3">
+            <Form.Label>{i18n.t("label.studyvariable")} *</Form.Label>
+            <Form.Select
+              value={formData.selectedStudyVariable?.id || ""}
+              onChange={handleDropdownChange}
+            >
+              <option value="">
+                {i18n.t("placeholder.selectstudyvariable")}
+              </option>
+              {studyVariables.map((studyVariable) => (
+                <option key={studyVariable.id} value={studyVariable.id}>
+                  {studyVariable.title} - {studyVariable.url}
                 </option>
-                {studyVariables.map((studyVariable) => (
-                  <option key={studyVariable.id} value={studyVariable.id}>
-                    {studyVariable.title} - {studyVariable.url}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+              ))}
+            </Form.Select>
+          </Form.Group>
 
-            {/* Display selected study variable details */}
-            {formData.selectedStudyVariable && (
-              <BaseEvidenceVariableForm
-                key={formData.selectedStudyVariable.id}
-                data={formData.selectedStudyVariable}
-                onChange={() => {}}
-                readonly={true}
-                type="study"
-                libraryDisplayValue={
-                  formData.selectedStudyVariable.libraryUrl || "N/A"
-                }
-              />
-            )}
-          </Card.Body>
-        </Card>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+          {/* Display selected study variable details */}
+          {formData.selectedStudyVariable && (
+            <BaseEvidenceVariableForm
+              key={formData.selectedStudyVariable.id}
+              data={formData.selectedStudyVariable}
+              onChange={() => {}}
+              readonly={true}
+              type="study"
+              libraryDisplayValue={
+                formData.selectedStudyVariable.libraryUrl || "N/A"
+              }
+            />
+          )}
+        </Card.Body>
+      </Card>
+    </BaseModalWrapper>
   );
 };
 
-export default ExistingStudyVariableModal;
+export default ExistingStudyVariableForm;

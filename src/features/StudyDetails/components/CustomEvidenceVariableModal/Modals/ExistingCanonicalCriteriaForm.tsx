@@ -1,51 +1,48 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Modal, Button, Form, Card } from "react-bootstrap";
+import { Form, Card } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ExcludeCard from "./Forms/ExcludeCard";
-import BaseEvidenceVariableForm from "./Forms/BaseEvidenceVariableForm";
+import ExcludeCard from "../shared/ExcludeCard";
+import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../types/evidenceVariable.types";
+import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
-import EvidenceVariableService from "../../services/evidenceVariable.service";
+import EvidenceVariableService from "../../../services/evidenceVariable.service";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface ExistingInclusionCriteriaModalProps {
+interface ExistingCanonicalCriteriaFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
   onHide: () => void;
   // Callback to save the data
-  onSave: (data: ExistingInclusionCriteriaFormData) => void;
-  // To indicate if the modal is for a canonical inclusion criteria or a simple inclusion criteria
-  isCanonical?: boolean;
+  onSave: (data: ExistingCanonicalCriteriaFormData) => void;
   // Modal mode
   mode: "create" | "update";
   // Initial data (for update mode)
-  initialData?: ExistingInclusionCriteriaFormData;
+  initialData?: ExistingCanonicalCriteriaFormData;
 }
 
-interface ExistingInclusionCriteriaFormData {
+interface ExistingCanonicalCriteriaFormData {
   exclude: boolean;
   selectedEvidenceVariable?: FormEvidenceVariableData;
 }
 
-const ExistingCanonicalModal: FunctionComponent<
-  ExistingInclusionCriteriaModalProps
-> = ({ show, onHide, onSave, mode = "create", initialData, isCanonical }) => {
+const ExistingCanonicalCriteriaForm: FunctionComponent<
+  ExistingCanonicalCriteriaFormProps
+> = ({ show, onHide, onSave, mode = "create", initialData }) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
 
-  const [formData, setFormData] = useState<ExistingInclusionCriteriaFormData>({
+  const [formData, setFormData] = useState<ExistingCanonicalCriteriaFormData>({
     exclude: false,
     selectedEvidenceVariable: undefined,
   });
@@ -76,23 +73,23 @@ const ExistingCanonicalModal: FunctionComponent<
   }, [show, mode, initialData]);
 
   /**
-   * Load EvidenceVariable data on component mount.
+   * Load EvidenceVariable data when modal opens.
    */
   useEffect(() => {
-    const loadEvidenceVariables = async () => {
-      try {
-        const models = await EvidenceVariableService.loadEvidenceVariables(
-          "",
-          "inclusion"
-        );
-        const displayObjects = models.map((model) => model.toDisplayObject());
-        setEvidenceVariables(displayObjects);
-      } catch (error) {
-        console.error("Error loading evidence variables:", error);
-      }
-    };
-    loadEvidenceVariables();
-  }, []);
+    if (show) {
+      const loadEvidenceVariables = async () => {
+        try {
+          const models =
+            await EvidenceVariableService.loadAllEvidenceVariables();
+          const displayObjects = models.map((model) => model.toDisplayObject());
+          setEvidenceVariables(displayObjects);
+        } catch (error) {
+          console.error("Error loading evidence variables:", error);
+        }
+      };
+      loadEvidenceVariables();
+    }
+  }, [show]);
 
   ////////////////////////////////
   //          Actions           //
@@ -148,7 +145,7 @@ const ExistingCanonicalModal: FunctionComponent<
    */
   const handleSave = () => {
     if (validateForm()) {
-      console.log("Existing Canonical Data to save:", formData);
+      console.log("Existing Canonical Criteria Data to save:", formData);
       onSave(formData);
     } else {
       alert(i18n.t("errormessage.selectevidencevariable"));
@@ -198,73 +195,57 @@ const ExistingCanonicalModal: FunctionComponent<
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
+      {/* First Card: Exclude settings */}
+      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 
-      <Modal.Body>
-        {/* First Card: Exclude settings */}
-        {isCanonical && (
-            <ExcludeCard
-              exclude={formData.exclude}
-              onChange={handleExcludeChange}
+      {/* Second Card: Evidence Variable Selection */}
+      <Card>
+        <Card.Header>
+          <Card.Title>{i18n.t("title.criteria")}</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          {/* EvidenceVariable dropdown */}
+          <Form.Group className="mb-3">
+            <Form.Label>{i18n.t("label.criteria")} *</Form.Label>
+            <Form.Select
+              value={formData.selectedEvidenceVariable?.id || ""}
+              onChange={handleDropdownChange}
+            >
+              <option value="">{i18n.t("placeholder.selectcriteria")}</option>
+              {evidenceVariables.map((evidenceVariable) => (
+                <option key={evidenceVariable.id} value={evidenceVariable.id}>
+                  {evidenceVariable.title} - {evidenceVariable.url}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+
+          {/* Display selected evidence variable details */}
+          {formData.selectedEvidenceVariable && (
+            <BaseEvidenceVariableForm
+              key={formData.selectedEvidenceVariable.id}
+              data={formData.selectedEvidenceVariable}
+              onChange={() => {}}
+              readonly={true}
+              type="inclusion"
+              libraryDisplayValue={
+                formData.selectedEvidenceVariable.libraryUrl || "N/A"
+              }
             />
-        )}
-
-        {/* Second Card: Evidence Variable Selection */}
-        <Card>
-          <Card.Header>
-            <Card.Title>{i18n.t("title.criteria")}</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            {/* EvidenceVariable dropdown */}
-            <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.criteria")} *</Form.Label>
-              <Form.Select
-                value={formData.selectedEvidenceVariable?.id || ""}
-                onChange={handleDropdownChange}
-              >
-                <option value="">{i18n.t("placeholder.selectcriteria")}</option>
-                {evidenceVariables.map((evidenceVariable) => (
-                  <option key={evidenceVariable.id} value={evidenceVariable.id}>
-                    {evidenceVariable.title} - {evidenceVariable.url}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            {formData.selectedEvidenceVariable && (
-              <BaseEvidenceVariableForm
-                key={formData.selectedEvidenceVariable.id}
-                data={formData.selectedEvidenceVariable}
-                onChange={() => {}}
-                readonly={true}
-                type="inclusion"
-                libraryDisplayValue={
-                  formData.selectedEvidenceVariable.libraryUrl || "N/A"
-                }
-              />
-            )}
-          </Card.Body>
-        </Card>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+          )}
+        </Card.Body>
+      </Card>
+    </BaseModalWrapper>
   );
 };
 
-export default ExistingCanonicalModal;
+export default ExistingCanonicalCriteriaForm;

@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
-// import CustomEvidenceVariableModal from "../components/CustomEvidenceVariableModal/CustomEvidenceVariableModal";
 // Services
 import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -39,12 +38,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 // Fhir
 import Client from "fhir-kit-client";
-import StudyVariableModal from "../components/CustomEvidenceVariableModal/StudyVariableModal";
-import CombinationModal from "../components/CustomEvidenceVariableModal/CombinationModal";
-import ExpressionModal from "../components/CustomEvidenceVariableModal/ExpressionModal";
-import ExistingInclusionCriteriaModal from "../components/CustomEvidenceVariableModal/ExistingInclusionCriteriaModal";
-import NewCanonicalModal from "../components/CustomEvidenceVariableModal/NewCanonicalModal";
-import ExistingStudyVariableModal from "../components/CustomEvidenceVariableModal/ExistingStudyVariableModal";
+
+// Tests Modals
+import EvidenceVariableForm from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableForm";
+import CombinationForm from "../components/CustomEvidenceVariableModal/Modals/CombinationForm";
+import ExpressionForm from "../components/CustomEvidenceVariableModal/Modals/ExpressionForm";
+import ExistingInclusionCriteriaModal from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
+import CanonicalForm from "../components/CustomEvidenceVariableModal/Modals/CanonicalForm";
+import ExistingStudyVariableForm from "../components/CustomEvidenceVariableModal/Modals/ExistingStudyVariableForm";
+import ExistingCanonicalCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingCanonicalCriteriaForm";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -119,9 +121,13 @@ const StudyDetails: FunctionComponent = () => {
   const [showExistingStudyVariableModal, setShowExistingStudyVariableModal] =
     useState(false);
   const [showStudyVariableModal, setShowStudyVariableModal] = useState(false);
+  const [showExistingCriteriaModal, setShowExistingCriteriaModal] =
+    useState(false);
+  const [showNewCriteriaModal, setShowNewCriteriaModal] = useState(false);
   const [showCombinationModal, setShowCombinationModal] = useState(false);
   const [showExpressionModal, setShowExpressionModal] = useState(false);
-  const [showExistingCanonicalModal, setShowExistingCanonicalModal] = useState(false);
+  const [showExistingCanonicalModal, setShowExistingCanonicalModal] =
+    useState(false);
   const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
 
   //////////////////////////////
@@ -140,10 +146,12 @@ const StudyDetails: FunctionComponent = () => {
   ////////////////////////////////
 
   useEffect(() => {
-    loadStudy();
-    loadEvidenceVariablesHandler("inclusion");
-    loadEvidenceVariablesHandler("study");
-  }, []);
+    if (studyId) {
+      loadStudy();
+      loadEvidenceVariablesHandler("inclusion");
+      loadEvidenceVariablesHandler("study");
+    }
+  }, [studyId]);
 
   ////////////////////////////////
   //           Actions          //
@@ -573,35 +581,12 @@ const StudyDetails: FunctionComponent = () => {
           </Button>
         </div>
         {/* TODO : Delete this button, it's only to test the modal */}
-        {/* <Button
-          variant="secondary"
-          className="mt-3"
-          onClick={() => setShowModal(true)}
-        >
-          TEST MODAL
-        </Button>
-        <CustomEvidenceVariableModal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          // Mode can be "create" or "update"
-          mode="create"
-          // Logic can be "AND", "OR", or "XOR"
-          logicType="OR"
-          // Type can be "inclusion" or "study"
-          evidenceVariableType="study"
-          // Can be "firstGroup", "inclusionCriteria", or "subGroup"
-          // study (RAS, je "save", la modal se ferme, ja la rouvre, je retrouve mes données)
-          // firstGroup (je clique sur save, ma modals se ferme, je la rouve, je ne retrouve pas mes données)
-          // subGroup, je clique sur save, rien ne se passe
-          // inclusionCriteria, clique sur save, rien ne se passe
-          formType="subGroup"
-        /> */}
 
         {/* To test the ExistingStudyVariableForm modal */}
         <Button onClick={() => setShowExistingStudyVariableModal(true)}>
-          Test Existing Study Variable Modal
+          Add Existing Study Variable
         </Button>
-        <ExistingStudyVariableModal
+        <ExistingStudyVariableForm
           show={showExistingStudyVariableModal}
           onHide={() => setShowExistingStudyVariableModal(false)}
           onSave={(data) => {
@@ -613,9 +598,9 @@ const StudyDetails: FunctionComponent = () => {
 
         {/* To test the StudyVariableForm modal */}
         <Button onClick={() => setShowStudyVariableModal(true)}>
-          Test Study Variable Modal
+          Add NEW Study Variable
         </Button>
-        <StudyVariableModal
+        <EvidenceVariableForm
           show={showStudyVariableModal}
           onHide={() => setShowStudyVariableModal(false)}
           onSave={(data) => {
@@ -623,13 +608,43 @@ const StudyDetails: FunctionComponent = () => {
             setShowStudyVariableModal(false);
           }}
           mode="create"
+          type="study"
+        />
+
+        {/* To test the modal to add a new criteria */}
+        <Button onClick={() => setShowNewCriteriaModal(true)}>
+          Add NEW Inclusion Criteria
+        </Button>
+        <EvidenceVariableForm
+          show={showNewCriteriaModal}
+          onHide={() => setShowNewCriteriaModal(false)}
+          onSave={(data) => {
+            console.log("Saving new criteria:", data);
+            setShowNewCriteriaModal(false);
+          }}
+          mode="create"
+          type="inclusion"
+        />
+
+        {/* To test the NewInclusionCriteriaForm modal */}
+        <Button onClick={() => setShowExistingCriteriaModal(true)}>
+          Add Existing Inclusion Criteria
+        </Button>
+        <ExistingInclusionCriteriaModal
+          show={showExistingCriteriaModal}
+          onHide={() => setShowExistingCriteriaModal(false)}
+          onSave={(data) => {
+            console.log("Saving existing criteria:", data);
+            setShowExistingCriteriaModal(false);
+          }}
+          mode="create"
         />
 
         {/* To test the CombinationForm modal */}
         <Button onClick={() => setShowCombinationModal(true)}>
-          Test Combination Modal
+          Add Combination
         </Button>
-        <CombinationModal
+        <CombinationForm
           show={showCombinationModal}
           onHide={() => setShowCombinationModal(false)}
           onSave={(data) => {
@@ -641,9 +656,9 @@ const StudyDetails: FunctionComponent = () => {
 
         {/* To test the ExpressionForm modal */}
         <Button onClick={() => setShowExpressionModal(true)}>
-          Test Expresion Modal
+          Add Expression
         </Button>
-        <ExpressionModal
+        <ExpressionForm
           show={showExpressionModal}
           onHide={() => setShowExpressionModal(false)}
           onSave={(data) => {
@@ -655,9 +670,9 @@ const StudyDetails: FunctionComponent = () => {
 
         {/* To test the ExistingCanonicalModal */}
         <Button onClick={() => setShowExistingCanonicalModal(true)}>
-          Test Existing Canonical Modal
+          Add Existing Canonical Modal
         </Button>
-        <ExistingInclusionCriteriaModal
+        <ExistingCanonicalCriteriaForm
           show={showExistingCanonicalModal}
           onHide={() => setShowExistingCanonicalModal(false)}
           onSave={(data) => {
@@ -665,14 +680,13 @@ const StudyDetails: FunctionComponent = () => {
             setShowExistingCanonicalModal(false);
           }}
           mode="create"
-          isCanonical={false}
         />
 
         {/* To test the NewCanonicalModal */}
         <Button onClick={() => setShowNewCanonicalModal(true)}>
-          Test New Canonical Modal
+          Add New Canonical Modal
         </Button>
-        <NewCanonicalModal
+        <CanonicalForm
           show={showNewCanonicalModal}
           onHide={() => setShowNewCanonicalModal(false)}
           onSave={(data) => {

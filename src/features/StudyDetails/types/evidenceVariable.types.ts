@@ -43,30 +43,6 @@ interface EvidenceVariableSectionProps {
 }
 
 /**
- * Type for the type of EvidenceVariable
- */
-type EvidenceVariableType = "inclusion" | "study";
-
-/**
- * Type to distinguish between the three types of forms
- *
- * firstGroup = EvidenceVariable header
- * inclusionCriteria = Inclusion Criteria simple
- * subGroup = Subgroup created in the EV header
- */
-type EvidenceVariableFormType = "firstGroup" | "inclusionCriteria" | "subGroup";
-
-/**
- * Type for the Modal mode
- */
-type ModalMode = "create" | "update";
-
-/**
- * Type for the logic type of EvidenceVariable
- */
-type EvidenceVariableLogicType = "XOR" | "OR" | "AND";
-
-/**
  * Type for the inclusion criteria types
  */
 type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code";
@@ -113,10 +89,6 @@ export type {
   EvidenceVariableFormData,
   FormEvidenceVariableData,
   EvidenceVariableSectionProps,
-  EvidenceVariableType,
-  EvidenceVariableFormType,
-  ModalMode,
-  EvidenceVariableLogicType,
   InclusionCriteriaTypes,
   IntegerOperatorType,
   DateOperatorType,

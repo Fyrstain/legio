@@ -2,7 +2,7 @@
 import { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Components
-import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
 // React Bootstrap
 import { Alert, Form } from "react-bootstrap";
 // FontAwesome
@@ -15,11 +15,11 @@ import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // FHIR
 import Client from "fhir-kit-client";
 // Types
-import { CodeOperatorType } from "../../../types/evidenceVariable.types";
+import { CodeOperatorType } from "../../../../types/evidenceVariable.types";
 // Resources
 import { ValueSet } from "fhir/r5";
 // Services
-import ValueSetService from "../../../services/valueSet.service";
+import ValueSetService from "../../../../services/valueSet.service";
 
 const CodeField: FunctionComponent<{
   value: InclusionCriteriaValue;

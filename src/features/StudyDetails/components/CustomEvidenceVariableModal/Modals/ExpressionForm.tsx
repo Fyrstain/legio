@@ -1,29 +1,28 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Modal, Button, Form, Card } from "react-bootstrap";
+import { Form, Card } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ExcludeCard from "./Forms/ExcludeCard";
-import ConditionalFieldsContainer from "./ConditionalFieldsContainer";
+import ExcludeCard from "../shared/ExcludeCard";
+import ConditionalFieldsContainer from "../Forms/ConditionalFieldsContainer";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { LibraryReference, LibraryParameter } from "../../types/library.types";
-import { InclusionCriteriaValue } from "../../types/evidenceVariable.types";
+import { LibraryReference, LibraryParameter } from "../../../types/library.types";
+import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // Models
-import { LibraryModel } from "../../../../shared/models/Library.model";
+import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
-import LibraryService from "../../services/library.service";
+import LibraryService from "../../../services/library.service";
 // Utils
-import { getUITypeFromLibraryParameter } from "../../../../shared/utils/libraryParameterMapping";
+import { getUITypeFromLibraryParameter } from "../../../../../shared/utils/libraryParameterMapping";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface ExpressionModalProps {
+interface ExpressionFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to close the modal
@@ -47,7 +46,7 @@ interface ExpressionFormData {
   criteriaValue?: InclusionCriteriaValue;
 }
 
-const ExpressionModal: FunctionComponent<ExpressionModalProps> = ({
+const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
   show,
   onHide,
   onSave,
@@ -172,7 +171,6 @@ const ExpressionModal: FunctionComponent<ExpressionModalProps> = ({
   const handleFieldChange = (field: keyof ExpressionFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
-
     // Reset dependent fields when library changes
     if (field === "selectedLibrary") {
       setFormData((prev) => ({
@@ -182,7 +180,6 @@ const ExpressionModal: FunctionComponent<ExpressionModalProps> = ({
         criteriaValue: undefined,
       }));
     }
-
     // Reset parameter-dependent fields when expression changes
     if (field === "selectedExpression") {
       setFormData((prev) => ({
@@ -320,158 +317,140 @@ const ExpressionModal: FunctionComponent<ExpressionModalProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
+      {/* First Card: Exclude settings */}
+      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 
-      <Modal.Body>
-        {/* First Card: Exclude settings */}
-        <ExcludeCard
-          exclude={formData.exclude}
-          onChange={handleExcludeChange}
-        />
+      {/* Second Card: Expression definition */}
+      <Card>
+        <Card.Header>
+          <Card.Title>{i18n.t("title.expressiondefinition")}</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Form>
+            {/* ID field */}
+            <Form.Group className="mb-3">
+              <Form.Label>ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder={i18n.t("placeholder.id")}
+                value={formData.expressionId}
+                onChange={(e) =>
+                  handleFieldChange("expressionId", e.target.value)
+                }
+              />
+            </Form.Group>
 
-        {/* Second Card: Expression definition */}
-        <Card>
-          <Card.Header>
-            <Card.Title>{i18n.t("title.expressiondefinition")}</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            <Form>
-              {/* ID field */}
-              <Form.Group className="mb-3">
-                <Form.Label>ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder={i18n.t("placeholder.id")}
-                  value={formData.expressionId}
-                  onChange={(e) =>
-                    handleFieldChange("expressionId", e.target.value)
-                  }
-                />
-              </Form.Group>
+            {/* Name field */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.name")}</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder={i18n.t("placeholder.name")}
+                value={formData.expressionName}
+                onChange={(e) =>
+                  handleFieldChange("expressionName", e.target.value)
+                }
+              />
+            </Form.Group>
 
-              {/* Name field */}
-              <Form.Group className="mb-3">
-                <Form.Label>{i18n.t("label.name")}</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder={i18n.t("placeholder.name")}
-                  value={formData.expressionName}
-                  onChange={(e) =>
-                    handleFieldChange("expressionName", e.target.value)
-                  }
-                />
-              </Form.Group>
+            {/* Description field */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.generaldescription")} *</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={i18n.t("placeholder.description")}
+                value={formData.expressionDescription}
+                onChange={(e) =>
+                  handleFieldChange("expressionDescription", e.target.value)
+                }
+              />
+            </Form.Group>
 
-              {/* Description field */}
-              <Form.Group className="mb-3">
-                <Form.Label>{i18n.t("label.generaldescription")} *</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder={i18n.t("placeholder.description")}
-                  value={formData.expressionDescription}
-                  onChange={(e) =>
-                    handleFieldChange("expressionDescription", e.target.value)
-                  }
-                />
-              </Form.Group>
+            {/* Library dropdown */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.library")} *</Form.Label>
+              <Form.Select
+                value={formData.selectedLibrary?.id || ""}
+                onChange={handleLibrarySelectChange}
+                disabled={loadingLibraries}
+              >
+                <option value="">{i18n.t("placeholder.library")}</option>
+                {libraries.map((library) => (
+                  <option key={library.getId()} value={library.getId()}>
+                    {library.getName()} - {library.getUrl()}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-              {/* Library dropdown */}
-              <Form.Group className="mb-3">
-                <Form.Label>{i18n.t("label.library")} *</Form.Label>
-                <Form.Select
-                  value={formData.selectedLibrary?.id || ""}
-                  onChange={handleLibrarySelectChange}
-                  disabled={loadingLibraries}
-                >
-                  <option value="">{i18n.t("placeholder.library")}</option>
-                  {libraries.map((library) => (
-                    <option key={library.getId()} value={library.getId()}>
-                      {library.getName()} - {library.getUrl()}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+            {/* Expression dropdown */}
+            <Form.Group className="mb-3">
+              <Form.Label>Expression *</Form.Label>
+              <Form.Select
+                value={formData.selectedExpression || ""}
+                onChange={(e) =>
+                  handleFieldChange("selectedExpression", e.target.value)
+                }
+                disabled={
+                  !formData.selectedLibrary || availableExpressions.length === 0
+                }
+              >
+                <option value="">{i18n.t("placeholder.expression")}</option>
+                {availableExpressions.map((expression) => (
+                  <option key={expression.name} value={expression.name}>
+                    {expression.name}
+                    {expression.documentation &&
+                      ` - ${expression.documentation}`}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-              {/* Expression dropdown */}
-              <Form.Group className="mb-3">
-                <Form.Label>Expression *</Form.Label>
-                <Form.Select
-                  value={formData.selectedExpression || ""}
-                  onChange={(e) =>
-                    handleFieldChange("selectedExpression", e.target.value)
-                  }
-                  disabled={
-                    !formData.selectedLibrary ||
-                    availableExpressions.length === 0
-                  }
-                >
-                  <option value="">{i18n.t("placeholder.expression")}</option>
-                  {availableExpressions.map((expression) => (
-                    <option key={expression.name} value={expression.name}>
-                      {expression.name}
-                      {expression.documentation &&
-                        ` - ${expression.documentation}`}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+            {/* Parameter dropdown */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.parameter")}</Form.Label>
+              <Form.Select
+                value={formData.selectedParameter || ""}
+                onChange={handleParameterSelectChange}
+                disabled={
+                  !formData.selectedLibrary || availableParameters.length === 0
+                }
+              >
+                <option value="">{i18n.t("placeholder.parameter")}</option>
+                {availableParameters.map((parameter) => (
+                  <option
+                    key={parameter.name}
+                    value={parameter.name}
+                    title={parameter.documentation}
+                  >
+                    {parameter.name} ({parameter.type})
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-              {/* Parameter dropdown */}
-              <Form.Group className="mb-3">
-                <Form.Label>{i18n.t("label.parameter")}</Form.Label>
-                <Form.Select
-                  value={formData.selectedParameter || ""}
-                  onChange={handleParameterSelectChange}
-                  disabled={
-                    !formData.selectedLibrary ||
-                    availableParameters.length === 0
-                  }
-                >
-                  <option value="">{i18n.t("placeholder.parameter")}</option>
-                  {availableParameters.map((parameter) => (
-                    <option
-                      key={parameter.name}
-                      value={parameter.name}
-                      title={parameter.documentation}
-                    >
-                      {parameter.name} ({parameter.type})
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-
-              {/* Conditional Fields for parameter configuration */}
-              {formData.selectedParameter && formData.criteriaValue && (
-                <ConditionalFieldsContainer
-                  value={formData.criteriaValue}
-                  onChange={handleCriteriaValueChange}
-                />
-              )}
-            </Form>
-          </Card.Body>
-        </Card>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+            {/* Conditional Fields for parameter configuration */}
+            {formData.selectedParameter && formData.criteriaValue && (
+              <ConditionalFieldsContainer
+                value={formData.criteriaValue}
+                onChange={handleCriteriaValueChange}
+              />
+            )}
+          </Form>
+        </Card.Body>
+      </Card>
+    </BaseModalWrapper>
   );
 };
 
-export default ExpressionModal;
+export default ExpressionForm;

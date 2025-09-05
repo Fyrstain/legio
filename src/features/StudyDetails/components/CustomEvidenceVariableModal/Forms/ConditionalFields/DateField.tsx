@@ -4,7 +4,7 @@ import { FunctionComponent } from "react";
 import {
   DateOperatorType,
   InclusionCriteriaValue,
-} from "../../../types/evidenceVariable.types";
+} from "../../../../types/evidenceVariable.types";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation

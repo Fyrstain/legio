@@ -28,16 +28,17 @@
         "update": "Update",
         "aninclusioncriteria": "an Inclusion Criteria",
         "astudyvariable": "a Study Variable",
-        "subgroup": "Sub-group",
-        "asubgroup": "a Sub-group",
         "criteria": "Criteria",
-        "thefirstgroup": "the First Group",
         "characteristicinclusion": "Characteristic Inclusion or Exclusion",
         "combinationdefinition": "Combination Definition",
         "acombination": "a Combination",
         "anexpression": "an Expression",
         "expressiondefinition": "Expression Definition",
-        "existingcanonicalcriteria": "Existing Canonical Criteria"
+        "existingcanonicalcriteria": "Existing Canonical Criteria",
+        "existingstudyvariable": "Existing Study Variable",
+        "studyvariable": "Study Variable",
+        "existingcriteria": "an existing Criteria",
+        "newcanonicalcriteria": "New Canonical Criteria"
     },
     "footer": {
         "items": {
@@ -106,7 +107,8 @@
         "and": "AND",
         "or": "OR",
         "xor": "XOR",
-        "criteria": "Criteria"
+        "criteria": "Criteria",
+        "studyvariable": "Study Variable"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -135,7 +137,6 @@
         "library": "-- Select a library --",
         "expression": "-- Select an expression --",
         "criteriatype": "-- Select a criteria type --",
-        "selectcriteriatype": "-- Select a criteria type --",
         "logicaloperator": "-- Select a logical operator --",
         "value": "Please fill in the value",
         "minvalue": "Minimum value",
@@ -146,9 +147,9 @@
         "choosestatus": "Choose a status",
         "identifier": "Please fill in the identifier",
         "parameter": "-- Select a parameter --",
-        "subgroupdescription": "Please fill in the subgroup description",
         "url": "Please fill in the URL",
         "id": "Please fill in the ID",
-        "selectcriteria": "-- Select a criteria --"
+        "selectcriteria": "-- Select a criteria --",
+        "selectstudyvariable": "-- Select a study variable --"
     }
 }

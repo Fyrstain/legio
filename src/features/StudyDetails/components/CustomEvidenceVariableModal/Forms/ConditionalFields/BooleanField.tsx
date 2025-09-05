@@ -1,7 +1,7 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation

@@ -1,19 +1,18 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Modal, Button, Form, Card } from "react-bootstrap";
+import { Form, Card } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ExcludeCard from "./Forms/ExcludeCard";
+import ExcludeCard from "../shared/ExcludeCard";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface CombinationModalProps {
+interface CombinationFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
@@ -33,7 +32,7 @@ interface CombinationFormData {
   combinationId: string;
 }
 
-const CombinationModal: FunctionComponent<CombinationModalProps> = ({
+const CombinationForm: FunctionComponent<CombinationFormProps> = ({
   show,
   onHide,
   onSave,
@@ -228,74 +227,60 @@ const CombinationModal: FunctionComponent<CombinationModalProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
+      {/* First Card: Exclude settings */}
+      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 
-      <Modal.Body>
-        {/* First Card: Exclude settings */}
-        <ExcludeCard
-          exclude={formData.exclude}
-          onChange={handleExcludeChange}
-        />
+      {/* Second Card: Combination definition */}
+      <Card>
+        <Card.Header>
+          <Card.Title>{i18n.t("title.combinationdefinition")}</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Form>
+            {/* ID field */}
+            <Form.Group className="mb-3">
+              <Form.Label>ID *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder={i18n.t("placeholder.id")}
+                value={formData.combinationId}
+                onChange={(e) =>
+                  handleFieldChange("combinationId", e.target.value)
+                }
+              />
+            </Form.Group>
 
-        {/* Second Card: Combination definition */}
-        <Card>
-          <Card.Header>
-            <Card.Title>{i18n.t("title.combinationdefinition")}</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            <Form>
-              {/* ID field */}
-              <Form.Group className="mb-3">
-                <Form.Label>ID *</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder={i18n.t("placeholder.id")}
-                  value={formData.combinationId}
-                  onChange={(e) => handleFieldChange("combinationId", e.target.value)}
-                />
-              </Form.Group>
-
-              {/* Logic type selection */}
-              <Form.Group className="mb-3">
-                <Form.Label>{i18n.t("label.logictype")} *</Form.Label>
-                <Form.Select
-                  value={getCurrentLogicType()}
-                  onChange={handleLogicTypeChange}
-                >
-                  <option value="" disabled hidden>
-                    {i18n.t("placeholder.logicaloperator")}
+            {/* Logic type selection */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.logictype")} *</Form.Label>
+              <Form.Select
+                value={getCurrentLogicType()}
+                onChange={handleLogicTypeChange}
+              >
+                <option value="" disabled hidden>
+                  {i18n.t("placeholder.logicaloperator")}
+                </option>
+                {getLogicTypeOptions().map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
-                  {getLogicTypeOptions().map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </Card.Body>
-        </Card>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Card.Body>
+      </Card>
+    </BaseModalWrapper>
   );
 };
 
-export default CombinationModal;
+export default CombinationForm;

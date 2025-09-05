@@ -1,40 +1,37 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
-// React Bootstrap
-import { Modal, Button } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ExcludeCard from "./Forms/ExcludeCard";
-import BaseEvidenceVariableForm from "./Forms/BaseEvidenceVariableForm";
+import ExcludeCard from "../shared/ExcludeCard";
+import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../types/evidenceVariable.types";
+import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface NewCanonicalModalProps {
+interface CanonicalFormProps {
   /** Afficher/masquer la modal */
   show: boolean;
   /** Callback pour fermer la modal */
   onHide: () => void;
   /** Callback pour sauvegarder */
-  onSave: (data: NewCanonicalFormData) => void;
+  onSave: (data: CanonicalFormData) => void;
   /** Mode de la modal */
   mode: "create" | "update";
   /** Données initiales (pour mode update) */
-  initialData?: NewCanonicalFormData;
+  initialData?: CanonicalFormData;
 }
 
-interface NewCanonicalFormData {
+interface CanonicalFormData {
   exclude: boolean;
   evidenceVariable: FormEvidenceVariableData;
 }
 
-const NewCanonicalModal: FunctionComponent<NewCanonicalModalProps> = ({
+const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
   show,
   onHide,
   onSave,
@@ -45,7 +42,7 @@ const NewCanonicalModal: FunctionComponent<NewCanonicalModalProps> = ({
   //           State            //
   ////////////////////////////////
 
-  const [formData, setFormData] = useState<NewCanonicalFormData>({
+  const [formData, setFormData] = useState<CanonicalFormData>({
     exclude: false,
     evidenceVariable: {
       title: "",
@@ -157,7 +154,6 @@ const NewCanonicalModal: FunctionComponent<NewCanonicalModalProps> = ({
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-
     setFormData({
       exclude: false,
       evidenceVariable: {
@@ -207,43 +203,27 @@ const NewCanonicalModal: FunctionComponent<NewCanonicalModalProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
+      {/* First Card: Exclude settings */}
+      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 
-      <Modal.Body>
-        {/* First Card: Exclude settings */}
-        <ExcludeCard
-          exclude={formData.exclude}
-          onChange={handleExcludeChange}
-        />
-
-        {/* Second Card: Evidence Variable Form */}
-        <BaseEvidenceVariableForm
-          data={formData.evidenceVariable}
-          onChange={handleEvidenceVariableChange}
-          readonly={false}
-          type="inclusion"
-        />
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      {/* Second Card: Evidence Variable Form */}
+      <BaseEvidenceVariableForm
+        data={formData.evidenceVariable}
+        onChange={handleEvidenceVariableChange}
+        readonly={false}
+        type="inclusion"
+      />
+    </BaseModalWrapper>
   );
 };
 
-export default NewCanonicalModal;
+export default CanonicalForm;

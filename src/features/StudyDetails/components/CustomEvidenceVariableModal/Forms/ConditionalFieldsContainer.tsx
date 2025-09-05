@@ -1,16 +1,17 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import { InclusionCriteriaValue } from "../../types/evidenceVariable.types";
+import BooleanField from "./ConditionalFields/BooleanField";
+import IntegerField from "./ConditionalFields/IntegerField";
+import DateField from "./ConditionalFields/DateField";
+import CodeField from "./ConditionalFields/CodeField";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// Conditional Fields
-import IntegerField from "./ConditionalFields/IntegerField";
-import BooleanField from "./ConditionalFields/BooleanField";
-import DateField from "./ConditionalFields/DateField";
-import CodeField from "./ConditionalFields/CodeField";
+// Types 
+import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+
 
 const ConditionalFieldsContainer: FunctionComponent<{
   value: InclusionCriteriaValue;

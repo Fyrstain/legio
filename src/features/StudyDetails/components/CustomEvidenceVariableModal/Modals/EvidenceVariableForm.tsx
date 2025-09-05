@@ -1,21 +1,18 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
-// React Bootstrap
-import { Modal, Button } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// HL7 Front library
-import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import BaseEvidenceVariableForm from "./Forms/BaseEvidenceVariableForm";
+import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
+import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../types/evidenceVariable.types";
+import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface StudyVariableModalProps {
+interface EvidenceVariableFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
@@ -24,15 +21,18 @@ interface StudyVariableModalProps {
   onSave: (data: FormEvidenceVariableData) => void;
   // Modal mode
   mode: "create" | "update";
+  // Type of variable: inclusion criteria or study variable
+  type: "inclusion" | "study";
   // Initial data (for update mode)
   initialData?: FormEvidenceVariableData;
 }
 
-const StudyVariableModal: FunctionComponent<StudyVariableModalProps> = ({
+const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
   show,
   onHide,
   onSave,
   mode = "create",
+  type,
   initialData,
 }) => {
   ////////////////////////////////
@@ -86,6 +86,9 @@ const StudyVariableModal: FunctionComponent<StudyVariableModalProps> = ({
   const getModalTitle = (): string => {
     const actionText =
       mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+    if (type === "inclusion") {
+      return `${actionText} ${i18n.t("title.aninclusioncriteria")}`;
+    }
     return `${actionText} ${i18n.t("title.astudyvariable")}`;
   };
 
@@ -181,32 +184,23 @@ const StudyVariableModal: FunctionComponent<StudyVariableModalProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
-      <Modal.Header closeButton>
-        {/* Dynamic title for the modal (create or update) */}
-        <Modal.Title>
-          <Title level={2} content={getModalTitle()} />
-        </Modal.Title>
-      </Modal.Header>
+    <BaseModalWrapper
+      show={show}
+      onHide={onHide}
+      onSave={handleSave}
+      onReset={handleReset}
+      title={getModalTitle()}
+      isSaveEnabled={isSaveEnabled()}
+      onClose={handleClose}
+    >
       {/* The component for the form using the base form */}
-      <Modal.Body>
-        <BaseEvidenceVariableForm data={formData} onChange={handleFormChange} />
-      </Modal.Body>
-      {/* The buttons in the footer (Save and Reset) */}
-      <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isSaveEnabled()}
-        >
-          {i18n.t("button.save")}
-        </Button>
-        <Button variant="secondary" onClick={handleReset}>
-          {i18n.t("button.reset")}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      <BaseEvidenceVariableForm
+        data={formData}
+        onChange={handleFormChange}
+        type={type}
+      />
+    </BaseModalWrapper>
   );
 };
 
-export default StudyVariableModal;
+export default EvidenceVariableForm;
