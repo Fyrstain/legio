@@ -7,7 +7,7 @@ import i18n from "i18next";
 // HL7 Front library
 import { Title } from "@fyrstain/hl7-front-library";
 // Components
-import ObsolescenceFilter from "../../../../components/ObsolescenceFilter/ObsolescenceFilter";
+import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
 // Types 
 import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
 
