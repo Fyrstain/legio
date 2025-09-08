@@ -9,14 +9,14 @@ import CodeField from "./ConditionalFields/CodeField";
 import { Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// Types 
+// Types
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
-
 
 const ConditionalFieldsContainer: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-}> = ({ value, onChange }) => {
+  errors?: Record<string, string>;
+}> = ({ value, onChange, errors }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -28,13 +28,13 @@ const ConditionalFieldsContainer: FunctionComponent<{
   const renderConditionalField = () => {
     switch (value.type) {
       case "boolean":
-        return <BooleanField value={value} onChange={onChange} />;
+        return <BooleanField value={value} onChange={onChange} errors={errors} />;
       case "integer":
-        return <IntegerField value={value} onChange={onChange} />;
+        return <IntegerField value={value} onChange={onChange} errors={errors} />;
       case "date":
-        return <DateField value={value} onChange={onChange} />;
+        return <DateField value={value} onChange={onChange} errors={errors} />;
       case "code":
-        return <CodeField value={value} onChange={onChange} />;
+        return <CodeField value={value} onChange={onChange} errors={errors} />;
       default:
         return null;
     }

@@ -124,7 +124,8 @@
         "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
         "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
         "fillrequiredfields": "Veuillez remplir tous les champs requis.",
-        "invalidurl": "URL invalide."
+        "invalidurl": "URL invalide.",
+        "loadingcomparators": "Erreur lors du chargement des comparateurs :"
     },
     "message": {
         "studyupdated": "Étude modifiée avec succès!",

@@ -1,35 +1,25 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import {
-  IntegerOperatorType,
-  InclusionCriteriaValue,
-} from "../../../../types/evidenceVariable.types";
+import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
+import FieldError from "../../shared/FieldError";
 // React Bootstrap
-import { Form } from "react-bootstrap";
+import { Alert, Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
+// Hook
+import { useComparators } from "../../../../hooks/useComparators";
 
 const IntegerField: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-}> = ({ value, onChange }) => {
-    
-  /////////////////////////////////////
-  //      Constants / ValueSet       //
-  /////////////////////////////////////
+  errors?: Record<string, string>;
+}> = ({ value, onChange, errors }) => {
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
 
-  /**
-   * Constant for the operator options for integer criteria
-   */
-  const integerOperatorOptions = [
-    { value: "equals", labelKey: "label.equals" },
-    { value: "greaterThan", labelKey: "label.greaterthan" },
-    { value: "lessThan", labelKey: "label.lessthan" },
-    { value: "greaterThanOrEqual", labelKey: "label.greaterthanorequal" },
-    { value: "lessThanOrEqual", labelKey: "label.lessthanorequal" },
-    { value: "between", labelKey: "label.between" },
-  ];
+  const { comparatorOptions, error } = useComparators("integer");
 
   ////////////////////////////////
   //          Actions           //
@@ -44,7 +34,10 @@ const IntegerField: FunctionComponent<{
   ): void => {
     onChange({
       ...value,
-      operator: event.target.value as IntegerOperatorType,
+      operator: event.target.value,
+      value: undefined,
+      minValue: undefined,
+      maxValue: undefined,
     });
   };
 
@@ -65,11 +58,22 @@ const IntegerField: FunctionComponent<{
   };
 
   /**
+   * To check if the selected operator is a range operator
+   *
+   * @param operator is the operator to check
+   * @returns True if the operator is a range operator, false otherwise
+   */
+  const isRangeOperator = (operator: string | undefined): boolean => {
+    if (!operator) return false;
+    return operator.toLowerCase().includes("between");
+  };
+
+  /**
    * Function to render the value input field based on the selected operator
    * @returns JSX Element for rendering the value input field
    */
   const renderValueInput = (): JSX.Element => {
-    if (value.operator === "between") {
+    if (isRangeOperator(value.operator)) {
       return (
         <div className="d-flex gap-2">
           <div className="flex-fill">
@@ -79,7 +83,9 @@ const IntegerField: FunctionComponent<{
               placeholder={i18n.t("placeholder.minvalue")}
               value={value?.minValue?.toString() || ""}
               onChange={(e) => handleValueChange("minValue", e.target.value)}
+              isInvalid={!!errors?.minValue}
             />
+            <FieldError error={errors?.minValue} />
           </div>
           <div className="flex-fill">
             <Form.Label>Max</Form.Label>
@@ -88,7 +94,9 @@ const IntegerField: FunctionComponent<{
               placeholder={i18n.t("placeholder.maxvalue")}
               value={value?.maxValue?.toString() || ""}
               onChange={(e) => handleValueChange("maxValue", e.target.value)}
+              isInvalid={!!errors?.maxValue}
             />
+            <FieldError error={errors?.maxValue} />
           </div>
         </div>
       );
@@ -101,7 +109,9 @@ const IntegerField: FunctionComponent<{
           placeholder={i18n.t("placeholder.value")}
           value={value?.value?.toString() || ""}
           onChange={(e) => handleValueChange("value", e.target.value)}
+          isInvalid={!!errors?.integerValue}
         />
+        <FieldError error={errors?.integerValue} />
       </>
     );
   };
@@ -114,18 +124,28 @@ const IntegerField: FunctionComponent<{
     <>
       <Form.Group className="mb-3">
         <Form.Label>{i18n.t("label.logicaloperator")}</Form.Label>
-        <Form.Select
-          value={value.operator || ""}
-          onChange={handleOperatorChange}
-          className="mb-2"
-        >
-          <option value="">{i18n.t("placeholder.logicaloperator")}</option>
-          {integerOperatorOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {i18n.t(option.labelKey)}
-            </option>
-          ))}
-        </Form.Select>
+        {error ? (
+          <Alert variant="warning" className="mb-2">
+            {i18n.t("error.loadingcomparators")} {error}
+          </Alert>
+        ) : (
+          <>
+            <Form.Select
+              value={value.operator || ""}
+              onChange={handleOperatorChange}
+              className="mb-2"
+              isInvalid={!!errors?.criteriaOperator}
+            >
+              <option value="">{i18n.t("placeholder.logicaloperator")}</option>
+              {comparatorOptions.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.display || option.code}
+                </option>
+              ))}
+            </Form.Select>
+            <FieldError error={errors?.criteriaOperator} />
+          </>
+        )}
       </Form.Group>
       {/* Render the value input based on the selected operator */}
       {value.operator && renderValueInput()}

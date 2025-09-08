@@ -1,33 +1,25 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import {
-  DateOperatorType,
-  InclusionCriteriaValue,
-} from "../../../../types/evidenceVariable.types";
+import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
+import FieldError from "../../shared/FieldError";
 // React Bootstrap
-import { Form } from "react-bootstrap";
+import { Alert, Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
+// Hook
+import { useComparators } from "../../../../hooks/useComparators";
 
 const DateField: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-}> = ({ value, onChange }) => {
-    
-  /////////////////////////////////////
-  //      Constants / ValueSet       //
-  /////////////////////////////////////
+  errors?: Record<string, string>;
+}> = ({ value, onChange, errors }) => {
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
 
-  /**
-   * To have the translation for the date operator options
-   */
-  const dateOperatorOptions = [
-    { value: "equals", labelKey: "label.equals" },
-    { value: "before", labelKey: "label.before" },
-    { value: "after", labelKey: "label.after" },
-    { value: "between", labelKey: "label.between" },
-  ];
+  const { comparatorOptions, error } = useComparators("date");
 
   ////////////////////////////////
   //          Actions           //
@@ -42,7 +34,10 @@ const DateField: FunctionComponent<{
   ): void => {
     onChange({
       ...value,
-      operator: event.target.value as DateOperatorType,
+      operator: event.target.value,
+      value: undefined,
+      minValue: undefined,
+      maxValue: undefined,
     });
   };
 
@@ -74,11 +69,25 @@ const DateField: FunctionComponent<{
   };
 
   /**
+   * To check if the selected operator is a range operator
+   *
+   * @param operator is the operator to check
+   * @returns True if the operator is a range operator, false otherwise
+   */
+  const isRangeOperator = (operator: string | undefined): boolean => {
+    if (!operator) return false;
+    return (
+      operator.toLowerCase().includes("inperiod") ||
+      operator.toLowerCase().includes("notinperiod")
+    );
+  };
+
+  /**
    * Function to render the value input field based on the selected operator
    * @returns JSX Element for rendering the value input field
    */
   const renderValueInput = (): JSX.Element => {
-    if (value.operator === "between") {
+    if (isRangeOperator(value.operator)) {
       return (
         <div className="d-flex gap-2">
           <div className="flex-fill">
@@ -87,7 +96,9 @@ const DateField: FunctionComponent<{
               type="date"
               value={formatDateForInput(value?.minValue as Date)}
               onChange={(e) => handleValueChange("minValue", e.target.value)}
+              isInvalid={!!errors?.minValue}
             />
+            <FieldError error={errors?.minValue} />
           </div>
           <div className="flex-fill">
             <Form.Label>{i18n.t("label.enddate")}</Form.Label>
@@ -95,7 +106,9 @@ const DateField: FunctionComponent<{
               type="date"
               value={formatDateForInput(value?.maxValue as Date)}
               onChange={(e) => handleValueChange("maxValue", e.target.value)}
+              isInvalid={!!errors?.maxValue}
             />
+            <FieldError error={errors?.maxValue} />
           </div>
         </div>
       );
@@ -108,7 +121,9 @@ const DateField: FunctionComponent<{
           placeholder={i18n.t("placeholder.date")}
           value={formatDateForInput(value?.value as Date)}
           onChange={(e) => handleValueChange("value", e.target.value)}
+          isInvalid={!!errors?.criteriaValue}
         />
+        <FieldError error={errors?.criteriaValue} />
       </>
     );
   };
@@ -121,18 +136,28 @@ const DateField: FunctionComponent<{
     <>
       <Form.Group className="mb-3">
         <Form.Label>{i18n.t("label.comparisonoperator")}</Form.Label>
-        <Form.Select
-          value={value.operator || ""}
-          onChange={handleOperatorChange}
-          className="mb-2"
-        >
-          <option value="">{i18n.t("placeholder.comparisonoperator")}</option>
-          {dateOperatorOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {i18n.t(option.labelKey)}
-            </option>
-          ))}
-        </Form.Select>
+        {error ? (
+          <Alert variant="warning" className="mb-2">
+            {i18n.t("error.loadingcomparators")} {error}
+          </Alert>
+        ) : (
+          <>
+            <Form.Select
+              value={value.operator || ""}
+              onChange={handleOperatorChange}
+              className="mb-2"
+              isInvalid={!!errors?.criteriaOperator}
+            >
+              <option value="">{i18n.t("placeholder.comparisonoperator")}</option>
+              {comparatorOptions.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.display || option.code}
+                </option>
+              ))}
+            </Form.Select>
+            <FieldError error={errors?.criteriaOperator} />
+          </>
+        )}
       </Form.Group>
       {/* Render the value input based on the selected operator */}
       {value.operator && renderValueInput()}

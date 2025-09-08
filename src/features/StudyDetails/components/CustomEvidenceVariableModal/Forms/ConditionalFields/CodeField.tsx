@@ -3,6 +3,7 @@ import { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
+import FieldError from "../../shared/FieldError";
 // React Bootstrap
 import { Alert, Form } from "react-bootstrap";
 // FontAwesome
@@ -14,17 +15,24 @@ import i18n from "i18next";
 import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // FHIR
 import Client from "fhir-kit-client";
-// Types
-import { CodeOperatorType } from "../../../../types/evidenceVariable.types";
 // Resources
 import { ValueSet } from "fhir/r5";
 // Services
 import ValueSetService from "../../../../services/valueSet.service";
+// Hook
+import { useComparators } from "../../../../hooks/useComparators";
 
 const CodeField: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-}> = ({ value, onChange }) => {
+  errors?: Record<string, string>;
+}> = ({ value, onChange, errors }) => {
+  ////////////////////////////////
+  //           Hooks            //
+  ////////////////////////////////
+
+  const { comparatorOptions, error } = useComparators("code");
+
   /////////////////////////////////////
   //             Client              //
   /////////////////////////////////////
@@ -47,12 +55,6 @@ const CodeField: FunctionComponent<{
   const [selectedValueSet, setSelectedValueSet] = useState<string>("");
   const [availableCodes, setAvailableCodes] = useState<SimpleCode[]>([]);
   const [selectedCode, setSelectedCode] = useState<string>("");
-
-  // Code Operator Options with translation
-  const codeOperatorOptions = [
-    { value: "equals", labelKey: "label.has" },
-    { value: "notEquals", labelKey: "label.hasnot" },
-  ];
 
   //////////////////////////////
   //           Error          //
@@ -134,7 +136,8 @@ const CodeField: FunctionComponent<{
   ): void => {
     onChange({
       ...value,
-      operator: event.target.value as CodeOperatorType,
+      operator: event.target.value,
+      value: undefined,
     });
   };
 
@@ -146,26 +149,37 @@ const CodeField: FunctionComponent<{
     <>
       {/* Operator Selection */}
       <Form.Group className="mb-2">
-        <Form.Label>{i18n.t("label.comparisonoperator")}</Form.Label>
-        <Form.Select
-          value={value.operator || ""}
-          onChange={handleOperatorChange}
-        >
-          <option value="">{i18n.t("placeholder.logicaloperator")}</option>
-          {codeOperatorOptions.map((op) => (
-            <option key={op.value} value={op.value}>
-              {i18n.t(op.labelKey)}
-            </option>
-          ))}
-        </Form.Select>
+        <Form.Label>{i18n.t("label.comparisonoperator")} *</Form.Label>
+        {error ? (
+          <Alert variant="warning" className="mb-2">
+            {i18n.t("error.loadingcomparators")} {error}
+          </Alert>
+        ) : (
+          <>
+            <Form.Select
+              value={value.operator || ""}
+              onChange={handleOperatorChange}
+              isInvalid={!!errors?.criteriaOperator}
+            >
+              <option value="">{i18n.t("placeholder.logicaloperator")}</option>
+              {comparatorOptions.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.display || option.code}
+                </option>
+              ))}
+            </Form.Select>
+            <FieldError error={errors?.criteriaOperator} />
+          </>
+        )}
       </Form.Group>
 
       {/* ValueSet Selection */}
       <Form.Group className="mb-2">
-        <Form.Label>{i18n.t("label.valueset")}</Form.Label>
+        <Form.Label>{i18n.t("label.valueset")} *</Form.Label>
         <Form.Select
           value={selectedValueSet}
           onChange={(e) => handleValueSetChange(e.target.value)}
+          isInvalid={!!errors?.criteriaValueSet}
         >
           <option value="">{i18n.t("placeholder.valueset")}</option>
           {valueSets.map((vs) => (
@@ -174,6 +188,7 @@ const CodeField: FunctionComponent<{
             </option>
           ))}
         </Form.Select>
+        <FieldError error={errors?.criteriaValueSet} />
       </Form.Group>
 
       {/* Code Selection */}
@@ -189,10 +204,11 @@ const CodeField: FunctionComponent<{
             </Alert>
           ) : (
             <>
-              <Form.Label>Code</Form.Label>
+              <Form.Label>Code *</Form.Label>
               <Form.Select
                 value={selectedCode}
                 onChange={(e) => handleCodeSelection(e.target.value)}
+                isInvalid={!!errors?.criteriaCode}
               >
                 <option value="">{i18n.t("placeholder.selectcode")}</option>
                 {availableCodes.map((code) => (
@@ -201,7 +217,9 @@ const CodeField: FunctionComponent<{
                   </option>
                 ))}
               </Form.Select>
+              <FieldError error={errors?.criteriaCode} />
             </>
+            // TODO : Do the multiple codes selection
           )}
         </Form.Group>
       )}

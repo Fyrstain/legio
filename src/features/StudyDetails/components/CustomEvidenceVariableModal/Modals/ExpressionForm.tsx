@@ -264,7 +264,6 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
    * Validate form data
    */
   const isFormValid = (): boolean => {
-    // Check for validation errors
     const descError = validateField(
       "expressionDescription",
       formData.expressionDescription,
@@ -280,8 +279,71 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
       formData.selectedExpression,
       true
     );
-    // Return true if no errors
-    return !(descError || libError || exprError);
+    // Validation for the conditionals fields
+    let parameterErrors = false;
+    if (formData.selectedParameter && formData.criteriaValue) {
+      const cv = formData.criteriaValue;
+      const operatorError = validateField(
+        "criteriaOperator",
+        cv.operator,
+        true
+      );
+      // Code type requires valueSet and code
+      if (cv.type === "code") {
+        const valueSetError = validateField(
+          "criteriaValueSet",
+          cv.valueSetUrl,
+          true
+        );
+        const codeError = validateField("criteriaCode", cv.value, true);
+        parameterErrors = !!(operatorError || valueSetError || codeError);
+      }
+      // Boolean type requires operator
+      if (cv.type === "boolean") {
+        const operatorError = validateField(
+          "criteriaOperator",
+          cv.operator,
+          true
+        );
+        parameterErrors = !!operatorError;
+      }
+      // Date type requires operator and value(s)
+      if (cv.type === "date") {
+        const operatorError = validateField(
+          "criteriaOperator",
+          cv.operator,
+          true
+        );
+        if (
+          cv.operator?.toLowerCase().includes("inperiod") ||
+          cv.operator?.toLowerCase().includes("notinperiod")
+        ) {
+          const minError = validateField("minValue", cv.minValue, true);
+          const maxError = validateField("maxValue", cv.maxValue, true);
+          parameterErrors = !!(operatorError || minError || maxError);
+        } else {
+          const dateError = validateField("criteriaValue", cv.value, true);
+          parameterErrors = !!(operatorError || dateError);
+        }
+      }
+      // Integer type requires operator and value(s)
+      if (cv.type === "integer") {
+        const operatorError = validateField(
+          "criteriaOperator",
+          cv.operator,
+          true
+        );
+        if (cv.operator?.toLowerCase().includes("between")) {
+          const minError = validateField("minValue", cv.minValue, true);
+          const maxError = validateField("maxValue", cv.maxValue, true);
+          parameterErrors = !!(operatorError || minError || maxError);
+        } else {
+          const intError = validateField("integerValue", cv.value, true);
+          parameterErrors = !!(operatorError || intError);
+        }
+      }
+    }
+    return !(descError || libError || exprError || parameterErrors);
   };
 
   /**
@@ -460,6 +522,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
               <ConditionalFieldsContainer
                 value={formData.criteriaValue}
                 onChange={handleCriteriaValueChange}
+                errors={errors}
               />
             )}
           </Form>

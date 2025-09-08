@@ -48,32 +48,11 @@ interface EvidenceVariableSectionProps {
 type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code";
 
 /**
- * Type for the operator types for different criteria
- */
-type IntegerOperatorType =
-  | "equals"
-  | "greaterThan"
-  | "lessThan"
-  | "greaterThanOrEqual"
-  | "lessThanOrEqual"
-  | "between";
-
-/**
- * Type for the operator types for date criteria
- */
-type DateOperatorType = "equals" | "before" | "after" | "between";
-
-/**
- * Type for the operator types for the codes in the ValueSets
- */
-type CodeOperatorType = "equals" | "notEquals" | "in" | "notIn";
-
-/**
  * Interface for the value of the Inclusion Criteria
  */
 interface InclusionCriteriaValue {
   type: InclusionCriteriaTypes;
-  operator?: IntegerOperatorType | DateOperatorType | CodeOperatorType;
+  operator?: string;
   value?: number | boolean | string | Date | string[];
   minValue?: number | Date;
   maxValue?: number | Date;
@@ -90,8 +69,5 @@ export type {
   FormEvidenceVariableData,
   EvidenceVariableSectionProps,
   InclusionCriteriaTypes,
-  IntegerOperatorType,
-  DateOperatorType,
-  CodeOperatorType,
   InclusionCriteriaValue,
 };
