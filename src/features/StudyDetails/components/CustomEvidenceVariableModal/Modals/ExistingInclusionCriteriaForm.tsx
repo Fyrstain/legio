@@ -7,7 +7,6 @@ import i18n from "i18next";
 // Components
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
-import FieldError from "../shared/FieldError";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
@@ -36,9 +35,9 @@ interface ExistingInclusionCriteriaFormData {
   selectedEvidenceVariable?: FormEvidenceVariableData;
 }
 
-const ExistingCanonicalForm: FunctionComponent<
+const ExistingInclusionCriteriaForm: FunctionComponent<
   ExistingInclusionCriteriaFormProps
-> = ({ show, onHide, onSave, mode = "create", initialData }) => {
+> = (props: ExistingInclusionCriteriaFormProps) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -65,9 +64,10 @@ const ExistingCanonicalForm: FunctionComponent<
 
   // Reset state when modal opens/closes
   useEffect(() => {
-    if (show) {
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+    if (props.show) {
+      clearErrors();
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         setFormData({
           selectedEvidenceVariable: undefined,
@@ -75,13 +75,13 @@ const ExistingCanonicalForm: FunctionComponent<
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   /**
    * Load EvidenceVariable data on component mount.
    */
   useEffect(() => {
-    if (show) {
+    if (props.show) {
       const loadEvidenceVariables = async () => {
         try {
           const models =
@@ -94,7 +94,7 @@ const ExistingCanonicalForm: FunctionComponent<
       };
       loadEvidenceVariables();
     }
-  }, [show]);
+  }, [props.show]);
 
   ////////////////////////////////
   //          Actions           //
@@ -105,7 +105,7 @@ const ExistingCanonicalForm: FunctionComponent<
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     return `${actionText} ${i18n.t("title.existingcriteria")}`;
   };
 
@@ -152,7 +152,7 @@ const ExistingCanonicalForm: FunctionComponent<
       return;
     }
     console.log("Existing Inclusion Criteria Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -163,19 +163,17 @@ const ExistingCanonicalForm: FunctionComponent<
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-    setFormData({
-      selectedEvidenceVariable: undefined,
-    });
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       setFormData({
         selectedEvidenceVariable: undefined,
@@ -190,8 +188,8 @@ const ExistingCanonicalForm: FunctionComponent<
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
@@ -218,7 +216,9 @@ const ExistingCanonicalForm: FunctionComponent<
                 </option>
               ))}
             </Form.Select>
-            <FieldError error={errors.selectedEvidenceVariable} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.selectedEvidenceVariable}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Display selected evidence variable details */}
@@ -240,4 +240,4 @@ const ExistingCanonicalForm: FunctionComponent<
   );
 };
 
-export default ExistingCanonicalForm;
+export default ExistingInclusionCriteriaForm;

@@ -7,9 +7,9 @@ import i18n from "i18next";
 // Components
 import ExcludeCard from "../shared/ExcludeCard";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
-import FieldError from "../shared/FieldError";
 // Hooks
 import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { clear } from "console";
 
 ////////////////////////////////
 //           Props            //
@@ -30,25 +30,21 @@ interface CombinationFormProps {
 
 interface CombinationFormData {
   exclude: boolean;
-  code: "all-of" | "any-of" | "";
+  code: "all-of" | "any-of" | undefined;
   isXor: boolean;
   combinationId: string;
 }
 
-const CombinationForm: FunctionComponent<CombinationFormProps> = ({
-  show,
-  onHide,
-  onSave,
-  mode = "create",
-  initialData,
-}) => {
+const CombinationForm: FunctionComponent<CombinationFormProps> = (
+  props: CombinationFormProps
+) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
 
   const [formData, setFormData] = useState<CombinationFormData>({
     exclude: false,
-    code: "",
+    code: undefined,
     isXor: false,
     combinationId: "",
   });
@@ -67,21 +63,22 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
 
   // Initialize form data when modal opens
   useEffect(() => {
-    if (show) {
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+    if (props.show) {
+      clearErrors();
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         // Reset for create mode
         setFormData({
           exclude: false,
-          code: "",
+          code: undefined,
           isXor: false,
           combinationId: "",
         });
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   ////////////////////////////////
   //          Actions           //
@@ -92,7 +89,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     return `${actionText} ${i18n.t("title.acombination")}`;
   };
 
@@ -185,7 +182,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
       return;
     }
     console.log("Combination Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -196,26 +193,21 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-    setFormData({
-      exclude: false,
-      code: "",
-      isXor: false,
-      combinationId: "",
-    });
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       setFormData({
         exclude: false,
-        code: "",
+        code: undefined,
         isXor: false,
         combinationId: "",
       });
@@ -229,8 +221,8 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
@@ -258,7 +250,9 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
                 }
                 isInvalid={!!errors?.combinationId}
               />
-              <FieldError error={errors?.combinationId} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.combinationId}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Logic type selection */}
@@ -278,7 +272,9 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
-              <FieldError error={errors?.code} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.code}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form>
         </Card.Body>

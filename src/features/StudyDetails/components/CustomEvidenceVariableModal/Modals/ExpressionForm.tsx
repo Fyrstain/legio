@@ -8,7 +8,6 @@ import i18n from "i18next";
 import ExcludeCard from "../shared/ExcludeCard";
 import ConditionalFieldsContainer from "../Forms/ConditionalFieldsContainer";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
-import FieldError from "../shared/FieldError";
 // Types
 import {
   LibraryReference,
@@ -52,13 +51,9 @@ interface ExpressionFormData {
   criteriaValue?: InclusionCriteriaValue;
 }
 
-const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
-  show,
-  onHide,
-  onSave,
-  mode = "create",
-  initialData,
-}) => {
+const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
+  props: ExpressionFormProps
+) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -100,16 +95,17 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
 
   // Load libraries when modal opens
   useEffect(() => {
-    if (show) {
+    if (props.show) {
+      clearErrors();
       loadLibraries();
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         resetFormData();
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   // Update expressions and parameters when library changes
   useEffect(() => {
@@ -174,7 +170,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     return `${actionText} ${i18n.t("title.anexpression")}`;
   };
 
@@ -356,7 +352,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
       return;
     }
     console.log("Expression Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -367,18 +363,17 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-
-    resetFormData();
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       resetFormData();
     }
@@ -391,8 +386,8 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
@@ -447,7 +442,9 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                 }
                 isInvalid={!!errors.expressionDescription}
               />
-              <FieldError error={errors.expressionDescription} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.expressionDescription}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Library dropdown */}
@@ -466,7 +463,9 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
-              <FieldError error={errors.selectedLibrary} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.selectedLibrary}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Expression dropdown */}
@@ -491,7 +490,9 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = ({
                   </option>
                 ))}
               </Form.Select>
-              <FieldError error={errors.selectedExpression} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.selectedExpression}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Parameter dropdown */}

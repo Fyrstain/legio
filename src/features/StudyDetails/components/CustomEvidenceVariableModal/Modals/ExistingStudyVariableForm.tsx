@@ -7,13 +7,13 @@ import i18n from "i18next";
 // Components
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
-import FieldError from "../shared/FieldError";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
 import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { clear } from "console";
 
 ////////////////////////////////
 //           Props            //
@@ -38,7 +38,7 @@ interface ExistingStudyVariableFormData {
 
 const ExistingStudyVariableForm: FunctionComponent<
   ExistingStudyVariableFormProps
-> = ({ show, onHide, onSave, mode = "create", initialData }) => {
+> = (props: ExistingStudyVariableFormProps) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -65,9 +65,10 @@ const ExistingStudyVariableForm: FunctionComponent<
 
   // Reset state when modal opens/closes
   useEffect(() => {
-    if (show) {
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+    if (props.show) {
+      clearErrors();
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         setFormData({
           selectedStudyVariable: undefined,
@@ -75,13 +76,13 @@ const ExistingStudyVariableForm: FunctionComponent<
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   /**
    * Load StudyVariable data on component mount.
    */
   useEffect(() => {
-    if (show) {
+    if (props.show) {
       const loadStudyVariables = async () => {
         try {
           const models =
@@ -94,7 +95,7 @@ const ExistingStudyVariableForm: FunctionComponent<
       };
       loadStudyVariables();
     }
-  }, [show]);
+  }, [props.show]);
 
   ////////////////////////////////
   //          Actions           //
@@ -105,7 +106,7 @@ const ExistingStudyVariableForm: FunctionComponent<
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     return `${actionText} ${i18n.t("title.existingstudyvariable")}`;
   };
 
@@ -152,7 +153,7 @@ const ExistingStudyVariableForm: FunctionComponent<
       return;
     }
     console.log("Existing Study Variable Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -163,19 +164,17 @@ const ExistingStudyVariableForm: FunctionComponent<
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-    setFormData({
-      selectedStudyVariable: undefined,
-    });
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       setFormData({
         selectedStudyVariable: undefined,
@@ -190,8 +189,8 @@ const ExistingStudyVariableForm: FunctionComponent<
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
@@ -220,7 +219,9 @@ const ExistingStudyVariableForm: FunctionComponent<
                 </option>
               ))}
             </Form.Select>
-            <FieldError error={errors.selectedStudyVariable} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.selectedStudyVariable}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Display selected study variable details */}

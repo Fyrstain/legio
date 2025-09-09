@@ -9,12 +9,13 @@ import BaseModalWrapper from "../shared/BaseModalWrapper";
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Hooks
 import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { clear } from "console";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
-interface EvidenceVariableFormProps {
+interface EvidenceVariableModalProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
@@ -29,14 +30,9 @@ interface EvidenceVariableFormProps {
   initialData?: FormEvidenceVariableData;
 }
 
-const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
-  show,
-  onHide,
-  onSave,
-  mode = "create",
-  type,
-  initialData,
-}) => {
+const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
+  props: EvidenceVariableModalProps
+) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -66,9 +62,10 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
 
   // When the modal is shown, initialize or reset the form data
   useEffect(() => {
-    if (show) {
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+    if (props.show) {
+      clearErrors();
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         // Reset to empty for create mode
         setFormData({
@@ -82,7 +79,7 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   ////////////////////////////////
   //          Actions           //
@@ -93,8 +90,8 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
-    if (type === "inclusion") {
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+    if (props.type === "inclusion") {
       return `${actionText} ${i18n.t("title.aninclusioncriteria")}`;
     }
     return `${actionText} ${i18n.t("title.astudyvariable")}`;
@@ -135,7 +132,7 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
       return;
     }
     console.log("EvidenceVariable Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -146,24 +143,17 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-    setFormData({
-      title: "",
-      description: "",
-      identifier: "",
-      status: "",
-      url: "",
-      selectedLibrary: undefined,
-    });
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action (clear form or revert to initial data)
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       setFormData({
         title: "",
@@ -183,8 +173,8 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}
@@ -194,11 +184,11 @@ const EvidenceVariableForm: FunctionComponent<EvidenceVariableFormProps> = ({
       <BaseEvidenceVariableForm
         data={formData}
         onChange={handleFormChange}
-        type={type}
+        type={props.type}
         errors={errors}
       />
     </BaseModalWrapper>
   );
 };
 
-export default EvidenceVariableForm;
+export default EvidenceVariableModal;

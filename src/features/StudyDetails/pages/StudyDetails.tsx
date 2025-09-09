@@ -40,7 +40,7 @@ import {
 import Client from "fhir-kit-client";
 
 // Tests Modals
-import EvidenceVariableForm from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableForm";
+import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
 import CombinationForm from "../components/CustomEvidenceVariableModal/Modals/CombinationForm";
 import ExpressionForm from "../components/CustomEvidenceVariableModal/Modals/ExpressionForm";
 import ExistingInclusionCriteriaModal from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
@@ -113,9 +113,6 @@ const StudyDetails: FunctionComponent = () => {
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
-
-  // To show or hide the modal
-  const [showModal, setShowModal] = useState(false);
 
   // TODO : To test the modals
   const [showExistingStudyVariableModal, setShowExistingStudyVariableModal] =
@@ -600,7 +597,7 @@ const StudyDetails: FunctionComponent = () => {
         <Button onClick={() => setShowStudyVariableModal(true)}>
           Add NEW Study Variable
         </Button>
-        <EvidenceVariableForm
+        <EvidenceVariableModal
           show={showStudyVariableModal}
           onHide={() => setShowStudyVariableModal(false)}
           onSave={(data) => {
@@ -615,7 +612,7 @@ const StudyDetails: FunctionComponent = () => {
         <Button onClick={() => setShowNewCriteriaModal(true)}>
           Add NEW Inclusion Criteria
         </Button>
-        <EvidenceVariableForm
+        <EvidenceVariableModal
           show={showNewCriteriaModal}
           onHide={() => setShowNewCriteriaModal(false)}
           onSave={(data) => {

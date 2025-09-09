@@ -33,13 +33,9 @@ interface CanonicalFormData {
   evidenceVariable: FormEvidenceVariableData;
 }
 
-const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
-  show,
-  onHide,
-  onSave,
-  mode = "create",
-  initialData,
-}) => {
+const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
+  props: CanonicalFormProps
+) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -71,9 +67,10 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
 
   // Initialize form data when modal opens
   useEffect(() => {
-    if (show) {
-      if (mode === "update" && initialData) {
-        setFormData(initialData);
+    if (props.show) {
+      clearErrors();
+      if (props.mode === "update" && props.initialData) {
+        setFormData(props.initialData);
       } else {
         // Reset for create mode
         setFormData({
@@ -90,7 +87,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
       }
       setHasChanges(false);
     }
-  }, [show, mode, initialData]);
+  }, [props.show, props.mode, props.initialData]);
 
   ////////////////////////////////
   //          Actions           //
@@ -101,7 +98,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
    */
   const getModalTitle = (): string => {
     const actionText =
-      mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
+      props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     return `${actionText} ${i18n.t("title.newcanonicalcriteria")}`;
   };
 
@@ -153,8 +150,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
       alert(i18n.t("errormessage.fillrequiredfields"));
       return;
     }
-    console.log("Canonical Data to save:", formData);
-    onSave(formData);
+    props.onSave(formData);
   };
 
   /**
@@ -165,27 +161,17 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
       const confirmClose = window.confirm(i18n.t("message.unsavedchanges"));
       if (!confirmClose) return;
     }
-    setFormData({
-      exclude: false,
-      evidenceVariable: {
-        title: "",
-        description: "",
-        identifier: "",
-        status: "",
-        url: "",
-        selectedLibrary: undefined,
-      },
-    });
-    setHasChanges(false);
-    onHide();
+    handleReset();
+    props.onHide();
   };
 
   /**
    * Handle reset action
    */
   const handleReset = () => {
-    if (mode === "update" && initialData) {
-      setFormData(initialData);
+    clearErrors();
+    if (props.mode === "update" && props.initialData) {
+      setFormData(props.initialData);
     } else {
       setFormData({
         exclude: false,
@@ -208,8 +194,8 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = ({
 
   return (
     <BaseModalWrapper
-      show={show}
-      onHide={onHide}
+      show={props.show}
+      onHide={props.onHide}
       onSave={handleSave}
       onReset={handleReset}
       title={getModalTitle()}

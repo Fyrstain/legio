@@ -2,7 +2,6 @@
 import { FunctionComponent } from "react";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
-import FieldError from "../../shared/FieldError";
 // React Bootstrap
 import { Alert, Form } from "react-bootstrap";
 // Translation
@@ -10,7 +9,15 @@ import i18n from "i18next";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
 
-const IntegerField: FunctionComponent<{
+/**
+ * Component for handling integer parameters in inclusion criteria.
+ *
+ * @param value - The current InclusionCriteriaValue object
+ * @param onChange - Callback function to handle changes to the value
+ * @param errors - Optional errors object for validation messages
+ * @returns JSX.Element representing the integer parameter form
+ */
+const IntegerParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: Record<string, string>;
@@ -85,7 +92,9 @@ const IntegerField: FunctionComponent<{
               onChange={(e) => handleValueChange("minValue", e.target.value)}
               isInvalid={!!errors?.minValue}
             />
-            <FieldError error={errors?.minValue} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.minValue}
+            </Form.Control.Feedback>
           </div>
           <div className="flex-fill">
             <Form.Label>Max</Form.Label>
@@ -96,7 +105,9 @@ const IntegerField: FunctionComponent<{
               onChange={(e) => handleValueChange("maxValue", e.target.value)}
               isInvalid={!!errors?.maxValue}
             />
-            <FieldError error={errors?.maxValue} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.maxValue}
+            </Form.Control.Feedback>
           </div>
         </div>
       );
@@ -111,7 +122,9 @@ const IntegerField: FunctionComponent<{
           onChange={(e) => handleValueChange("value", e.target.value)}
           isInvalid={!!errors?.integerValue}
         />
-        <FieldError error={errors?.integerValue} />
+        <Form.Control.Feedback type="invalid">
+          {errors?.integerValue}
+        </Form.Control.Feedback>
       </>
     );
   };
@@ -143,7 +156,9 @@ const IntegerField: FunctionComponent<{
                 </option>
               ))}
             </Form.Select>
-            <FieldError error={errors?.criteriaOperator} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.criteriaOperator}
+            </Form.Control.Feedback>
           </>
         )}
       </Form.Group>
@@ -153,4 +168,4 @@ const IntegerField: FunctionComponent<{
   );
 };
 
-export default IntegerField;
+export default IntegerParameter;

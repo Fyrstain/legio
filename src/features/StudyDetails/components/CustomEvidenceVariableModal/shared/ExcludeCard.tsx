@@ -16,10 +16,7 @@ interface ExcludeCardProps {
   onChange: (exclude: boolean) => void;
 }
 
-const ExcludeCard: FunctionComponent<ExcludeCardProps> = ({
-  exclude,
-  onChange,
-}) => {
+const ExcludeCard: FunctionComponent<ExcludeCardProps> = (props: ExcludeCardProps) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -31,7 +28,7 @@ const ExcludeCard: FunctionComponent<ExcludeCardProps> = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const isExcluded = e.target.value === "exclusion";
-    onChange(isExcluded);
+    props.onChange(isExcluded);
   };
 
   /////////////////////////////////////////////
@@ -57,7 +54,7 @@ const ExcludeCard: FunctionComponent<ExcludeCardProps> = ({
               id="inclusion-radio"
               label="Inclusion"
               value="inclusion"
-              checked={!exclude}
+              checked={!props.exclude}
               onChange={handleInclusionExclusionChange}
             />
             {/* The check for exclusion */}
@@ -68,7 +65,7 @@ const ExcludeCard: FunctionComponent<ExcludeCardProps> = ({
               id="exclusion-radio"
               label="Exclusion"
               value="exclusion"
-              checked={exclude}
+              checked={props.exclude}
               onChange={handleInclusionExclusionChange}
             />
           </div>

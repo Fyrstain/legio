@@ -15,8 +15,6 @@ import { LibraryReference } from "../../../types/library.types";
 import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
 import LibraryService from "../../../services/library.service";
-// Components
-import FieldError from "../shared/FieldError";
 
 ////////////////////////////////
 //           Props            //
@@ -57,15 +55,7 @@ type StatusOption = {
 
 const BaseEvidenceVariableForm: FunctionComponent<
   BaseEvidenceVariableFormProps
-> = ({
-  data,
-  onChange,
-  readonly = false,
-  mode,
-  libraryDisplayValue,
-  type,
-  errors,
-}) => {
+> = (props: BaseEvidenceVariableFormProps) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -124,9 +114,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
     field: keyof FormEvidenceVariableData,
     value: any
   ) => {
-    if (readonly) return;
-    onChange({
-      ...data,
+    if (props.readonly) return;
+    props.onChange({
+      ...props.data,
       [field]: value,
     });
   };
@@ -153,7 +143,6 @@ const BaseEvidenceVariableForm: FunctionComponent<
       const libraryReference: LibraryReference =
         library.toDisplayLibraryReference();
       handleFieldChange("selectedLibrary", libraryReference);
-      console.log("Selected library:", libraryReference);
     }
   };
 
@@ -166,29 +155,36 @@ const BaseEvidenceVariableForm: FunctionComponent<
       <Form>
         <Card.Header className="d-flex align-items-center gap-4">
           <Card.Title>
-            {type === "inclusion"
+            {props.type === "inclusion"
               ? i18n.t("title.criteria")
               : i18n.t("title.studyvariables")}
           </Card.Title>
           {/* Status selector in header */}
           <Form.Group>
-            {readonly ? (
+            {props.readonly ? (
               <StatusTag
-                flavor={FhirStatus[data.status as keyof typeof FhirStatus]}
-                message={data.status || ""}
+                flavor={
+                  FhirStatus[props.data.status as keyof typeof FhirStatus]
+                }
+                message={props.data.status || ""}
               />
             ) : (
-              <StatusSelect
-                defaultSelectOption={
-                  data.status || i18n.t("placeholder.choosestatus") + " *"
-                }
-                statusMessageArray={statusOptions}
-                onChange={handleStatusChange}
-                language={i18n.t}
-                updateTypeTranslation=""
-              />
+              <div className={props.errors?.status ? "is-invalid" : ""}>
+                <StatusSelect
+                  defaultSelectOption={
+                    props.data.status ||
+                    i18n.t("placeholder.choosestatus") + " *"
+                  }
+                  statusMessageArray={statusOptions}
+                  onChange={handleStatusChange}
+                  language={i18n.t}
+                  updateTypeTranslation=""
+                />
+              </div>
             )}
-            <FieldError error={errors?.status} />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.status}
+            </Form.Control.Feedback>
           </Form.Group>
         </Card.Header>
         <Card.Body>
@@ -197,10 +193,10 @@ const BaseEvidenceVariableForm: FunctionComponent<
             <Form.Label>{i18n.t("label.identifier")}</Form.Label>
             <Form.Control
               type="text"
-              placeholder={readonly ? "" : i18n.t("placeholder.identifier")}
-              value={data.identifier}
+              placeholder={i18n.t("placeholder.identifier")}
+              value={props.data.identifier}
               onChange={(e) => handleFieldChange("identifier", e.target.value)}
-              disabled={readonly}
+              disabled={props.readonly}
             />
           </Form.Group>
 
@@ -209,13 +205,15 @@ const BaseEvidenceVariableForm: FunctionComponent<
             <Form.Label>{i18n.t("label.name")} *</Form.Label>
             <Form.Control
               type="text"
-              placeholder={readonly ? "" : i18n.t("placeholder.name")}
-              value={data.title || ""}
+              placeholder={i18n.t("placeholder.name")}
+              value={props.data.title || ""}
               onChange={(e) => handleFieldChange("title", e.target.value)}
-              disabled={readonly}
-              isInvalid={!!errors?.title}
+              disabled={props.readonly}
+              isInvalid={!!props.errors?.title}
             />
-            <FieldError error={errors?.title} />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.title}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Description field */}
@@ -224,13 +222,15 @@ const BaseEvidenceVariableForm: FunctionComponent<
             <Form.Control
               as="textarea"
               rows={3}
-              placeholder={readonly ? "" : i18n.t("placeholder.description")}
-              value={data.description || ""}
+              placeholder={i18n.t("placeholder.description")}
+              value={props.data.description || ""}
               onChange={(e) => handleFieldChange("description", e.target.value)}
-              disabled={readonly}
-              isInvalid={!!errors?.description}
+              disabled={props.readonly}
+              isInvalid={!!props.errors?.description}
             />
-            <FieldError error={errors?.description} />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.description}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* URL field */}
@@ -238,29 +238,32 @@ const BaseEvidenceVariableForm: FunctionComponent<
             <Form.Label>URL</Form.Label>
             <Form.Control
               type="text"
-              placeholder={readonly ? "" : i18n.t("placeholder.url")}
-              value={data.url || ""}
+              placeholder={i18n.t("placeholder.url")}
+              value={props.data.url || ""}
               onChange={(e) => handleFieldChange("url", e.target.value)}
-              disabled={readonly}
-              isInvalid={!!errors?.url}
+              disabled={props.readonly}
+              isInvalid={!!props.errors?.url}
             />
-            <FieldError error={errors?.url} />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.url}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Library field */}
           <Form.Group className="mb-3">
             <Form.Label>{i18n.t("label.library")} *</Form.Label>
-            {readonly ? (
+            {props.readonly ? (
               <Form.Control
                 type="text"
-                value={libraryDisplayValue || "N/A"}
-                disabled={readonly}
-                isInvalid={!!errors?.selectedLibrary}
+                value={props.libraryDisplayValue || "N/A"}
+                disabled={props.readonly}
+                isInvalid={!!props.errors?.selectedLibrary}
               />
             ) : (
               <Form.Select
-                value={data.selectedLibrary?.id || ""}
+                value={props.data.selectedLibrary?.id || ""}
                 onChange={handleLibraryChange}
+                isInvalid={!!props.errors?.selectedLibrary}
               >
                 <option value="">{i18n.t("placeholder.library")}</option>
                 {libraries.map((library) => (
@@ -270,7 +273,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
                 ))}
               </Form.Select>
             )}
-            <FieldError error={errors?.selectedLibrary} />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.selectedLibrary}
+            </Form.Control.Feedback>
           </Form.Group>
         </Card.Body>
       </Form>

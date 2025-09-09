@@ -1,10 +1,10 @@
 //React
 import { FunctionComponent } from "react";
 // Components
-import BooleanField from "./ConditionalFields/BooleanField";
-import IntegerField from "./ConditionalFields/IntegerField";
-import DateField from "./ConditionalFields/DateField";
-import CodeField from "./ConditionalFields/CodeField";
+import BooleanParameter from "./ConditionalFields/BooleanParameter";
+import IntegerParameter from "./ConditionalFields/IntegerParameter";
+import DateParameter from "./ConditionalFields/DateParameter";
+import CodeParameter from "./ConditionalFields/CodeParameter";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation
@@ -28,13 +28,13 @@ const ConditionalFieldsContainer: FunctionComponent<{
   const renderConditionalField = () => {
     switch (value.type) {
       case "boolean":
-        return <BooleanField value={value} onChange={onChange} errors={errors} />;
+        return <BooleanParameter value={value} onChange={onChange} errors={errors} />;
       case "integer":
-        return <IntegerField value={value} onChange={onChange} errors={errors} />;
+        return <IntegerParameter value={value} onChange={onChange} errors={errors} />;
       case "date":
-        return <DateField value={value} onChange={onChange} errors={errors} />;
+        return <DateParameter value={value} onChange={onChange} errors={errors} />;
       case "code":
-        return <CodeField value={value} onChange={onChange} errors={errors} />;
+        return <CodeParameter value={value} onChange={onChange} errors={errors} />;
       default:
         return null;
     }

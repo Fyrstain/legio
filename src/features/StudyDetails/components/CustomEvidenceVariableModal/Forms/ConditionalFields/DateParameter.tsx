@@ -2,7 +2,6 @@
 import { FunctionComponent } from "react";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
-import FieldError from "../../shared/FieldError";
 // React Bootstrap
 import { Alert, Form } from "react-bootstrap";
 // Translation
@@ -10,7 +9,14 @@ import i18n from "i18next";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
 
-const DateField: FunctionComponent<{
+/**
+ * Component for handling date parameters in inclusion criteria.
+ * 
+ * @param value - The current InclusionCriteriaValue object
+ * @param onChange - Callback function to handle changes to the value
+ * @returns JSX.Element representing the date parameter form
+ */
+const DateParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: Record<string, string>;
@@ -98,7 +104,9 @@ const DateField: FunctionComponent<{
               onChange={(e) => handleValueChange("minValue", e.target.value)}
               isInvalid={!!errors?.minValue}
             />
-            <FieldError error={errors?.minValue} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.minValue}
+            </Form.Control.Feedback>
           </div>
           <div className="flex-fill">
             <Form.Label>{i18n.t("label.enddate")}</Form.Label>
@@ -108,7 +116,9 @@ const DateField: FunctionComponent<{
               onChange={(e) => handleValueChange("maxValue", e.target.value)}
               isInvalid={!!errors?.maxValue}
             />
-            <FieldError error={errors?.maxValue} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.maxValue}
+            </Form.Control.Feedback>
           </div>
         </div>
       );
@@ -123,7 +133,9 @@ const DateField: FunctionComponent<{
           onChange={(e) => handleValueChange("value", e.target.value)}
           isInvalid={!!errors?.criteriaValue}
         />
-        <FieldError error={errors?.criteriaValue} />
+        <Form.Control.Feedback type="invalid">
+          {errors?.criteriaValue}
+        </Form.Control.Feedback>
       </>
     );
   };
@@ -155,7 +167,9 @@ const DateField: FunctionComponent<{
                 </option>
               ))}
             </Form.Select>
-            <FieldError error={errors?.criteriaOperator} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.criteriaOperator}
+            </Form.Control.Feedback>
           </>
         )}
       </Form.Group>
@@ -165,4 +179,4 @@ const DateField: FunctionComponent<{
   );
 };
 
-export default DateField;
+export default DateParameter;

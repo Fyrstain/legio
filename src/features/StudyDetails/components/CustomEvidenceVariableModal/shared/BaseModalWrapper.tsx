@@ -24,22 +24,11 @@ interface BaseModalWrapperProps {
   title: string;
   // Content to display in modal body
   children: ReactNode;
-  // Modal size
-  size?: "sm" | "lg" | "xl";
   // Custom close handler
   onClose?: () => void;
 }
 
-const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = ({
-  show,
-  onHide,
-  onSave,
-  onReset,
-  title,
-  children,
-  size = "lg",
-  onClose,
-}) => {
+const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = (props: BaseModalWrapperProps) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -48,10 +37,10 @@ const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = ({
    * Handle modal close - use custom handler if provided, otherwise use onHide
    */
   const handleClose = () => {
-    if (onClose) {
-      onClose();
+    if (props.onClose) {
+      props.onClose();
     } else {
-      onHide();
+      props.onHide();
     }
   };
 
@@ -60,20 +49,20 @@ const BaseModalWrapper: FunctionComponent<BaseModalWrapperProps> = ({
   /////////////////////////////////////////////
 
   return (
-    <Modal show={show} onHide={handleClose} size={size} centered>
+    <Modal show={props.show} onHide={handleClose} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title>
-          <Title level={2} content={title} />
+          <Title level={2} content={props.title} />
         </Modal.Title>
       </Modal.Header>
 
-      <Modal.Body>{children}</Modal.Body>
+      <Modal.Body>{props.children}</Modal.Body>
 
       <Modal.Footer>
-        <Button variant="primary" onClick={onSave}>
+        <Button variant="primary" onClick={props.onSave}>
           {i18n.t("button.save")}
         </Button>
-        <Button variant="secondary" onClick={onReset}>
+        <Button variant="secondary" onClick={props.onReset}>
           {i18n.t("button.reset")}
         </Button>
       </Modal.Footer>

@@ -3,7 +3,6 @@ import { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
-import FieldError from "../../shared/FieldError";
 // React Bootstrap
 import { Alert, Form } from "react-bootstrap";
 // FontAwesome
@@ -22,7 +21,15 @@ import ValueSetService from "../../../../services/valueSet.service";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
 
-const CodeField: FunctionComponent<{
+/**
+ * Component for handling code parameters in inclusion criteria.
+ *
+ * @param value - The current InclusionCriteriaValue object
+ * @param onChange - Callback function to handle changes to the value
+ * @param errors - Optional errors object for validation messages
+ * @returns JSX.Element representing the code parameter form
+ */
+const CodeParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: Record<string, string>;
@@ -168,7 +175,9 @@ const CodeField: FunctionComponent<{
                 </option>
               ))}
             </Form.Select>
-            <FieldError error={errors?.criteriaOperator} />
+            <Form.Control.Feedback type="invalid">
+              {errors?.criteriaOperator}
+            </Form.Control.Feedback>
           </>
         )}
       </Form.Group>
@@ -188,7 +197,9 @@ const CodeField: FunctionComponent<{
             </option>
           ))}
         </Form.Select>
-        <FieldError error={errors?.criteriaValueSet} />
+        <Form.Control.Feedback type="invalid">
+          {errors?.criteriaValueSet}
+        </Form.Control.Feedback>
       </Form.Group>
 
       {/* Code Selection */}
@@ -217,9 +228,12 @@ const CodeField: FunctionComponent<{
                   </option>
                 ))}
               </Form.Select>
-              <FieldError error={errors?.criteriaCode} />
+              <Form.Control.Feedback type="invalid">
+                {errors?.criteriaCode}
+              </Form.Control.Feedback>
             </>
             // TODO : Do the multiple codes selection
+            // TODO : Allow user to add codes (free value)
           )}
         </Form.Group>
       )}
@@ -227,4 +241,4 @@ const CodeField: FunctionComponent<{
   );
 };
 
-export default CodeField;
+export default CodeParameter;
