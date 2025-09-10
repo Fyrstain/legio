@@ -16,7 +16,7 @@ interface ObsolescenceFilterProps {
   onChange: (value: "obsolete" | "not-obsolete" | "all") => void;
 }
 
-const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value, onChange }) => {
+const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = (props: ObsolescenceFilterProps) => {
 
   ////////////////////////////////
   //           Actions          //
@@ -56,11 +56,11 @@ const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value,
    * based on the currently selected filter option.
    */
   const getDisplayTitle = () => {
-    if (value === "all") {
+    if (props.value === "all") {
       return i18n.t("button.filterobsolescence");
     }
     const currentOption = filterOptions.find(
-      (option) => option.value === value
+      (option) => option.value === props.value
     );
     return currentOption
       ? currentOption.label
@@ -83,8 +83,8 @@ const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = ({ value,
         {filterOptions.map((option) => (
           <Dropdown.Item
             key={option.value}
-            onClick={() => onChange(option.value)}
-            active={value === option.value}
+            onClick={() => props.onChange(option.value)}
+            active={props.value === option.value}
           >
             {option.label}
           </Dropdown.Item>

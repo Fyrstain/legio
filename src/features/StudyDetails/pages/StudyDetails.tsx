@@ -2,11 +2,17 @@
 import { FunctionComponent, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // Components
-import LegioPage from "../../components/LegioPage/LegioPage";
-import InformationSection from "../../components/InformationSection/InformationSection";
-import EvidenceVariableSection from "../../components/EvidenceVariableSection/EvidenceVariableSection";
+import LegioPage from "../../../shared/components/LegioPage/LegioPage";
+import InformationSection from "../components/InformationSection/InformationSection";
+import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
 // Services
-import StudyService from "../../services/StudyService";
+import StudyService from "../services/study.service";
+import EvidenceVariableService from "../services/evidenceVariable.service";
+// Model
+import {
+  EvidenceVariableModel,
+  EvidenceVariableUtils,
+} from "../../../shared/models/EvidenceVariable.model";
 // Resources
 import { List, ResearchStudy } from "fhir/r5";
 // Translation
@@ -84,29 +90,33 @@ const StudyDetails: FunctionComponent = () => {
 
   // Inclusion criteria array
   const [inclusionCriteria, setInclusionCriteria] = useState<
-    Array<{
-      title: string;
-      description: string;
-      status?: string;
-    }>
+    EvidenceVariableModel[]
   >([]);
 
   // Study variables array
-  const [studyVariables, setStudyVariables] = useState<
-    Array<{
-      title: string;
-      description: string;
-      expression?: string;
-      status?: string;
-    }>
-  >([]);
-
+  const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
+    []
+  );
+  
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
 
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
+
+  // TODO : To test the modals
+  const [showExistingStudyVariableModal, setShowExistingStudyVariableModal] =
+    useState(false);
+  const [showStudyVariableModal, setShowStudyVariableModal] = useState(false);
+  const [showExistingCriteriaModal, setShowExistingCriteriaModal] =
+    useState(false);
+  const [showNewCriteriaModal, setShowNewCriteriaModal] = useState(false);
+  const [showCombinationModal, setShowCombinationModal] = useState(false);
+  const [showExpressionModal, setShowExpressionModal] = useState(false);
+  const [showExistingCanonicalModal, setShowExistingCanonicalModal] =
+    useState(false);
+  const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
 
   //////////////////////////////
   //           Error          //
@@ -124,10 +134,12 @@ const StudyDetails: FunctionComponent = () => {
   ////////////////////////////////
 
   useEffect(() => {
-    loadStudy();
-    loadEvidenceVariablesHandler("inclusion");
-    loadEvidenceVariablesHandler("study");
-  }, []);
+    if (studyId) {
+      loadStudy();
+      loadEvidenceVariablesHandler("inclusion");
+      loadEvidenceVariablesHandler("study");
+    }
+  }, [studyId]);
 
   ////////////////////////////////
   //           Actions          //
@@ -299,10 +311,11 @@ const StudyDetails: FunctionComponent = () => {
    */
   async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
     try {
-      const evidencesVariables = await StudyService.loadEvidenceVariables(
-        studyId ?? "",
-        type
-      );
+      const evidencesVariables =
+        await EvidenceVariableService.loadEvidenceVariables(
+          studyId ?? "",
+          type
+        );
       if (type === "inclusion") {
         setInclusionCriteria(evidencesVariables);
       } else {
@@ -317,9 +330,20 @@ const StudyDetails: FunctionComponent = () => {
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
-  const studyVariablesExpressions = studyVariables.map(
-    (studyVariable) => studyVariable.expression
-  );
+  const studyVariablesExpressions =
+    EvidenceVariableUtils.extractExpressions(studyVariables);
+
+  /**
+   * To display the Inclusion Criteria
+   */
+  const inclusionCriteriaDisplayObjects =
+    EvidenceVariableUtils.toDisplayObjects(inclusionCriteria);
+
+  /**
+   * To display the Study Variable
+   */
+  const studyVariablesDisplayObjects =
+    EvidenceVariableUtils.toDisplayObjects(studyVariables);
 
   /**
    * Handle the cohorting and datamart generation.
@@ -506,11 +530,11 @@ const StudyDetails: FunctionComponent = () => {
         />
         {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
         <EvidenceVariableSection
-          evidenceVariables={inclusionCriteria}
+          evidenceVariables={inclusionCriteriaDisplayObjects}
           type="inclusion"
         />
         <EvidenceVariableSection
-          evidenceVariables={studyVariables}
+          evidenceVariables={studyVariablesDisplayObjects}
           type="study"
         />
         {/* Warning message if no study variables are found */}
@@ -544,6 +568,7 @@ const StudyDetails: FunctionComponent = () => {
             {i18n.t("button.export")}
           </Button>
         </div>
+
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
@@ -561,8 +586,8 @@ const StudyDetails: FunctionComponent = () => {
                       width: "30%",
                     },
                     ...studyVariables.map((studyVariable) => ({
-                      header: studyVariable.expression ?? "N/A",
-                      dataField: studyVariable.expression ?? "N/A",
+                      header: studyVariable.getExpression() ?? "N/A",
+                      dataField: studyVariable.getExpression() ?? "N/A",
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {
@@ -578,12 +603,13 @@ const StudyDetails: FunctionComponent = () => {
                       subjectParam?.valueIdentifier?.value ?? "N/A";
                     // Extract all other parameters and set them to "N/A" if not found
                     studyVariables.forEach((studyVariable) => {
-                      const paramName = studyVariable.expression ?? "N/A";
+                      const paramName = studyVariable.getExpression() ?? "N/A";
                       data[paramName] = "N/A";
                     });
                     resource.parameter.forEach((param: any) => {
                       if (param.name !== "Patient") {
-                        data[param.name] = StudyService.getParameterValue(param);
+                        data[param.name] =
+                          StudyService.getParameterValue(param);
                       }
                     });
                     return data;
@@ -603,7 +629,7 @@ const StudyDetails: FunctionComponent = () => {
         )}
         {isEditingForm && (
           <Button className="mt-3" onClick={handleSave}>
-            {i18n.t("button.save")}
+            {i18n.t("button.savechanges")}
           </Button>
         )}
       </>

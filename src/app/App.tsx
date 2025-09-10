@@ -11,11 +11,11 @@ import { useEffect } from "react";
 // React router dom
 import { Route, Routes, useLocation, useNavigationType } from "react-router-dom";
 // Pages
-import Home from "./pages/Home/Home";
-import Studies from "./pages/Studies/Studies";
-import Error from "./pages/Error/Error";
-import InProgress from "./pages/InProgress/InProgress";
-import StudyDetails from './pages/StudyDetails/StudyDetails';
+import Home from "../shared/pages/Home/Home";
+import Studies from "../features/Studies/pages/Studies";
+import Error from "../shared/pages/Error/Error";
+import InProgress from "../shared/pages/InProgress/InProgress";
+import StudyDetails from "../features/StudyDetails/pages/StudyDetails";
 
 require('dayjs/locale/fr');
 

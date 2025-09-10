@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 // React router dom
 import { BrowserRouter } from "react-router-dom";
 // Component
-import App from "./App";
-import UserService from "./services/UserService";
+import App from "./app/App";
+import UserService from "./shared/services/UserService";
 // Web vitals
 import reportWebVitals from "./reportWebVitals";
 // styles

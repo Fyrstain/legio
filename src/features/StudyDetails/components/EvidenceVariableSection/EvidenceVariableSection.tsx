@@ -8,25 +8,12 @@ import i18n from "i18next";
 import { Title } from "@fyrstain/hl7-front-library";
 // Components
 import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
-
-////////////////////////////////
-//         Interface          //
-////////////////////////////////
-
-interface EvidenceVariable {
-  title: string;
-  description: string;
-  status?: string;
-}
+// Types 
+import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
 
 ////////////////////////////////
 //           Props            //
 ////////////////////////////////
-
-export interface EvidenceVariableSectionProps {
-  evidenceVariables: EvidenceVariable[];
-  type: "inclusion" | "study";
-}
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps

@@ -1,14 +1,8 @@
 // Resources
-import {
-  Bundle,
-  ResearchStudy,
-  Parameters,
-  Group,
-  List,
-  EvidenceVariable,
-} from "fhir/r5";
+import { ResearchStudy, Parameters, Group, List } from "fhir/r5";
 // Client
 import Client from "fhir-kit-client";
+// Model
 
 /////////////////////////////////////
 //             Client              //
@@ -16,10 +10,6 @@ import Client from "fhir-kit-client";
 
 const fhirClient = new Client({
   baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-});
-
-const fhirKnowledgeClient = new Client({
-  baseUrl: process.env.REACT_APP_KNOWLEDGE_URL ?? "fhir",
 });
 
 const fhirDatamartEngineClient = new Client({
@@ -262,152 +252,6 @@ async function loadDatamartForStudy(
   }
   // If the datamart extension doesn't exist or has no valueReference, return null
   return null;
-}
-
-/**
- *  Load the inclusion criteria for a study.
- *
- * @param studyId The study id to load the inclusion criteria for.
- * @returns A promise of a Bundle containing the inclusion criteria.
- */
-async function loadInclusionCriteria(studyId: string): Promise<Bundle> {
-  return fhirKnowledgeClient.search({
-    resourceType: "EvidenceVariable",
-    searchParams: {
-      "_has:ResearchStudy:eligibility:_id": studyId,
-    },
-  }) as Promise<Bundle>;
-}
-
-/**
- * Load the study variables for a study.
- *
- * @param studyId The study id to load the study variables for.
- * @returns A promise of a Bundle containing the study variables.
- */
-async function loadStudyVariables(studyId: string): Promise<Bundle> {
-  return fhirKnowledgeClient.search({
-    resourceType: "EvidenceVariable",
-    searchParams: {
-      "_has:ResearchStudy:study-variables:_id": studyId,
-    },
-  }) as Promise<Bundle>;
-}
-
-/**
- * Read an EvidenceVariable by its canonical URL.
- *
- * @param canonicalUrl The canonical URL of the EvidenceVariable to load
- * @returns A promise of a Bundle containing the requested EvidenceVariable
- */
-async function readEvidenceVariableByUrl(
-  canonicalUrl: string
-): Promise<Bundle> {
-  return fhirKnowledgeClient.search({
-    resourceType: "EvidenceVariable",
-    searchParams: {
-      url: canonicalUrl,
-    },
-  }) as Promise<Bundle>;
-}
-
-/**
- * A function to load evidence variables for a study.
- *
- * @param studyId The study ID to load the evidence variables.
- * @param type The type of evidence variables to load (can be "inclusion" for Inclusion Criteria or "study" for Study Variable).
- * @returns A promise of an array of evidence variables.
- */
-async function loadEvidenceVariables(
-  studyId: string,
-  type: "inclusion" | "study"
-) {
-  const serviceMethod =
-    type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
-  try {
-    // Load the evidence variables using the service method, first level of EvidenceVariable
-    const response = await serviceMethod(studyId ?? "");
-    const bundle = response as Bundle;
-    const evidencesVariables: Array<{
-      title: string;
-      description: string;
-      expression?: string;
-      status?: string;
-    }> = [];
-    if (bundle.entry) {
-      const canonicalUrls: string[] = [];
-      // Extract canonical URLs from the EvidenceVariable resources
-      bundle.entry.forEach((entry) => {
-        if (entry.resource?.resourceType === "EvidenceVariable") {
-          const evidenceVariable = entry.resource as EvidenceVariable;
-          evidenceVariable.characteristic?.forEach((characteristic) => {
-            if (characteristic.definitionByCombination?.characteristic) {
-              characteristic.definitionByCombination.characteristic.forEach(
-                (subCharacteristic) => {
-                  if (subCharacteristic.definitionCanonical) {
-                    canonicalUrls.push(subCharacteristic.definitionCanonical);
-                  }
-                }
-              );
-            }
-          });
-        }
-      });
-      // If canonical URLs were found, load the EvidenceVariable resources using the URLs
-      if (canonicalUrls.length > 0) {
-        const canonicalResults = await Promise.all(
-          canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
-        );
-        canonicalResults.forEach((result) => {
-          if (
-            result.entry?.[0]?.resource?.resourceType === "EvidenceVariable"
-          ) {
-            const evidenceVariable = result.entry[0]
-              .resource as EvidenceVariable;
-            const details = extractEvidenceVariableDetails(evidenceVariable);
-            evidencesVariables.push(details);
-          }
-        });
-      } else {
-        // If no canonical URLs were found, use the original bundle entries
-        // TODO : We'll need to delete this part for the V1 when the canonical URLs will be always present
-        bundle.entry.forEach((entry) => {
-          if (entry.resource?.resourceType === "EvidenceVariable") {
-            const evidenceVariable = entry.resource as EvidenceVariable;
-            const details = extractEvidenceVariableDetails(evidenceVariable);
-            evidencesVariables.push(details);
-          }
-        });
-      }
-    }
-    return evidencesVariables;
-  } catch (error) {
-    throw new Error("Error loading evidence variables: " + error);
-  }
-}
-
-/**
- * Function to extract the details from an EvidenceVariable resource.
- *
- * @param evidenceVariable The EvidenceVariable resource to extract data from
- * @returns An object containing the title, description, and expression of the EvidenceVariable
- */
-function extractEvidenceVariableDetails(evidenceVariable: EvidenceVariable) {
-  let expressionValue: string | undefined;
-  if (evidenceVariable.characteristic) {
-    evidenceVariable.characteristic.forEach((characteristic) => {
-      if (characteristic.definitionExpression) {
-        expressionValue =
-          characteristic.definitionExpression?.expression;
-      }
-    });
-  }
-  return {
-    title: evidenceVariable.title ?? "",
-    description: evidenceVariable.description ?? "",
-    expression: expressionValue,
-    status: evidenceVariable.status ?? "",
-  };
 }
 
 /**
@@ -716,10 +560,6 @@ const StudyService = {
   updateStudy,
   loadDatamartForStudy,
   loadListById,
-  loadInclusionCriteria,
-  loadStudyVariables,
-  readEvidenceVariableByUrl,
-  loadEvidenceVariables,
   executeCohorting,
   executeGenerateDatamart,
   generateCohortAndDatamart,

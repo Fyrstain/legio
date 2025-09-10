@@ -40,7 +40,7 @@ export interface InformationSectionProps {
 //             Type             //
 //////////////////////////////////
 
-// Links the TestScript status to a display type for the dropdown
+// Links the status to a display type for the dropdown
 type StatusMenu = {
   status:
     | "success"
