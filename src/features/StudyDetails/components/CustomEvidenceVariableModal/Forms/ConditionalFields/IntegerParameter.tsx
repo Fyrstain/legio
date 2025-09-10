@@ -8,6 +8,7 @@ import { Alert, Form } from "react-bootstrap";
 import i18n from "i18next";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
+import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
  * Component for handling integer parameters in inclusion criteria.
@@ -20,8 +21,9 @@ import { useComparators } from "../../../../hooks/useComparators";
 const IntegerParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: Record<string, string>;
-}> = ({ value, onChange, errors }) => {
+  errors?: ValidationErrors;
+  validateField: (field: string, value: any, isRequired?: boolean) => void;
+}> = ({ value, onChange, errors, validateField }) => {
   ////////////////////////////////
   //           Hooks            //
   ////////////////////////////////
@@ -46,6 +48,7 @@ const IntegerParameter: FunctionComponent<{
       minValue: undefined,
       maxValue: undefined,
     });
+    validateField("criteriaOperator", event.target.value, false);
   };
 
   /**
@@ -62,6 +65,22 @@ const IntegerParameter: FunctionComponent<{
       ...value,
       [field]: numericValue,
     });
+    let fieldName: string;
+    // Assign the correct field name for validation
+    switch (field) {
+      case "value":
+        fieldName = "criteriaValue";
+        break;
+      case "minValue":
+        fieldName = "minValue";
+        break;
+      case "maxValue":
+        fieldName = "maxValue";
+        break;
+      default:
+        fieldName = field;
+    }
+    validateField(fieldName, numericValue, true);
   };
 
   /**
@@ -120,10 +139,10 @@ const IntegerParameter: FunctionComponent<{
           placeholder={i18n.t("placeholder.value")}
           value={value?.value?.toString() || ""}
           onChange={(e) => handleValueChange("value", e.target.value)}
-          isInvalid={!!errors?.integerValue}
+          isInvalid={!!errors?.criteriaValue}
         />
         <Form.Control.Feedback type="invalid">
-          {errors?.integerValue}
+          {errors?.criteriaValue}
         </Form.Control.Feedback>
       </>
     );

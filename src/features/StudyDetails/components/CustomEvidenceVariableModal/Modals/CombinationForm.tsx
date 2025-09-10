@@ -8,8 +8,7 @@ import i18n from "i18next";
 import ExcludeCard from "../shared/ExcludeCard";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
-import { clear } from "console";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -55,7 +54,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -117,6 +116,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
   const handleFieldChange = (field: keyof CombinationFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
+    validateField(field, value, true);
   };
 
   /**
@@ -146,6 +146,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       }));
     }
     setHasChanges(true);
+    validateField("code", value, true);
   };
 
   /**

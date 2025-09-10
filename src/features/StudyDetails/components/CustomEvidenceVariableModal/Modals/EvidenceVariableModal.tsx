@@ -8,8 +8,7 @@ import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
-import { clear } from "console";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -54,7 +53,7 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -186,6 +185,7 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
         onChange={handleFormChange}
         type={props.type}
         errors={errors}
+        validateField={validateField}
       />
     </BaseModalWrapper>
   );

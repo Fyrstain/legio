@@ -6,8 +6,9 @@ import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types
 import { Alert, Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// Hook
+// Hooks
 import { useComparators } from "../../../../hooks/useComparators";
+import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
  * Component for handling boolean parameters in inclusion criteria.
@@ -20,8 +21,9 @@ import { useComparators } from "../../../../hooks/useComparators";
 const BooleanParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: Record<string, string>;
-}> = ({ value, onChange, errors }) => {
+  errors?: ValidationErrors;
+  validateField: (field: string, value: any, isRequired?: boolean) => void;
+}> = ({ value, onChange, errors, validateField }) => {
   ////////////////////////////////
   //           Hooks            //
   ////////////////////////////////
@@ -43,6 +45,7 @@ const BooleanParameter: FunctionComponent<{
       ...value,
       operator: event.target.value,
     });
+    validateField("criteriaOperator", event.target.value, true);
   };
 
   /**

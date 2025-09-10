@@ -8,10 +8,11 @@ import { Alert, Form } from "react-bootstrap";
 import i18n from "i18next";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
+import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
  * Component for handling date parameters in inclusion criteria.
- * 
+ *
  * @param value - The current InclusionCriteriaValue object
  * @param onChange - Callback function to handle changes to the value
  * @returns JSX.Element representing the date parameter form
@@ -19,8 +20,9 @@ import { useComparators } from "../../../../hooks/useComparators";
 const DateParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: Record<string, string>;
-}> = ({ value, onChange, errors }) => {
+  errors?: ValidationErrors;
+  validateField: (field: string, value: any, isRequired?: boolean) => void;
+}> = ({ value, onChange, errors, validateField }) => {
   ////////////////////////////////
   //           Hooks            //
   ////////////////////////////////
@@ -45,6 +47,7 @@ const DateParameter: FunctionComponent<{
       minValue: undefined,
       maxValue: undefined,
     });
+    validateField("criteriaOperator", event.target.value, false);
   };
 
   /**
@@ -61,6 +64,22 @@ const DateParameter: FunctionComponent<{
       ...value,
       [field]: dateValue,
     });
+    let fieldName: string;
+    // Assign the correct field name for validation
+    switch (field) {
+      case "value":
+        fieldName = "criteriaValue";
+        break;
+      case "minValue":
+        fieldName = "minValue";
+        break;
+      case "maxValue":
+        fieldName = "maxValue";
+        break;
+      default:
+        fieldName = field;
+    }
+    validateField(fieldName, dateValue, true);
   };
 
   /**
@@ -160,7 +179,9 @@ const DateParameter: FunctionComponent<{
               className="mb-2"
               isInvalid={!!errors?.criteriaOperator}
             >
-              <option value="">{i18n.t("placeholder.comparisonoperator")}</option>
+              <option value="">
+                {i18n.t("placeholder.comparisonoperator")}
+              </option>
               {comparatorOptions.map((option) => (
                 <option key={option.code} value={option.code}>
                   {option.display || option.code}

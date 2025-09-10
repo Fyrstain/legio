@@ -94,8 +94,6 @@
         "startdate": "Start Date",
         "enddate": "End Date",
         "identifier": "Identifier",
-        "notobsolete": "Not Obsolete",
-        "obsolete": "Obsolete",
         "criteriatype": "Choose the criteria type",
         "parameter": "Parameter",
         "valueset": "ValueSet",
@@ -117,7 +115,7 @@
         "noinclusioncriteria": "No inclusion criteria found for this study.",
         "nostudyvariables": "No study variables found for this study.",
         "nogenerateddatamart": "No datamart generation possible, no study variable has been found.",
-        "requiredfield": "This field is required.",
+        "requiredfield": "This field is required !",
         "versionalreadyexists": "This version already exists. Please choose another one.",
         "errorwhilesavingstudy": "Error while saving study. Please try again.",
         "nofilterresults": "No results for the selected filter.",
@@ -125,7 +123,7 @@
         "nonotobsoletevariables": "No non-obsolete variables found for this study.",
         "nocodesavailable": "No codes available for this ValueSet.",
         "fillrequiredfields": "Please fill all required fields.",
-        "invalidurl": "Invalid URL.",
+        "invalidurl": "Invalid URL !",
         "loadingcomparators": "Error loading comparators:"
     },
     "message": {

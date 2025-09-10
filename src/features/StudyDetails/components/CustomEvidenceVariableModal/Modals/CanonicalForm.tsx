@@ -9,7 +9,7 @@ import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -59,7 +59,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -211,6 +211,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
         readonly={false}
         type="inclusion"
         errors={errors}
+        validateField={validateField}
       />
     </BaseModalWrapper>
   );

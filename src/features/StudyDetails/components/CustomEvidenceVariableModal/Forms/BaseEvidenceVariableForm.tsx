@@ -35,6 +35,8 @@ interface BaseEvidenceVariableFormProps {
   libraryDisplayValue?: string;
   // Validation errors
   errors?: { [field: string]: string };
+  // Validate fields callback
+  validateField: (fieldName: string, value: any, isRequired?: boolean) => string | null;
 }
 
 //////////////////////////////////
@@ -112,13 +114,15 @@ const BaseEvidenceVariableForm: FunctionComponent<
    */
   const handleFieldChange = (
     field: keyof FormEvidenceVariableData,
-    value: any
+    value: any,
+    isRequired: boolean
   ) => {
     if (props.readonly) return;
     props.onChange({
       ...props.data,
       [field]: value,
     });
+    props.validateField(field, value, isRequired);
   };
 
   /**
@@ -126,7 +130,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
    */
   const handleStatusChange = (statusMessage: string) => {
     if (statusMessage !== i18n.t("placeholder.choosestatus")) {
-      handleFieldChange("status", statusMessage);
+      handleFieldChange("status", statusMessage, true);
     }
   };
 
@@ -136,13 +140,13 @@ const BaseEvidenceVariableForm: FunctionComponent<
   const handleLibraryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const libraryId = e.target.value;
     if (!libraryId) {
-      handleFieldChange("selectedLibrary", undefined);
+      handleFieldChange("selectedLibrary", undefined, e.target.required);
     }
     const library = libraries.find((lib) => lib.getId() === libraryId);
     if (library) {
       const libraryReference: LibraryReference =
         library.toDisplayLibraryReference();
-      handleFieldChange("selectedLibrary", libraryReference);
+      handleFieldChange("selectedLibrary", libraryReference, e.target.required);
     }
   };
 
@@ -195,7 +199,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
               type="text"
               placeholder={i18n.t("placeholder.identifier")}
               value={props.data.identifier}
-              onChange={(e) => handleFieldChange("identifier", e.target.value)}
+              onChange={(e) => handleFieldChange("identifier", e.target.value, false)}
               disabled={props.readonly}
             />
           </Form.Group>
@@ -207,7 +211,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
               type="text"
               placeholder={i18n.t("placeholder.name")}
               value={props.data.title || ""}
-              onChange={(e) => handleFieldChange("title", e.target.value)}
+              onChange={(e) => handleFieldChange("title", e.target.value, true)}
               disabled={props.readonly}
               isInvalid={!!props.errors?.title}
             />
@@ -224,7 +228,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
               rows={3}
               placeholder={i18n.t("placeholder.description")}
               value={props.data.description || ""}
-              onChange={(e) => handleFieldChange("description", e.target.value)}
+              onChange={(e) => handleFieldChange("description", e.target.value, true)}
               disabled={props.readonly}
               isInvalid={!!props.errors?.description}
             />
@@ -240,7 +244,7 @@ const BaseEvidenceVariableForm: FunctionComponent<
               type="text"
               placeholder={i18n.t("placeholder.url")}
               value={props.data.url || ""}
-              onChange={(e) => handleFieldChange("url", e.target.value)}
+              onChange={(e) => handleFieldChange("url", e.target.value, false)}
               disabled={props.readonly}
               isInvalid={!!props.errors?.url}
             />

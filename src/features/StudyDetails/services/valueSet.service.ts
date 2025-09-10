@@ -46,6 +46,7 @@ async function loadValueSets(): Promise<ValueSet[]> {
   try {
     const bundle = (await fhirClient.search({
       resourceType: "ValueSet",
+      searchParams: { _count: 10000 },
     })) as Bundle;
     return bundle.entry?.map((entry) => entry.resource as ValueSet) || [];
   } catch (error) {

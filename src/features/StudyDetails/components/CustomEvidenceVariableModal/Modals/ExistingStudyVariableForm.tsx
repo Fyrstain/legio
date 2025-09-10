@@ -12,8 +12,7 @@ import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types"
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
-import { clear } from "console";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -57,7 +56,7 @@ const ExistingStudyVariableForm: FunctionComponent<
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -129,6 +128,7 @@ const ExistingStudyVariableForm: FunctionComponent<
     }
     const selectedSV = studyVariables.find((sv) => sv.id === selectedId);
     handleStudyVariableSelect(selectedSV);
+    validateField("selectedStudyVariable", selectedId, true);
   };
 
   /**
@@ -235,6 +235,7 @@ const ExistingStudyVariableForm: FunctionComponent<
               libraryDisplayValue={
                 formData.selectedStudyVariable.libraryUrl || "N/A"
               }
+              validateField={validateField}
             />
           )}
         </Card.Body>

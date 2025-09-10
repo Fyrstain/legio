@@ -22,6 +22,7 @@ async function loadLibraries(): Promise<LibraryModel[]> {
   try {
     const bundle = (await fhirKnowledgeClient.search({
       resourceType: "Library",
+      searchParams: { _count: 10000 },
     })) as Bundle;
     // Convert Bundle to LibraryModel instances
     return LibraryModel.fromBundle(bundle);

@@ -21,7 +21,7 @@ import LibraryService from "../../../services/library.service";
 // Utils
 import { getUITypeFromLibraryParameter } from "../../../../../shared/utils/libraryParameterMapping";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -87,7 +87,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -177,7 +177,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
   /**
    * Handle field changes
    */
-  const handleFieldChange = (field: keyof ExpressionFormData, value: any) => {
+  const handleFieldChange = (
+    field: keyof ExpressionFormData,
+    value: any,
+    isRequired: boolean
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
     // Reset dependent fields when library changes
@@ -197,13 +201,14 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
         criteriaValue: undefined,
       }));
     }
+    validateField(field, value, isRequired);
   };
 
   /**
    * Handle exclude change from ExcludeCard
    */
   const handleExcludeChange = (exclude: boolean) => {
-    handleFieldChange("exclude", exclude);
+    handleFieldChange("exclude", exclude, true);
   };
 
   /**
@@ -214,15 +219,14 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
   ) => {
     const libraryId = e.target.value;
     if (!libraryId) {
-      handleFieldChange("selectedLibrary", undefined);
+      handleFieldChange("selectedLibrary", undefined, true);
       return;
     }
-
     const library = libraries.find((lib) => lib.getId() === libraryId);
     if (library) {
       const libraryReference: LibraryReference =
         library.toDisplayLibraryReference();
-      handleFieldChange("selectedLibrary", libraryReference);
+      handleFieldChange("selectedLibrary", libraryReference, true);
     }
   };
 
@@ -233,7 +237,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const parameterName = e.target.value;
-    handleFieldChange("selectedParameter", parameterName);
+    handleFieldChange("selectedParameter", parameterName, false);
 
     if (parameterName && selectedLibrary) {
       const parameter = availableParameters.find(
@@ -241,10 +245,14 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
       );
       if (parameter) {
         const uiType = getUITypeFromLibraryParameter(parameter.type);
-        handleFieldChange("criteriaValue", {
-          type: uiType,
-          value: undefined,
-        });
+        handleFieldChange(
+          "criteriaValue",
+          {
+            type: uiType,
+            value: uiType === "boolean" ? false : undefined,
+          },
+          false
+        );
       }
     }
   };
@@ -253,7 +261,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
    * Handle criteria value change from ConditionalFieldsContainer
    */
   const handleCriteriaValueChange = (value: InclusionCriteriaValue) => {
-    handleFieldChange("criteriaValue", value);
+    handleFieldChange(
+      "criteriaValue",
+      value,
+      formData.selectedParameter ? true : false
+    );
   };
 
   /**
@@ -334,7 +346,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
           const maxError = validateField("maxValue", cv.maxValue, true);
           parameterErrors = !!(operatorError || minError || maxError);
         } else {
-          const intError = validateField("integerValue", cv.value, true);
+          const intError = validateField("criteriaValue", cv.value, true);
           parameterErrors = !!(operatorError || intError);
         }
       }
@@ -411,7 +423,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                 placeholder={i18n.t("placeholder.id")}
                 value={formData.expressionId}
                 onChange={(e) =>
-                  handleFieldChange("expressionId", e.target.value)
+                  handleFieldChange(
+                    "expressionId",
+                    e.target.value,
+                    e.target.required
+                  )
                 }
               />
             </Form.Group>
@@ -424,7 +440,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                 placeholder={i18n.t("placeholder.name")}
                 value={formData.expressionName}
                 onChange={(e) =>
-                  handleFieldChange("expressionName", e.target.value)
+                  handleFieldChange(
+                    "expressionName",
+                    e.target.value,
+                    e.target.required
+                  )
                 }
               />
             </Form.Group>
@@ -437,8 +457,13 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                 rows={3}
                 placeholder={i18n.t("placeholder.description")}
                 value={formData.expressionDescription}
+                required
                 onChange={(e) =>
-                  handleFieldChange("expressionDescription", e.target.value)
+                  handleFieldChange(
+                    "expressionDescription",
+                    e.target.value,
+                    e.target.required
+                  )
                 }
                 isInvalid={!!errors.expressionDescription}
               />
@@ -473,8 +498,13 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
               <Form.Label>Expression *</Form.Label>
               <Form.Select
                 value={formData.selectedExpression || ""}
+                required
                 onChange={(e) =>
-                  handleFieldChange("selectedExpression", e.target.value)
+                  handleFieldChange(
+                    "selectedExpression",
+                    e.target.value,
+                    e.target.required
+                  )
                 }
                 disabled={
                   !formData.selectedLibrary || availableExpressions.length === 0
@@ -524,6 +554,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                 value={formData.criteriaValue}
                 onChange={handleCriteriaValueChange}
                 errors={errors}
+                validateField={validateField}
               />
             )}
           </Form>

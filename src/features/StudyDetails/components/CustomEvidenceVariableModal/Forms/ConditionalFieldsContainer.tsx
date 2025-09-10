@@ -11,12 +11,15 @@ import { Form } from "react-bootstrap";
 import i18n from "i18next";
 // Types
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+// Hooks
+import { ValidationErrors } from "../../../hooks/useFormValidation";
 
 const ConditionalFieldsContainer: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: Record<string, string>;
-}> = ({ value, onChange, errors }) => {
+  errors?: ValidationErrors;
+  validateField: (field: string, value: any, isRequired?: boolean) => void;
+}> = ({ value, onChange, errors, validateField }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -28,13 +31,13 @@ const ConditionalFieldsContainer: FunctionComponent<{
   const renderConditionalField = () => {
     switch (value.type) {
       case "boolean":
-        return <BooleanParameter value={value} onChange={onChange} errors={errors} />;
+        return <BooleanParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
       case "integer":
-        return <IntegerParameter value={value} onChange={onChange} errors={errors} />;
+        return <IntegerParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
       case "date":
-        return <DateParameter value={value} onChange={onChange} errors={errors} />;
+        return <DateParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
       case "code":
-        return <CodeParameter value={value} onChange={onChange} errors={errors} />;
+        return <CodeParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
       default:
         return null;
     }

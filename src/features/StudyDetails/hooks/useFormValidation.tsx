@@ -25,7 +25,7 @@ export interface SimpleValidationResult {
 //////////////////////////
 //         Hook         //
 //////////////////////////
-export const useSimpleValidation = (): SimpleValidationResult => {
+export const useFormValidation = (): SimpleValidationResult => {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   const hasNoErrors = Object.keys(errors).length === 0;
@@ -36,7 +36,6 @@ export const useSimpleValidation = (): SimpleValidationResult => {
     isRequired = false
   ): string | null => {
     let error: string | null = null;
-
     // Validation for required fields
     if (
       isRequired &&
@@ -44,7 +43,6 @@ export const useSimpleValidation = (): SimpleValidationResult => {
     ) {
       error = i18n.t("errormessage.requiredfield");
     }
-
     // Validation for URL fields
     if (
       !error &&
@@ -64,14 +62,16 @@ export const useSimpleValidation = (): SimpleValidationResult => {
       if (error) {
         return { ...prev, [fieldName]: error };
       } else {
-        const { [fieldName]: removed, ...rest } = prev;
-        return rest;
+        delete prev[fieldName];
+        return prev;
       }
     });
     return error;
   };
 
-  const clearErrors = () => setErrors({});
+  const clearErrors = () => {
+    setErrors({});
+  };
 
   return {
     errors,

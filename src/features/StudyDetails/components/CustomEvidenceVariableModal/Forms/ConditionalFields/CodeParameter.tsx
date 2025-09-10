@@ -20,6 +20,7 @@ import { ValueSet } from "fhir/r5";
 import ValueSetService from "../../../../services/valueSet.service";
 // Hook
 import { useComparators } from "../../../../hooks/useComparators";
+import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
  * Component for handling code parameters in inclusion criteria.
@@ -32,8 +33,9 @@ import { useComparators } from "../../../../hooks/useComparators";
 const CodeParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: Record<string, string>;
-}> = ({ value, onChange, errors }) => {
+  errors?: ValidationErrors;
+  validateField: (field: string, value: any, isRequired?: boolean) => void;
+}> = ({ value, onChange, errors, validateField }) => {
   ////////////////////////////////
   //           Hooks            //
   ////////////////////////////////
@@ -118,6 +120,7 @@ const CodeParameter: FunctionComponent<{
       valueSetUrl: valueSetUrl,
       value: "",
     });
+    validateField("criteriaValueSet", valueSetUrl, true);
   };
 
   /**
@@ -132,6 +135,7 @@ const CodeParameter: FunctionComponent<{
       value: codeValue,
       valueSetUrl: selectedValueSet,
     });
+    validateField("criteriaCode", codeValue, true);
   };
 
   /**
@@ -146,6 +150,7 @@ const CodeParameter: FunctionComponent<{
       operator: event.target.value,
       value: undefined,
     });
+    validateField("criteriaOperator", event.target.value, true);
   };
 
   /////////////////////////////////////////////

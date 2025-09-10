@@ -12,7 +12,7 @@ import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types"
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
-import { useSimpleValidation } from "../../../hooks/useFormValidation";
+import { useFormValidation } from "../../../hooks/useFormValidation";
 
 ////////////////////////////////
 //           Props            //
@@ -56,7 +56,7 @@ const ExistingInclusionCriteriaForm: FunctionComponent<
   //           Hooks            //
   ////////////////////////////////
 
-  const { errors, validateField, clearErrors } = useSimpleValidation();
+  const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -128,6 +128,7 @@ const ExistingInclusionCriteriaForm: FunctionComponent<
     }
     const selectedEV = evidenceVariables.find((ev) => ev.id === selectedId);
     handleEvidenceVariableSelect(selectedEV);
+    validateField("selectedEvidenceVariable", selectedId, true);
   };
 
   /**
@@ -232,6 +233,7 @@ const ExistingInclusionCriteriaForm: FunctionComponent<
               libraryDisplayValue={
                 formData.selectedEvidenceVariable.libraryUrl || "N/A"
               }
+              validateField={validateField}
             />
           )}
         </Card.Body>
