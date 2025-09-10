@@ -39,15 +39,6 @@ import {
 // Fhir
 import Client from "fhir-kit-client";
 
-// Tests Modals
-import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
-import CombinationForm from "../components/CustomEvidenceVariableModal/Modals/CombinationForm";
-import ExpressionForm from "../components/CustomEvidenceVariableModal/Modals/ExpressionForm";
-import ExistingInclusionCriteriaModal from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
-import CanonicalForm from "../components/CustomEvidenceVariableModal/Modals/CanonicalForm";
-import ExistingStudyVariableForm from "../components/CustomEvidenceVariableModal/Modals/ExistingStudyVariableForm";
-import ExistingCanonicalCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingCanonicalCriteriaForm";
-
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
   //             Client              //
@@ -577,121 +568,6 @@ const StudyDetails: FunctionComponent = () => {
             {i18n.t("button.export")}
           </Button>
         </div>
-        {/* TODO : Delete this button, it's only to test the modal */}
-
-        {/* To test the ExistingStudyVariableForm modal */}
-        <Button onClick={() => setShowExistingStudyVariableModal(true)}>
-          Add Existing Study Variable
-        </Button>
-        <ExistingStudyVariableForm
-          show={showExistingStudyVariableModal}
-          onHide={() => setShowExistingStudyVariableModal(false)}
-          onSave={(data) => {
-            console.log("Saving existing study variable:", data);
-            setShowExistingStudyVariableModal(false);
-          }}
-          mode="create"
-        />
-
-        {/* To test the StudyVariableForm modal */}
-        <Button onClick={() => setShowStudyVariableModal(true)}>
-          Add NEW Study Variable
-        </Button>
-        <EvidenceVariableModal
-          show={showStudyVariableModal}
-          onHide={() => setShowStudyVariableModal(false)}
-          onSave={(data) => {
-            console.log("Saving study variable:", data);
-            setShowStudyVariableModal(false);
-          }}
-          mode="create"
-          type="study"
-        />
-
-        {/* To test the modal to add a new criteria */}
-        <Button onClick={() => setShowNewCriteriaModal(true)}>
-          Add NEW Inclusion Criteria
-        </Button>
-        <EvidenceVariableModal
-          show={showNewCriteriaModal}
-          onHide={() => setShowNewCriteriaModal(false)}
-          onSave={(data) => {
-            console.log("Saving new criteria:", data);
-            setShowNewCriteriaModal(false);
-          }}
-          mode="create"
-          type="inclusion"
-        />
-
-        {/* To test the NewInclusionCriteriaForm modal */}
-        <Button onClick={() => setShowExistingCriteriaModal(true)}>
-          Add Existing Inclusion Criteria
-        </Button>
-        <ExistingInclusionCriteriaModal
-          show={showExistingCriteriaModal}
-          onHide={() => setShowExistingCriteriaModal(false)}
-          onSave={(data) => {
-            console.log("Saving existing criteria:", data);
-            setShowExistingCriteriaModal(false);
-          }}
-          mode="create"
-        />
-
-        {/* To test the CombinationForm modal */}
-        <Button onClick={() => setShowCombinationModal(true)}>
-          Add Combination
-        </Button>
-        <CombinationForm
-          show={showCombinationModal}
-          onHide={() => setShowCombinationModal(false)}
-          onSave={(data) => {
-            console.log("Combination data:", data);
-            setShowCombinationModal(false);
-          }}
-          mode="create"
-        />
-
-        {/* To test the ExpressionForm modal */}
-        <Button onClick={() => setShowExpressionModal(true)}>
-          Add Expression
-        </Button>
-        <ExpressionForm
-          show={showExpressionModal}
-          onHide={() => setShowExpressionModal(false)}
-          onSave={(data) => {
-            console.log("Expression data:", data);
-            setShowExpressionModal(false);
-          }}
-          mode="create"
-        />
-
-        {/* To test the ExistingCanonicalModal */}
-        <Button onClick={() => setShowExistingCanonicalModal(true)}>
-          Add Existing Canonical Modal
-        </Button>
-        <ExistingCanonicalCriteriaForm
-          show={showExistingCanonicalModal}
-          onHide={() => setShowExistingCanonicalModal(false)}
-          onSave={(data) => {
-            console.log("Existing Canonical data:", data);
-            setShowExistingCanonicalModal(false);
-          }}
-          mode="create"
-        />
-
-        {/* To test the NewCanonicalModal */}
-        <Button onClick={() => setShowNewCanonicalModal(true)}>
-          Add New Canonical Modal
-        </Button>
-        <CanonicalForm
-          show={showNewCanonicalModal}
-          onHide={() => setShowNewCanonicalModal(false)}
-          onSave={(data) => {
-            console.log("New Canonical data:", data);
-            setShowNewCanonicalModal(false);
-          }}
-          mode="create"
-        />
 
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
