@@ -272,6 +272,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
    * Validate form data
    */
   const isFormValid = (): boolean => {
+    const nameError = validateField(
+      "expressionName",
+      formData.expressionName,
+      true
+    );
     const descError = validateField(
       "expressionDescription",
       formData.expressionDescription,
@@ -351,7 +356,13 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
         }
       }
     }
-    return !(descError || libError || exprError || parameterErrors);
+    return !(
+      nameError ||
+      descError ||
+      libError ||
+      exprError ||
+      parameterErrors
+    );
   };
 
   /**
@@ -434,7 +445,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
 
             {/* Name field */}
             <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.name")}</Form.Label>
+              <Form.Label>{i18n.t("label.name")} *</Form.Label>
               <Form.Control
                 type="text"
                 placeholder={i18n.t("placeholder.name")}
@@ -443,10 +454,14 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                   handleFieldChange(
                     "expressionName",
                     e.target.value,
-                    e.target.required
+                    true
                   )
                 }
+                isInvalid={!!errors.expressionName}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors?.expressionName}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Description field */}
@@ -462,7 +477,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                   handleFieldChange(
                     "expressionDescription",
                     e.target.value,
-                    e.target.required
+                    true
                   )
                 }
                 isInvalid={!!errors.expressionDescription}
@@ -494,59 +509,61 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
             </Form.Group>
 
             {/* Expression dropdown */}
-            <Form.Group className="mb-3">
-              <Form.Label>Expression *</Form.Label>
-              <Form.Select
-                value={formData.selectedExpression || ""}
-                required
-                onChange={(e) =>
-                  handleFieldChange(
-                    "selectedExpression",
-                    e.target.value,
-                    e.target.required
-                  )
-                }
-                disabled={
-                  !formData.selectedLibrary || availableExpressions.length === 0
-                }
-                isInvalid={!!errors.selectedExpression}
-              >
-                <option value="">{i18n.t("placeholder.expression")}</option>
-                {availableExpressions.map((expression) => (
-                  <option key={expression.name} value={expression.name}>
-                    {expression.name}
-                    {expression.documentation &&
-                      ` - ${expression.documentation}`}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">
-                {errors?.selectedExpression}
-              </Form.Control.Feedback>
-            </Form.Group>
+            {formData.selectedLibrary && (
+              <Form.Group className="mb-3">
+                <Form.Label>Expression *</Form.Label>
+                <Form.Select
+                  value={formData.selectedExpression || ""}
+                  required
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "selectedExpression",
+                      e.target.value,
+                      e.target.required
+                    )
+                  }
+                  isInvalid={!!errors.selectedExpression}
+                >
+                  <option value="">{i18n.t("placeholder.expression")}</option>
+                  {availableExpressions.map((expression) => (
+                    <option key={expression.name} value={expression.name}>
+                      {expression.name}
+                      {expression.documentation &&
+                        ` - ${expression.documentation}`}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.selectedExpression}
+                </Form.Control.Feedback>
+              </Form.Group>
+            )}
 
             {/* Parameter dropdown */}
-            <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.parameter")}</Form.Label>
-              <Form.Select
-                value={formData.selectedParameter || ""}
-                onChange={handleParameterSelectChange}
-                disabled={
-                  !formData.selectedLibrary || availableParameters.length === 0
-                }
-              >
-                <option value="">{i18n.t("placeholder.parameter")}</option>
-                {availableParameters.map((parameter) => (
-                  <option
-                    key={parameter.name}
-                    value={parameter.name}
-                    title={parameter.documentation}
-                  >
-                    {parameter.name} ({parameter.type})
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+            {formData.selectedLibrary && (
+              <Form.Group className="mb-3">
+                <Form.Label>{i18n.t("label.parameter")}</Form.Label>
+                <Form.Select
+                  value={formData.selectedParameter || ""}
+                  onChange={handleParameterSelectChange}
+                  disabled={
+                    !formData.selectedLibrary ||
+                    availableParameters.length === 0
+                  }
+                >
+                  <option value="">{i18n.t("placeholder.parameter")}</option>
+                  {availableParameters.map((parameter) => (
+                    <option
+                      key={parameter.name}
+                      value={parameter.name}
+                      title={parameter.documentation}
+                    >
+                      {parameter.name} ({parameter.type})
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            )}
 
             {/* Conditional Fields for parameter configuration */}
             {formData.selectedParameter && formData.criteriaValue && (

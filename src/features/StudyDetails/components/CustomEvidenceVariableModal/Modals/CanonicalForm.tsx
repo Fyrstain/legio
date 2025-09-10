@@ -128,6 +128,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
     // To validate all fields, we need to access the evidenceVariable data
     const ev = formData.evidenceVariable;
     // Validate all fields
+    const identifierError = validateField("identifier", ev.identifier, true);
     const titleError = validateField("title", ev.title, true);
     const descError = validateField("description", ev.description, true);
     const statusError = validateField("status", ev.status, true);
@@ -138,7 +139,14 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
     );
     const urlError = validateField("url", ev.url);
     // Return true if no errors
-    return !(titleError || descError || statusError || libError || urlError);
+    return !(
+      identifierError ||
+      titleError ||
+      descError ||
+      statusError ||
+      libError ||
+      urlError
+    );
   };
 
   /**
