@@ -36,7 +36,11 @@ interface BaseEvidenceVariableFormProps {
   // Validation errors
   errors?: { [field: string]: string };
   // Validate fields callback
-  validateField: (fieldName: string, value: any, isRequired?: boolean) => string | null;
+  validateField: (
+    fieldName: string,
+    value: any,
+    isRequired?: boolean
+  ) => string | null;
 }
 
 //////////////////////////////////
@@ -194,14 +198,20 @@ const BaseEvidenceVariableForm: FunctionComponent<
         <Card.Body>
           {/* Identifier field */}
           <Form.Group className="mb-3">
-            <Form.Label>{i18n.t("label.identifier")}</Form.Label>
+            <Form.Label>{i18n.t("label.identifier")} *</Form.Label>
             <Form.Control
               type="text"
               placeholder={i18n.t("placeholder.identifier")}
               value={props.data.identifier}
-              onChange={(e) => handleFieldChange("identifier", e.target.value, false)}
+              onChange={(e) =>
+                handleFieldChange("identifier", e.target.value, true)
+              }
               disabled={props.readonly}
+              isInvalid={!!props.errors?.identifier}
             />
+            <Form.Control.Feedback type="invalid">
+              {props.errors?.identifier}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {/* Title/Name field */}
@@ -228,7 +238,9 @@ const BaseEvidenceVariableForm: FunctionComponent<
               rows={3}
               placeholder={i18n.t("placeholder.description")}
               value={props.data.description || ""}
-              onChange={(e) => handleFieldChange("description", e.target.value, true)}
+              onChange={(e) =>
+                handleFieldChange("description", e.target.value, true)
+              }
               disabled={props.readonly}
               isInvalid={!!props.errors?.description}
             />

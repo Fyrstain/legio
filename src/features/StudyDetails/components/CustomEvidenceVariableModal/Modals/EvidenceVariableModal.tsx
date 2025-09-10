@@ -108,6 +108,11 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
    * To validate the form before saving
    */
   const isFormValid = (): boolean => {
+    const identifierError = validateField(
+      "identifier",
+      formData.identifier,
+      true
+    );
     const titleError = validateField("title", formData.title, true);
     const descError = validateField("description", formData.description, true);
     const statusError = validateField("status", formData.status, true);
@@ -118,7 +123,14 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
     );
     const urlError = validateField("url", formData.url);
     // Return true if no errors
-    return !(titleError || descError || statusError || libError || urlError);
+    return !(
+      identifierError ||
+      titleError ||
+      descError ||
+      statusError ||
+      libError ||
+      urlError
+    );
   };
 
   /**
