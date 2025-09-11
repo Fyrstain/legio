@@ -80,7 +80,7 @@ const EvidenceVariableSection: FunctionComponent<
             value={obsolescenceFilter}
             onChange={handleObsolescenceFilterChange}
           />
-          {editMode && onAction && (
+          {editMode && onAction && evidenceVariables.length === 0 && (
             <EvidenceVariableButtons
               buttonType={type === "inclusion" ? "criteria" : "studyVariable"}
               editMode={editMode}
@@ -96,7 +96,12 @@ const EvidenceVariableSection: FunctionComponent<
                   <Accordion.Header>
                     <Title level={3} content={item.title} />
                   </Accordion.Header>
-                  <Accordion.Body>{item.description}</Accordion.Body>
+                  <Accordion.Body>
+                    <div className="d-flex align-items-center">
+                      <span className="me-2 fw-bold">Description : </span>
+                      <span>{item.description}</span>
+                    </div>
+                  </Accordion.Body>
                 </Accordion.Item>
               </Accordion>
             ))

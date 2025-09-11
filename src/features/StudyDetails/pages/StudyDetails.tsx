@@ -41,7 +41,10 @@ import {
 // Fhir
 import Client from "fhir-kit-client";
 // Types
-import { EvidenceVariableActionType } from "../types/evidenceVariable.types";
+import {
+  EvidenceVariableActionType,
+  FormEvidenceVariableData,
+} from "../types/evidenceVariable.types";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -276,6 +279,57 @@ const StudyDetails: FunctionComponent = () => {
       case "existing":
         setShowExistingCriteriaModal(true);
         break;
+    }
+  };
+
+  /**
+   * Save an evidence variable as inclusion criteria.
+   * @param evidenceVariableId The id of the evidence variable to save as inclusion criteria.
+   */
+  const saveInclusionCriteria = async (evidenceVariableId: string) => {
+    await StudyService.addEvidenceVariableToStudy(
+      studyId!,
+      evidenceVariableId,
+      "inclusion"
+    );
+    await loadEvidenceVariablesHandler("inclusion");
+  };
+
+  /**
+   * Handle the creation of a new evidence variable.
+   * @param data The data of the new evidence variable to create.
+   */
+  const handleSaveNewCriteria = async (data: FormEvidenceVariableData) => {
+    try {
+      setLoading(true);
+      const createdEV =
+        await EvidenceVariableService.createSimpleEvidenceVariable(data);
+      await saveInclusionCriteria(createdEV.id!);
+      setShowNewCriteriaModal(false);
+    } catch (error) {
+      console.error("Error creating criteria:", error);
+      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the addition of an existing evidence variable.
+   * @param data The data of the existing evidence variable to add.
+   */
+  const handleSaveExistingCriteria = async (data: {
+    selectedEvidenceVariable?: FormEvidenceVariableData;
+  }) => {
+    try {
+      setLoading(true);
+      await saveInclusionCriteria(data.selectedEvidenceVariable!.id!);
+      setShowExistingCriteriaModal(false);
+    } catch (error) {
+      console.error("Error adding existing criteria:", error);
+      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -663,10 +717,7 @@ const StudyDetails: FunctionComponent = () => {
             mode="create"
             type="inclusion"
             onHide={() => setShowNewCriteriaModal(false)}
-            onSave={() => {
-              setShowNewCriteriaModal(false);
-              loadEvidenceVariablesHandler("inclusion");
-            }}
+            onSave={handleSaveNewCriteria}
           />
         )}
         {/* To link an existing Inclusion Criteria */}
@@ -675,10 +726,7 @@ const StudyDetails: FunctionComponent = () => {
             show={showExistingCriteriaModal}
             mode="create"
             onHide={() => setShowExistingCriteriaModal(false)}
-            onSave={() => {
-              setShowExistingCriteriaModal(false);
-              loadEvidenceVariablesHandler("inclusion");
-            }}
+            onSave={handleSaveExistingCriteria}
           />
         )}
       </>

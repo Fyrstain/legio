@@ -124,7 +124,8 @@
         "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
         "fillrequiredfields": "Veuillez remplir tous les champs requis.",
         "invalidurl": "URL invalide !",
-        "loadingcomparators": "Erreur lors du chargement des comparateurs :"
+        "loadingcomparators": "Erreur lors du chargement des comparateurs :",
+        "errorwhileaddingcriteria": "Erreur lors de l'ajout du critère. Veuillez réessayer."
     },
     "message": {
         "studyupdated": "Étude modifiée avec succès!",
