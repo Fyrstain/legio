@@ -8,17 +8,13 @@ import i18n from "i18next";
 import { Title } from "@fyrstain/hl7-front-library";
 // Components
 import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
-// Types 
+import EvidenceVariableButtons from "../../components/EvidenceVariableButtons/EvidenceVariableButtons";
+// Types
 import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
-
-////////////////////////////////
-//           Props            //
-////////////////////////////////
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps
-> = ({ evidenceVariables, type }) => {
-
+> = ({ evidenceVariables, type, editMode = false, onAction }) => {
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -84,6 +80,13 @@ const EvidenceVariableSection: FunctionComponent<
             value={obsolescenceFilter}
             onChange={handleObsolescenceFilterChange}
           />
+          {editMode && onAction && (
+            <EvidenceVariableButtons
+              buttonType={type === "inclusion" ? "criteria" : "studyVariable"}
+              editMode={editMode}
+              onAction={onAction}
+            />
+          )}
         </Accordion.Header>
         <Accordion.Body>
           {filteredEvidenceVariables.length > 0 ? (
@@ -105,8 +108,7 @@ const EvidenceVariableSection: FunctionComponent<
                   ? i18n.t("errormessage.noobsoletevariables")
                   : obsolescenceFilter === "not-obsolete"
                   ? i18n.t("errormessage.nonotobsoletevariables")
-                  :
-                type === "inclusion" 
+                  : type === "inclusion"
                   ? i18n.t("errormessage.noinclusioncriteria")
                   : i18n.t("errormessage.nostudyvariables")
               }

@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
+import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
+import ExistingInclusionCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
 // Services
 import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -38,6 +40,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 // Fhir
 import Client from "fhir-kit-client";
+// Types
+import { EvidenceVariableActionType } from "../types/evidenceVariable.types";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -97,7 +101,7 @@ const StudyDetails: FunctionComponent = () => {
   const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
     []
   );
-  
+
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
 
@@ -256,6 +260,23 @@ const StudyDetails: FunctionComponent = () => {
       isInvalid: false,
       errorMessage: "",
     };
+  };
+
+  /**
+   * Handle actions for inclusion criteria
+   * @param actionType The type of action to perform (new or existing).
+   */
+  const handleInclusionCriteriaAction = (
+    actionType: EvidenceVariableActionType
+  ) => {
+    switch (actionType) {
+      case "new":
+        setShowNewCriteriaModal(true);
+        break;
+      case "existing":
+        setShowExistingCriteriaModal(true);
+        break;
+    }
   };
 
   /**
@@ -532,6 +553,8 @@ const StudyDetails: FunctionComponent = () => {
         <EvidenceVariableSection
           evidenceVariables={inclusionCriteriaDisplayObjects}
           type="inclusion"
+          editMode={isEditingForm}
+          onAction={handleInclusionCriteriaAction}
         />
         <EvidenceVariableSection
           evidenceVariables={studyVariablesDisplayObjects}
@@ -631,6 +654,32 @@ const StudyDetails: FunctionComponent = () => {
           <Button className="mt-3" onClick={handleSave}>
             {i18n.t("button.savechanges")}
           </Button>
+        )}
+
+        {/* To create a new Inclusion Criteria */}
+        {showNewCriteriaModal && (
+          <EvidenceVariableModal
+            show={showNewCriteriaModal}
+            mode="create"
+            type="inclusion"
+            onHide={() => setShowNewCriteriaModal(false)}
+            onSave={() => {
+              setShowNewCriteriaModal(false);
+              loadEvidenceVariablesHandler("inclusion");
+            }}
+          />
+        )}
+        {/* To link an existing Inclusion Criteria */}
+        {showExistingCriteriaModal && (
+          <ExistingInclusionCriteriaForm
+            show={showExistingCriteriaModal}
+            mode="create"
+            onHide={() => setShowExistingCriteriaModal(false)}
+            onSave={() => {
+              setShowExistingCriteriaModal(false);
+              loadEvidenceVariablesHandler("inclusion");
+            }}
+          />
         )}
       </>
     </LegioPage>
