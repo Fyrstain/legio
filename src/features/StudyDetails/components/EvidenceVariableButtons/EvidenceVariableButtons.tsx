@@ -10,7 +10,7 @@ import {
   EvidenceVariableActionType,
 } from "../../types/evidenceVariable.types";
 // Styles
-import styles from "./EvidenceVariableFilter.css";
+import styles from "./EvidenceVariableButtons.css";
 
 const EvidenceVariableButtons: FunctionComponent<
   EvidenceVariableButtonsProps
