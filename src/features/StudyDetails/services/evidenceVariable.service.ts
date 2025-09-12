@@ -23,7 +23,7 @@ async function loadAllEvidenceVariables(): Promise<EvidenceVariableModel[]> {
   try {
     const bundle = (await fhirKnowledgeClient.search({
       resourceType: "EvidenceVariable",
-      searchParams: { "_count": 10000 },
+      searchParams: { _count: 10000 },
     })) as Bundle;
 
     return (
@@ -166,6 +166,7 @@ async function createSimpleEvidenceVariable(
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
+
 const EvidenceVariableService = {
   loadAllEvidenceVariables,
   loadInclusionCriteria,
