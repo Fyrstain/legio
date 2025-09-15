@@ -13,7 +13,7 @@ import {
   LibraryReference,
   LibraryParameter,
 } from "../../../types/library.types";
-import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+import { ExpressionFormData, InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // Models
 import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
@@ -38,17 +38,6 @@ interface ExpressionFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: ExpressionFormData;
-}
-
-interface ExpressionFormData {
-  exclude: boolean;
-  expressionId: string;
-  expressionName: string;
-  expressionDescription: string;
-  selectedLibrary?: LibraryReference;
-  selectedExpression: string;
-  selectedParameter: string;
-  criteriaValue?: InclusionCriteriaValue;
 }
 
 const ExpressionForm: FunctionComponent<ExpressionFormProps> = (

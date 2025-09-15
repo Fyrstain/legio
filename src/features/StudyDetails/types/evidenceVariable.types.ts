@@ -1,3 +1,6 @@
+// Model
+import { EvidenceVariableModel } from "../../../shared/models/EvidenceVariable.model";
+// Types
 import { LibraryReference } from "./library.types";
 
 /**
@@ -39,6 +42,7 @@ type FormEvidenceVariableData = EvidenceVariableProps &
  */
 interface EvidenceVariableSectionProps {
   evidenceVariables: EvidenceVariableProps[];
+  evidenceVariableModels: EvidenceVariableModel[];
   type: "inclusion" | "study";
   onAction?: (actionType: EvidenceVariableActionType) => void;
   editMode?: boolean;
@@ -59,6 +63,57 @@ interface InclusionCriteriaValue {
   minValue?: number | Date;
   maxValue?: number | Date;
   valueSetUrl?: string;
+}
+
+/**
+ * Interface for combination form data
+ */
+interface CombinationFormData {
+  exclude: boolean;
+  code: "all-of" | "any-of" | undefined;
+  isXor: boolean;
+  combinationId: string;
+  combinationDescription?: string;
+}
+
+/**
+ * Interface for existing canonical criteria form data
+ */
+interface ExistingCanonicalFormData {
+  exclude: boolean;
+  canonicalUrl: string;
+  canonicalId?: string;
+  canonicalDescription?: string;
+}
+
+/**
+ * Interface for existing canonical criteria form data
+ */
+interface ExistingCanonicalCriteriaFormData {
+  exclude: boolean;
+  selectedEvidenceVariable?: FormEvidenceVariableData;
+}
+
+/**
+ * Interface for canonical form data
+ */
+interface CanonicalFormData {
+  exclude: boolean;
+  evidenceVariable: FormEvidenceVariableData;
+}
+
+/**
+ * Interface for expression form data
+ */
+interface ExpressionFormData {
+  exclude: boolean;
+  expressionId: string;
+  expressionName: string;
+  expressionDescription: string;
+  selectedLibrary?: LibraryReference;
+  selectedExpression: string;
+  selectedParameter: string;
+  criteriaValue?: InclusionCriteriaValue;
 }
 
 /**
@@ -102,6 +157,11 @@ export type {
   EvidenceVariableSectionProps,
   InclusionCriteriaTypes,
   InclusionCriteriaValue,
+  CombinationFormData,
+  ExistingCanonicalFormData,
+  ExistingCanonicalCriteriaFormData, 
+  CanonicalFormData,
+  ExpressionFormData, 
   EvidenceVariableButtonType,
   EvidenceVariableActionType,
   EvidenceVariableButtonsProps,

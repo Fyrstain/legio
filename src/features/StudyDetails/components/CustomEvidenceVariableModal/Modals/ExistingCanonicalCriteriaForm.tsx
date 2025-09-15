@@ -9,7 +9,7 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+import { ExistingCanonicalCriteriaFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
@@ -30,11 +30,6 @@ interface ExistingCanonicalCriteriaFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: ExistingCanonicalCriteriaFormData;
-}
-
-interface ExistingCanonicalCriteriaFormData {
-  exclude: boolean;
-  selectedEvidenceVariable?: FormEvidenceVariableData;
 }
 
 const ExistingCanonicalCriteriaForm: FunctionComponent<

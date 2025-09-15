@@ -137,6 +137,15 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * To get all characteristics of the EvidenceVariable
+   *
+   * @returns All characteristics of the EvidenceVariable, or an empty array if none are set
+   */
+  getCharacteristics(): any[] {
+    return this.fhirResource.characteristic || [];
+  }
+
+  /**
    * To get the first characteristic of the EvidenceVariable
    *
    * @returns The first characteristic of the EvidenceVariable, or undefined if not set

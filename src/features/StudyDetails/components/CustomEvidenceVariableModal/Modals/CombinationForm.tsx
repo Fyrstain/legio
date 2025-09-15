@@ -9,6 +9,8 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
+// Types
+import { CombinationFormData } from "../../../types/evidenceVariable.types";
 
 ////////////////////////////////
 //           Props            //
@@ -27,13 +29,6 @@ interface CombinationFormProps {
   initialData?: CombinationFormData;
 }
 
-interface CombinationFormData {
-  exclude: boolean;
-  code: "all-of" | "any-of" | undefined;
-  isXor: boolean;
-  combinationId: string;
-}
-
 const CombinationForm: FunctionComponent<CombinationFormProps> = (
   props: CombinationFormProps
 ) => {
@@ -46,6 +41,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
     code: undefined,
     isXor: false,
     combinationId: "",
+    combinationDescription: "",
   });
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -73,6 +69,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
           code: undefined,
           isXor: false,
           combinationId: "",
+          combinationDescription: "",
         });
       }
       setHasChanges(false);
@@ -170,7 +167,12 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       true
     );
     const codeError = validateField("code", formData.code, true);
-    return !(idError || codeError);
+    const descriptionError = validateField(
+      "combinationDescription",
+      formData.combinationDescription,
+      true
+    );
+    return !(idError || codeError || descriptionError);
   };
 
   /**
@@ -211,6 +213,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
         code: undefined,
         isXor: false,
         combinationId: "",
+        combinationDescription: "",
       });
     }
     setHasChanges(false);
@@ -253,6 +256,24 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.combinationId}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            {/* Description field */}
+            <Form.Group className="mb-3">
+              <Form.Label>{i18n.t("label.generaldescription")} *</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={i18n.t("placeholder.description")}
+                value={formData.combinationDescription}
+                onChange={(e) =>
+                  handleFieldChange("combinationDescription", e.target.value)
+                }
+                isInvalid={!!errors?.combinationDescription}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.combinationDescription}
               </Form.Control.Feedback>
             </Form.Group>
 

@@ -7,7 +7,7 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+import { CanonicalFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
 
@@ -26,11 +26,6 @@ interface CanonicalFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: CanonicalFormData;
-}
-
-interface CanonicalFormData {
-  exclude: boolean;
-  evidenceVariable: FormEvidenceVariableData;
 }
 
 const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
@@ -137,7 +132,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       ev.selectedLibrary?.id,
       true
     );
-    const urlError = validateField("url", ev.url);
+    const urlError = validateField("url", ev.url, true);
     // Return true if no errors
     return !(
       identifierError ||

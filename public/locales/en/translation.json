@@ -38,7 +38,9 @@
         "existingstudyvariable": "Existing Study Variable",
         "studyvariable": "Study Variable",
         "existingcriteria": "an existing Criteria",
-        "newcanonicalcriteria": "New Canonical Criteria"
+        "newcanonicalcriteria": "New Canonical Criteria",
+        "combination": "Combination",
+        "canonical": "Canonical"
     },
     "footer": {
         "items": {
@@ -59,7 +61,8 @@
       "cancel": "Cancel",
       "editstudy": "Edit Study",
       "filterobsolescence": "Filter by Obsolescence",
-      "addcriteria": "Add Criteria"
+      "addcriteria": "Add Criteria",
+      "addcharacteristic": "Add Characteristic"
     },
     "label": {
         "name": "Name",
@@ -107,7 +110,8 @@
         "or": "OR",
         "xor": "XOR",
         "criteria": "Criteria",
-        "studyvariable": "Study Variable"
+        "studyvariable": "Study Variable",
+        "excluded": "Excluded"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -126,11 +130,13 @@
         "fillrequiredfields": "Please fill all required fields.",
         "invalidurl": "Invalid URL !",
         "loadingcomparators": "Error loading comparators:",
-        "errorwhileaddingcriteria": "Error while adding criteria. Please try again."
+        "errorwhileaddingcriteria": "Error while adding criteria. Please try again.",
+        "noevidencevariablefound": "No Evidence Variable found !"
     },
     "message": {
         "studyupdated": "Study updated successfully.",
-        "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?"
+        "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?",
+        "addcharacteristictocombination": "Empty Combination - add characteristics"
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",
