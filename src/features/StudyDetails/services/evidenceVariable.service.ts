@@ -4,6 +4,9 @@ import { Bundle, EvidenceVariable } from "fhir/r5";
 import Client from "fhir-kit-client";
 // Model
 import { EvidenceVariableModel } from "../../../shared/models/EvidenceVariable.model";
+import { FormEvidenceVariableData } from "../types/evidenceVariable.types";
+// Service
+import StudyService from "./study.service";
 
 /////////////////////////////////////
 //             Client              //
@@ -18,13 +21,16 @@ const fhirKnowledgeClient = new Client({
  */
 async function loadAllEvidenceVariables(): Promise<EvidenceVariableModel[]> {
   try {
-    const bundle = await fhirKnowledgeClient.search({
+    const bundle = (await fhirKnowledgeClient.search({
       resourceType: "EvidenceVariable",
-    }) as Bundle;
-    
-    return bundle.entry?.map(
-      (entry) => new EvidenceVariableModel(entry.resource as EvidenceVariable)
-    ) || [];
+      searchParams: { _count: 10000 },
+    })) as Bundle;
+
+    return (
+      bundle.entry?.map(
+        (entry) => new EvidenceVariableModel(entry.resource as EvidenceVariable)
+      ) || []
+    );
   } catch (error) {
     throw new Error(`Error loading all evidence variables: ${error}`);
   }
@@ -102,22 +108,72 @@ async function loadEvidenceVariables(
       // Convert the canonical results to EvidenceVariableModel instances
       return EvidenceVariableModel.fromCanonicalBundles(canonicalResults);
     }
-    // If no canonical URLs were found, return the models directly
-    return models;
+    if (models.length > 0) {
+      return models;
+    }
+    // If no models were found and no canonical URLs, check if we need to load the default inclusion criteria
+    if (type === "inclusion") {
+      const study = await StudyService.loadStudy(studyId);
+      const eligibilityRef = study.recruitment?.eligibility?.reference;
+      if (eligibilityRef) {
+        const evidenceVariableId = eligibilityRef.replace(
+          "EvidenceVariable/",
+          ""
+        );
+        const evidenceVariable = (await fhirKnowledgeClient.read({
+          resourceType: "EvidenceVariable",
+          id: evidenceVariableId,
+        })) as EvidenceVariable;
+        return [new EvidenceVariableModel(evidenceVariable)];
+      }
+    }
+    return [];
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
 }
 
+/**
+ * Create a new EvidenceVariable.
+ *
+ * @param data The form data to create the EvidenceVariable
+ * @returns A promise of the created EvidenceVariable
+ */
+async function createSimpleEvidenceVariable(
+  data: FormEvidenceVariableData
+): Promise<EvidenceVariable> {
+  const evidenceVariable: EvidenceVariable = {
+    resourceType: "EvidenceVariable",
+    status: data.status as any,
+    identifier: [{ value: data.identifier }],
+    title: data.title,
+    description: data.description,
+    url: data.url,
+    extension: [
+      {
+        url: "http://hl7.org/fhir/StructureDefinition/cqf-library",
+        valueCanonical: data.selectedLibrary?.url,
+      },
+    ],
+  };
+  const createdEvidenceVariable = (await fhirKnowledgeClient.create({
+    resourceType: "EvidenceVariable",
+    body: evidenceVariable,
+  })) as EvidenceVariable;
+  return createdEvidenceVariable;
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
+
 const EvidenceVariableService = {
   loadAllEvidenceVariables,
   loadInclusionCriteria,
   loadStudyVariables,
   readEvidenceVariableByUrl,
   loadEvidenceVariables,
+  createSimpleEvidenceVariable,
 };
 
 export default EvidenceVariableService;

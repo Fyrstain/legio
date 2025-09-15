@@ -40,6 +40,8 @@ type FormEvidenceVariableData = EvidenceVariableProps &
 interface EvidenceVariableSectionProps {
   evidenceVariables: EvidenceVariableProps[];
   type: "inclusion" | "study";
+  onAction?: (actionType: EvidenceVariableActionType) => void;
+  editMode?: boolean;
 }
 
 /**
@@ -59,6 +61,36 @@ interface InclusionCriteriaValue {
   valueSetUrl?: string;
 }
 
+/**
+ * Button type for EvidenceVariableButtons component
+ */
+type EvidenceVariableButtonType =
+  | "criteria"
+  | "studyVariable"
+  | "characteristic";
+
+/**
+ * Action types for evidence variable operations
+ */
+type EvidenceVariableActionType =
+  | "new"
+  | "existing"
+  | "expression"
+  | "combination"
+  | "newCanonical"
+  | "existingCanonical"
+  | "edit";
+
+/**
+ * Props for EvidenceVariableButtons component
+ */
+interface EvidenceVariableButtonsProps {
+  buttonType: EvidenceVariableButtonType;
+  editMode: boolean;
+  onAction: (actionType: EvidenceVariableActionType) => void;
+  disabled?: boolean;
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -70,4 +102,7 @@ export type {
   EvidenceVariableSectionProps,
   InclusionCriteriaTypes,
   InclusionCriteriaValue,
+  EvidenceVariableButtonType,
+  EvidenceVariableActionType,
+  EvidenceVariableButtonsProps,
 };

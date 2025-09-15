@@ -550,6 +550,60 @@ async function executeExportDatamart(studyId: string): Promise<any> {
   }) as Promise<any>;
 }
 
+/**
+ * To add an evidence variable to a study.
+ * 
+ * @param studyId is the id of the study to add the evidence variable to.
+ * @param evidenceVariableId is the id of the evidence variable to add.
+ * @param type is the type of the evidence variable (inclusion or study).
+ */
+async function addEvidenceVariableToStudy(
+  studyId: string,
+  evidenceVariableId: string,
+  type: "inclusion" | "study"
+): Promise<void> {
+  const study = await loadStudy(studyId);
+  // To add the reference to the study (recruitment.eligibility) (Inclusion Criteria)
+  if (type === "inclusion") {
+    if (!study.recruitment) {
+      study.recruitment = {};
+    }
+    study.recruitment.eligibility = {
+      reference: `EvidenceVariable/${evidenceVariableId}`,
+    };
+  } else {
+    // To add the reference to the study (extension) (Study Variable)
+    if (!study.extension) study.extension = [];
+    let datamartExtension = study.extension.find(
+      (ext) =>
+        ext.url ===
+        "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+    );
+    if (!datamartExtension) {
+      datamartExtension = {
+        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart",
+        extension: [],
+      };
+      study.extension.push(datamartExtension);
+    }
+    if (!datamartExtension.extension) {
+      datamartExtension.extension = [];
+    }
+    datamartExtension.extension.push({
+      url: "variable",
+      valueReference: {
+        reference: evidenceVariableId,
+      },
+    });
+  }
+  // Update the study with the new evidence variable
+  await fhirClient.update({
+    resourceType: "ResearchStudy",
+    id: studyId,
+    body: study,
+  });
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -565,6 +619,7 @@ const StudyService = {
   generateCohortAndDatamart,
   getParameterValue,
   executeExportDatamart,
+  addEvidenceVariableToStudy,
 };
 
 export default StudyService;

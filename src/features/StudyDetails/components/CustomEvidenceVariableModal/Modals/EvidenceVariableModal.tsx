@@ -91,9 +91,9 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
     const actionText =
       props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
     if (props.type === "inclusion") {
-      return `${actionText} ${i18n.t("title.aninclusioncriteria")}`;
+      return `${actionText} ${i18n.t("title.anewinclusioncriteria")}`;
     }
-    return `${actionText} ${i18n.t("title.astudyvariable")}`;
+    return `${actionText} ${i18n.t("title.anewstudyvariable")}`;
   };
 
   /**

@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
+import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
+import ExistingInclusionCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
 // Services
 import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -38,6 +40,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 // Fhir
 import Client from "fhir-kit-client";
+// Types
+import {
+  EvidenceVariableActionType,
+  FormEvidenceVariableData,
+} from "../types/evidenceVariable.types";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -97,7 +104,7 @@ const StudyDetails: FunctionComponent = () => {
   const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
     []
   );
-  
+
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
 
@@ -256,6 +263,74 @@ const StudyDetails: FunctionComponent = () => {
       isInvalid: false,
       errorMessage: "",
     };
+  };
+
+  /**
+   * Handle actions for inclusion criteria
+   * @param actionType The type of action to perform (new or existing).
+   */
+  const handleInclusionCriteriaAction = (
+    actionType: EvidenceVariableActionType
+  ) => {
+    switch (actionType) {
+      case "new":
+        setShowNewCriteriaModal(true);
+        break;
+      case "existing":
+        setShowExistingCriteriaModal(true);
+        break;
+    }
+  };
+
+  /**
+   * Save an evidence variable as inclusion criteria.
+   * @param evidenceVariableId The id of the evidence variable to save as inclusion criteria.
+   */
+  const saveInclusionCriteria = async (evidenceVariableId: string) => {
+    await StudyService.addEvidenceVariableToStudy(
+      studyId!,
+      evidenceVariableId,
+      "inclusion"
+    );
+    await loadEvidenceVariablesHandler("inclusion");
+  };
+
+  /**
+   * Handle the creation of a new evidence variable.
+   * @param data The data of the new evidence variable to create.
+   */
+  const handleSaveNewCriteria = async (data: FormEvidenceVariableData) => {
+    try {
+      setLoading(true);
+      const createdEV =
+        await EvidenceVariableService.createSimpleEvidenceVariable(data);
+      await saveInclusionCriteria(createdEV.id!);
+      setShowNewCriteriaModal(false);
+    } catch (error) {
+      console.error("Error creating criteria:", error);
+      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the addition of an existing evidence variable.
+   * @param data The data of the existing evidence variable to add.
+   */
+  const handleSaveExistingCriteria = async (data: {
+    selectedEvidenceVariable?: FormEvidenceVariableData;
+  }) => {
+    try {
+      setLoading(true);
+      await saveInclusionCriteria(data.selectedEvidenceVariable!.id!);
+      setShowExistingCriteriaModal(false);
+    } catch (error) {
+      console.error("Error adding existing criteria:", error);
+      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -532,6 +607,8 @@ const StudyDetails: FunctionComponent = () => {
         <EvidenceVariableSection
           evidenceVariables={inclusionCriteriaDisplayObjects}
           type="inclusion"
+          editMode={isEditingForm}
+          onAction={handleInclusionCriteriaAction}
         />
         <EvidenceVariableSection
           evidenceVariables={studyVariablesDisplayObjects}
@@ -631,6 +708,26 @@ const StudyDetails: FunctionComponent = () => {
           <Button className="mt-3" onClick={handleSave}>
             {i18n.t("button.savechanges")}
           </Button>
+        )}
+
+        {/* To create a new Inclusion Criteria */}
+        {showNewCriteriaModal && (
+          <EvidenceVariableModal
+            show={showNewCriteriaModal}
+            mode="create"
+            type="inclusion"
+            onHide={() => setShowNewCriteriaModal(false)}
+            onSave={handleSaveNewCriteria}
+          />
+        )}
+        {/* To link an existing Inclusion Criteria */}
+        {showExistingCriteriaModal && (
+          <ExistingInclusionCriteriaForm
+            show={showExistingCriteriaModal}
+            mode="create"
+            onHide={() => setShowExistingCriteriaModal(false)}
+            onSave={handleSaveExistingCriteria}
+          />
         )}
       </>
     </LegioPage>

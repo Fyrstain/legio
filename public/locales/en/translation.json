@@ -26,8 +26,8 @@
         "studyvariables": "Study Variables",
         "add": "Add",
         "update": "Update",
-        "aninclusioncriteria": "an Inclusion Criteria",
-        "astudyvariable": "a Study Variable",
+        "anewinclusioncriteria": "a new Inclusion Criteria",
+        "anewstudyvariable": "a new Study Variable",
         "criteria": "Criteria",
         "characteristicinclusion": "Characteristic Inclusion or Exclusion",
         "combinationdefinition": "Combination Definition",
@@ -58,7 +58,8 @@
       "add": "Add",
       "cancel": "Cancel",
       "editstudy": "Edit Study",
-      "filterobsolescence": "Filter by Obsolescence"
+      "filterobsolescence": "Filter by Obsolescence",
+      "addcriteria": "Add Criteria"
     },
     "label": {
         "name": "Name",
@@ -124,7 +125,8 @@
         "nocodesavailable": "No codes available for this ValueSet.",
         "fillrequiredfields": "Please fill all required fields.",
         "invalidurl": "Invalid URL !",
-        "loadingcomparators": "Error loading comparators:"
+        "loadingcomparators": "Error loading comparators:",
+        "errorwhileaddingcriteria": "Error while adding criteria. Please try again."
     },
     "message": {
         "studyupdated": "Study updated successfully.",
@@ -151,5 +153,15 @@
         "id": "Please fill in the ID",
         "selectcriteria": "-- Select a criteria --",
         "selectstudyvariable": "-- Select a study variable --"
+    },
+    "option": {
+        "addnewcriteria": "Add new Criteria",
+        "addexistingcriteria": "Add existing Criteria",
+        "addnewstudyvariable": "Add new Study Variable",
+        "addexistingstudyvariable": "Add existing Study Variable",
+        "addnewcanonicalcriteria": "Add new Canonical Criteria",
+        "addexistingcanonicalcriteria": "Add existing Canonical Criteria",
+        "addexpression": "Add Expression",
+        "addcombination": "Add Combination"
     }
 }
