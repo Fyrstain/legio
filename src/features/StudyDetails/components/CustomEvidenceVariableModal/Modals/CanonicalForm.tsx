@@ -10,6 +10,11 @@ import BaseModalWrapper from "../shared/BaseModalWrapper";
 import { CanonicalFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
+// React Bootstrap
+import { Alert } from "react-bootstrap";
+// FontAwesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
 
 ////////////////////////////////
 //           Props            //
@@ -26,6 +31,8 @@ interface CanonicalFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: CanonicalFormData;
+  // To show the alert about combination absence
+  showCombinationAlert?: boolean;
 }
 
 const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
@@ -204,6 +211,14 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       title={getModalTitle()}
       onClose={handleClose}
     >
+      {/* Warning Alert */}
+      {props.showCombinationAlert && (
+        <Alert variant="warning" className="mb-3">
+          <FontAwesomeIcon icon={faWarning} className="me-2" />
+          {i18n.t("message.warningcombinationconstraint")}
+        </Alert>
+      )}
+
       {/* First Card: Exclude settings */}
       <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 

@@ -136,7 +136,8 @@
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
     "unsavedchanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter sans enregistrer ?",
-    "emptycombination": "Combinaison vide - ajoutez des caractéristiques"
+    "emptycombination": "Combinaison vide - ajoutez des caractéristiques",
+    "warningcombinationconstraint": "Veuillez noter que vous n'avez pas de “combinaison”. Si vous ajoutez une référence canonique avant, vous ne pourrez plus ajouter d'autres caractéristiques. "
   },
   "placeholder": {
     "selectstudydesign": "-- Sélectionnez une conception de l'étude --",

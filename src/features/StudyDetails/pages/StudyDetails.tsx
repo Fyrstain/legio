@@ -314,6 +314,20 @@ const StudyDetails: FunctionComponent = () => {
   };
 
   /**
+   * Determine if the alert about combination absence should be shown.
+   * @returns True if the alert about combination absence should be shown, false otherwise.
+   */
+  const showCombinationAbsenceAlert = () => {
+    if (
+      inclusionCriteria.length > 0 &&
+      !inclusionCriteria[0].hasCharacteristic()
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  /**
    * Save an evidence variable as inclusion criteria.
    * @param evidenceVariableId The id of the evidence variable to save as inclusion criteria.
    */
@@ -891,6 +905,7 @@ const StudyDetails: FunctionComponent = () => {
             mode="create"
             onHide={() => setShowExistingCanonicalModal(false)}
             onSave={handleSaveExistingCanonical}
+            showCombinationAlert={showCombinationAbsenceAlert()}
           />
         )}
         {/* To create a new Canonical Criteria with a definitionCanonical */}
@@ -900,6 +915,7 @@ const StudyDetails: FunctionComponent = () => {
             mode="create"
             onHide={() => setShowNewCanonicalModal(false)}
             onSave={handleSaveNewCanonical}
+            showCombinationAlert={showCombinationAbsenceAlert()}
           />
         )}
         {/* To add a definitionExpression into the EvidenceVariable */}
@@ -909,6 +925,7 @@ const StudyDetails: FunctionComponent = () => {
             mode="create"
             onHide={() => setShowExpressionModal(false)}
             onSave={handleSaveExpression}
+            showCombinationAlert={showCombinationAbsenceAlert()}
           />
         )}
         {showCombinationModal && (

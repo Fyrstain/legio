@@ -95,7 +95,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   return (
     <div className="mt-4">
       {characteristics.map((char, index) => (
-        <Accordion key={index} className="mb-4">
+        <Accordion defaultActiveKey="0" key={index} className="mb-4">
           <Accordion.Item eventKey="0">
             <Accordion.Header>
               {/* DefinitionByCombination Header */}

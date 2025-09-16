@@ -137,7 +137,8 @@
     "message": {
         "studyupdated": "Study updated successfully.",
         "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?",
-        "emptycombination": "Empty Combination - add characteristics"
+        "emptycombination": "Empty Combination - add characteristics",
+        "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics."
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",
