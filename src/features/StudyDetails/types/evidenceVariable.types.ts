@@ -44,7 +44,7 @@ interface EvidenceVariableSectionProps {
   evidenceVariables: EvidenceVariableProps[];
   evidenceVariableModels: EvidenceVariableModel[];
   type: "inclusion" | "study";
-  onAction?: (actionType: EvidenceVariableActionType) => void;
+  onAction?: (actionType: EvidenceVariableActionType, path?: number[]) => void;
   editMode?: boolean;
 }
 

@@ -114,6 +114,11 @@ const StudyDetails: FunctionComponent = () => {
     []
   );
 
+  // Current path for action (used for modals to know where to add the criteria)
+  const [currentActionPath, setCurrentActionPath] = useState<
+    number[] | undefined
+  >();
+
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
 
@@ -277,10 +282,13 @@ const StudyDetails: FunctionComponent = () => {
   /**
    * Handle actions for inclusion criteria
    * @param actionType The type of action to perform (new or existing).
+   * @param path The path to the characteristic where the action is performed.
    */
   const handleInclusionCriteriaAction = (
-    actionType: EvidenceVariableActionType
+    actionType: EvidenceVariableActionType,
+    path?: number[]
   ) => {
+    setCurrentActionPath(path);
     switch (actionType) {
       case "new":
         setShowNewCriteriaModal(true);
@@ -331,7 +339,7 @@ const StudyDetails: FunctionComponent = () => {
       setShowNewCriteriaModal(false);
     } catch (error) {
       console.error("Error creating criteria:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(i18n.t("errormessage.errorwhileaddingcriteria") + error);
     } finally {
       setLoading(false);
     }
@@ -350,7 +358,7 @@ const StudyDetails: FunctionComponent = () => {
       setShowExistingCriteriaModal(false);
     } catch (error) {
       console.error("Error adding existing criteria:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -367,16 +375,18 @@ const StudyDetails: FunctionComponent = () => {
         const parentEVId = inclusionCriteria[0].getId();
         await EvidenceVariableService.addDefinitionByCombination(
           parentEVId!,
-          data
+          data,
+          currentActionPath
         );
         await loadEvidenceVariablesHandler("inclusion");
         setShowCombinationModal(false);
+        setCurrentActionPath(undefined);
       } else {
         alert(i18n.t("errormessage.noevidencevariablefound"));
       }
     } catch (error) {
       console.error("Error adding combination:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -392,23 +402,29 @@ const StudyDetails: FunctionComponent = () => {
       setLoading(true);
       if (inclusionCriteria.length > 0) {
         const parentEVId = inclusionCriteria[0].getId();
+        if (!data.selectedEvidenceVariable?.url) {
+          alert(i18n.t("errormessage.nourlontheevidencevariable"));
+          return;
+        }
         // Data to create the canonical evidence variable
         const canonicalData: ExistingCanonicalFormData = {
           exclude: data.exclude,
-          canonicalUrl: data.selectedEvidenceVariable!.url!,
+          canonicalUrl: data.selectedEvidenceVariable!.url,
           canonicalId: data.selectedEvidenceVariable!.identifier,
           canonicalDescription: data.selectedEvidenceVariable!.title,
         };
         await EvidenceVariableService.addExistingCanonical(
           parentEVId!,
-          canonicalData
+          canonicalData,
+          currentActionPath
         );
         await loadEvidenceVariablesHandler("inclusion");
         setShowExistingCanonicalModal(false);
+        setCurrentActionPath(undefined);
       }
     } catch (error) {
       console.error("Error adding existing canonical:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -426,16 +442,18 @@ const StudyDetails: FunctionComponent = () => {
         await EvidenceVariableService.addNewCanonical(
           parentEVId!,
           data.evidenceVariable,
-          data.exclude
+          data.exclude,
+          currentActionPath
         );
         await loadEvidenceVariablesHandler("inclusion");
         setShowNewCanonicalModal(false);
+        setCurrentActionPath(undefined);
       } else {
         alert(i18n.t("errormessage.noevidencevariablefound"));
       }
     } catch (error) {
       console.error("Error adding new canonical:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -451,16 +469,18 @@ const StudyDetails: FunctionComponent = () => {
         const parentEVId = inclusionCriteria[0].getId();
         await EvidenceVariableService.addDefinitionExpression(
           parentEVId!,
-          data
+          data,
+          currentActionPath
         );
         await loadEvidenceVariablesHandler("inclusion");
         setShowExpressionModal(false);
+        setCurrentActionPath(undefined);
       } else {
         alert(i18n.t("errormessage.noevidencevariablefound"));
       }
     } catch (error) {
       console.error("Error adding expression:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -489,7 +509,7 @@ const StudyDetails: FunctionComponent = () => {
       await loadStudy();
     } catch (error) {
       // Error message if the update fails
-      alert(i18n.t("errormessage.errorwhilesavingstudy"));
+      alert(`${i18n.t("errormessage.errorwhilesavingstudy")} ${error}`);
     }
   };
 

@@ -100,7 +100,7 @@ async function loadEvidenceVariables(
   studyId: string,
   type: "inclusion" | "study"
 ): Promise<EvidenceVariableModel[]> {
-  const serviceMethod =
+  const fetchEvidenceVariableByType =
     type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
   try {
     if (type === "inclusion") {
@@ -124,7 +124,7 @@ async function loadEvidenceVariables(
       return [];
     } else {
       // Load the bundle of evidence variables for the study
-      const bundle = await serviceMethod(studyId ?? "");
+      const bundle = await fetchEvidenceVariableByType(studyId ?? "");
       const { models, canonicalUrls } =
         EvidenceVariableModel.fromBundle(bundle);
       // If canonical URLs were found, read the EvidenceVariables by their URLs
@@ -177,39 +177,134 @@ async function createSimpleEvidenceVariable(
 }
 
 /**
+ * Navigate to a target combination using the provided path
+ * @param parentEV The parent EvidenceVariable to navigate within
+ * @param targetPath The path to navigate to
+ * @return The characteristic at the target path
+ */
+function navigateToTargetCombination(
+  parentEV: EvidenceVariable,
+  targetPath: number[]
+): any {
+  let currentCharacteristic = parentEV.characteristic?.[targetPath[0]];
+  // Check if the current characteristic is defined
+  if (!currentCharacteristic) {
+    throw new Error(`Characteristic not found at path index ${targetPath[0]}`);
+  }
+  // Navigate through the tree according to the targetPath
+  for (let i = 1; i < targetPath.length; i++) {
+    if (!currentCharacteristic.definitionByCombination?.characteristic) {
+      throw new Error(`No combination found at path index ${i}`);
+    }
+    // Move to the next characteristic in the path
+    currentCharacteristic =
+      currentCharacteristic.definitionByCombination.characteristic[
+        targetPath[i]
+      ];
+  }
+  // Check that the final characteristic is indeed a combination
+  if (!currentCharacteristic.definitionByCombination) {
+    throw new Error(
+      "Target characteristic is not a combination. Cannot add to non-combination."
+    );
+  }
+  return currentCharacteristic;
+}
+
+/**
+ * Add a characteristic to a target combination or at root level
+ * @param parentEV The parent EvidenceVariable to update
+ * @param newCharacteristic The new characteristic to add
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable
+ */
+function addCharacteristicToEV(
+  parentEV: EvidenceVariable,
+  newCharacteristic: any,
+  targetPath?: number[]
+): void {
+  if (targetPath && targetPath.length > 0) {
+    // Add to specific combination
+    const targetCombination = navigateToTargetCombination(parentEV, targetPath);
+    // Ensure the characteristic array exists
+    if (!targetCombination.definitionByCombination.characteristic) {
+      targetCombination.definitionByCombination.characteristic = [];
+    }
+    // Add the new characteristic to the combination
+    targetCombination.definitionByCombination.characteristic.push(
+      newCharacteristic
+    );
+  } else {
+    // Add at root level - logic depends on characteristic type
+    addCharacteristicAtRootLevel(parentEV, newCharacteristic);
+  }
+}
+
+/**
+ * Add characteristic at root level with appropriate logic
+ * @param parentEV The parent EvidenceVariable to update
+ * @param newCharacteristic The new characteristic to add
+ */
+function addCharacteristicAtRootLevel(
+  parentEV: EvidenceVariable,
+  newCharacteristic: any
+): void {
+  if (!parentEV.characteristic || parentEV.characteristic.length === 0) {
+    parentEV.characteristic = [newCharacteristic];
+  } else if (parentEV.characteristic.length === 1) {
+    const existingChar = parentEV.characteristic[0];
+    // If existing is a combination, add to it
+    if (existingChar.definitionByCombination) {
+      // Add to existing combination
+      if (!existingChar.definitionByCombination.characteristic) {
+        existingChar.definitionByCombination.characteristic = [];
+      }
+      existingChar.definitionByCombination.characteristic.push(
+        newCharacteristic
+      );
+    } else if (newCharacteristic.definitionByCombination) {
+      // Adding combination to EV that already has non-combination characteristic
+      throw new Error(
+        "This EvidenceVariable already has a characteristic. Cannot add a combination."
+      );
+    } else {
+      // Adding non-combination to EV that already has non-combination
+      throw new Error(
+        "This EvidenceVariable already has a characteristic. Cannot add another without creating a combination first."
+      );
+    }
+  } else {
+    throw new Error("Multiple characteristics found at root level");
+  }
+}
+
+/**
  * Adds a definition by combination to an existing EvidenceVariable.
  *
  * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
  * @param combinationData The combination data to add.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
  * @returns The updated EvidenceVariable.
  */
 async function addDefinitionByCombination(
   parentEvidenceVariableId: string,
-  combinationData: CombinationFormData
+  combinationData: CombinationFormData,
+  targetPath?: number[]
 ): Promise<EvidenceVariable> {
   try {
     const parentEV = (await fhirKnowledgeClient.read({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
     })) as EvidenceVariable;
-    // Check if the parent EV already has a characteristic
-    if (parentEV.characteristic) {
-      throw new Error(
-        "This EvidenceVariable already has a characteristic. Cannot add a combination."
-      );
-    }
     // Create the new combination characteristic
     const newCombination: any = {
       linkId: combinationData.combinationId,
       description: combinationData.combinationDescription,
       definitionByCombination: {
-        // "all-of" or "any-of"
         code: combinationData.code,
-        // Initially empty
         characteristic: [],
       },
     };
-    // Add XOR if needed
+    // Add XOR extension if needed
     if (combinationData.isXor && combinationData.code === "any-of") {
       newCombination.definitionByCombination.extension = [
         {
@@ -218,8 +313,8 @@ async function addDefinitionByCombination(
         },
       ];
     }
-    parentEV.characteristic = [newCombination];
-    // Update the parent EvidenceVariable
+    // Add the new combination characteristic to the parent EV at the specified path or root
+    addCharacteristicToEV(parentEV, newCombination, targetPath);
     return (await fhirKnowledgeClient.update({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
@@ -235,84 +330,48 @@ async function addDefinitionByCombination(
  *
  * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
  * @param canonicalData The canonical data to add.
- * @returns The updated EvidenceVariable.
- */
-/**
- * To add an existing canonical criteria to an EvidenceVariable.
- *
- * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
- * @param canonicalData The canonical data to add.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
  * @returns The updated EvidenceVariable.
  */
 async function addExistingCanonical(
   parentEvidenceVariableId: string,
-  canonicalData: ExistingCanonicalFormData
+  canonicalData: ExistingCanonicalFormData,
+  targetPath?: number[]
 ): Promise<EvidenceVariable> {
   try {
-    // Read the parent EvidenceVariable
+    try {
+      const canonicalBundle = await readEvidenceVariableByUrl(
+        canonicalData.canonicalUrl
+      );
+      if (!canonicalBundle.entry || canonicalBundle.entry.length === 0) {
+        throw new Error(
+          `EvidenceVariable not found at canonical URL: ${canonicalData.canonicalUrl}`
+        );
+      }
+    } catch (error) {
+      throw new Error(
+        `Cannot resolve canonical URL: ${canonicalData.canonicalUrl}. The EvidenceVariable is not accessible at this URL.`
+      );
+    }
     const parentEV = (await fhirKnowledgeClient.read({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
     })) as EvidenceVariable;
-    // Case 1 : no characteristic => add a definitionCanonical directly
-    if (!parentEV.characteristic || parentEV.characteristic.length === 0) {
-      parentEV.characteristic = [
-        {
-          definitionCanonical: canonicalData.canonicalUrl,
-          exclude: canonicalData.exclude,
-          description: canonicalData.canonicalDescription,
-          ...(canonicalData.canonicalId && {
-            linkId: canonicalData.canonicalId,
-          }),
-        },
-      ];
-    }
-    // Case 2 : Already one characteristic, check its type
-    else if (parentEV.characteristic.length === 1) {
-      const charac = parentEV.characteristic[0];
-      // Case 2a : characteristic is a combination => add the canonical inside the combination
-      if (charac.definitionByCombination) {
-        if (!charac.definitionByCombination.characteristic) {
-          charac.definitionByCombination.characteristic = [];
-        }
-        const newCanonical = {
-          definitionCanonical: canonicalData.canonicalUrl,
-          exclude: canonicalData.exclude,
-          description: canonicalData.canonicalDescription,
-          ...(canonicalData.canonicalId && {
-            linkId: canonicalData.canonicalId,
-          }),
-        };
-        charac.definitionByCombination.characteristic.push(newCanonical);
-      }
-      // Case 2b : characteristic is already a canonical => throw an error
-      else if (charac.definitionCanonical && !charac.definitionByCombination) {
-        throw new Error(
-          "This EvidenceVariable already has a canonical characteristic. Cannot add another one."
-        );
-      }
-      // Case 2c : characteristic is neither canonical nor combination => throw an error
-      else {
-        throw new Error(
-          "The existing characteristic is neither a definitionCanonical nor a definitionByCombination."
-        );
-      }
-    }
-    // Case 3 : more than one characteristic at the root (not compliant with the profile)
-    else {
-      throw new Error(
-        "The FHIR profile requires 0..1 characteristic at the root. Multiple characteristics found."
-      );
-    }
-    // Update the parent EvidenceVariable
-    const result = (await fhirKnowledgeClient.update({
+    // Create the new canonical characteristic
+    const newCanonical = {
+      definitionCanonical: canonicalData.canonicalUrl,
+      exclude: canonicalData.exclude,
+      description: canonicalData.canonicalDescription,
+      ...(canonicalData.canonicalId && { linkId: canonicalData.canonicalId }),
+    };
+    // Add the new canonical characteristic to the parent EV at the specified path or root
+    addCharacteristicToEV(parentEV, newCanonical, targetPath);
+    return (await fhirKnowledgeClient.update({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
       body: parentEV,
     })) as EvidenceVariable;
-    return result;
   } catch (error) {
-    console.error("Error in addExistingCanonical:", error);
     throw new Error(`Failed to add existing canonical: ${error}`);
   }
 }
@@ -323,12 +382,14 @@ async function addExistingCanonical(
  * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
  * @param newEVData The data for the new EvidenceVariable to create.
  * @param exclude Whether this canonical should be excluded.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
  * @returns The updated parent EvidenceVariable.
  */
 async function addNewCanonical(
   parentEvidenceVariableId: string,
   newEVData: FormEvidenceVariableData,
-  exclude: boolean = false
+  exclude: boolean = false,
+  targetPath?: number[]
 ): Promise<EvidenceVariable> {
   try {
     // 1. Create the new EvidenceVariable
@@ -343,7 +404,8 @@ async function addNewCanonical(
     // 3. Add this new EV as definitionCanonical to the parent EV
     const updatedParentEV = await addExistingCanonical(
       parentEvidenceVariableId,
-      canonicalData
+      canonicalData,
+      targetPath
     );
     return updatedParentEV;
   } catch (error) {
@@ -356,14 +418,15 @@ async function addNewCanonical(
  *
  * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
  * @param expressionData The expression data to add.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
  * @returns The updated EvidenceVariable.
  */
 async function addDefinitionExpression(
   parentEvidenceVariableId: string,
-  expressionData: ExpressionFormData
+  expressionData: ExpressionFormData,
+  targetPath?: number[]
 ): Promise<EvidenceVariable> {
   try {
-    // To find the parent EvidenceVariable
     const parentEV = (await fhirKnowledgeClient.read({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
@@ -380,14 +443,13 @@ async function addDefinitionExpression(
       const paramExtension: any = {
         url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation",
         extension: [
-          // Name of the parameter is ALWAYS a valueCode
           {
             url: "name",
             valueCode: expressionData.selectedParameter,
           },
         ],
       };
-      // The VALUE of the parameter varies according to the type
+      // Add the value based on the type
       const criteriaValue = expressionData.criteriaValue;
       if (
         criteriaValue.type === "integer" &&
@@ -431,32 +493,13 @@ async function addDefinitionExpression(
       definitionExpression: newExpression,
       linkId: expressionData.expressionId || undefined,
     };
-    // Logical of adding the new characteristic to the parent EvidenceVariable
-    if (!parentEV.characteristic || parentEV.characteristic.length === 0) {
-      parentEV.characteristic = [newCharacteristic];
-    } else if (parentEV.characteristic.length === 1) {
-      const charac = parentEV.characteristic[0];
-      if (charac.definitionByCombination) {
-        if (!charac.definitionByCombination.characteristic) {
-          charac.definitionByCombination.characteristic = [];
-        }
-        charac.definitionByCombination.characteristic.push(newCharacteristic);
-      } else if (charac.definitionCanonical || charac.definitionExpression) {
-        throw new Error(
-          "This EvidenceVariable already has a characteristic. Cannot add an expression without creating a combination first."
-        );
-      } else {
-        throw new Error("Unexpected characteristic type");
-      }
-    } else {
-      throw new Error("Multiple characteristics found at root level");
-    }
-    const result = (await fhirKnowledgeClient.update({
+    // Add the new characteristic to the parent EV at the specified path or root
+    addCharacteristicToEV(parentEV, newCharacteristic, targetPath);
+    return (await fhirKnowledgeClient.update({
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
       body: parentEV,
     })) as EvidenceVariable;
-    return result;
   } catch (error) {
     throw new Error(`Failed to add definition expression: ${error}`);
   }

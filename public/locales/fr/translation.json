@@ -130,7 +130,8 @@
     "invalidurl": "URL invalide !",
     "loadingcomparators": "Erreur lors du chargement des comparateurs :",
     "errorwhileaddingcriteria": "Erreur lors de l'ajout du critère. Veuillez réessayer.",
-    "noevidencevariablefound": "Aucune Variable d'Évidence trouvée !"
+    "noevidencevariablefound": "Aucune Variable d'Évidence trouvée !",
+    "nourlontheevidencevariable": "Aucune URL sur la Variable d'Évidence sélectionnée ! Veuillez en sélectionner une autre."
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",

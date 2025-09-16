@@ -131,7 +131,8 @@
         "invalidurl": "Invalid URL !",
         "loadingcomparators": "Error loading comparators:",
         "errorwhileaddingcriteria": "Error while adding criteria. Please try again.",
-        "noevidencevariablefound": "No Evidence Variable found !"
+        "noevidencevariablefound": "No Evidence Variable found !",
+        "nourlontheevidencevariable": "No URL on the selected Evidence Variable ! Please select another one."
     },
     "message": {
         "studyupdated": "Study updated successfully.",

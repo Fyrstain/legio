@@ -23,13 +23,16 @@ interface CharacteristicDisplayProps {
   // Boolean indicating if the component is in edit mode
   editMode: boolean;
   // Optional action handler for evidence variable actions
-  onAction?: (actionType: EvidenceVariableActionType) => void;
+  onAction?: (actionType: EvidenceVariableActionType, path?: number[]) => void;
+  // Optional current path in the characteristics hierarchy
+  currentPath?: number[];
 }
 
 const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   characteristics,
   editMode,
   onAction,
+  currentPath = [],
 }) => {
   ////////////////////////////////
   //           Actions          //
@@ -71,6 +74,20 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     }
   }
 
+  /**
+   * Handles an action for a characteristic.
+   * Used to pass to EvidenceVariableButtons component and know the index of the characteristic
+   * to build the path in the characteristics tree.
+   * @param index is the index of the characteristic in the list.
+   * @param actionType is the type of action to perform.
+   * @returns a function that handles the action for the characteristic at the given index.
+   */
+  const handleAction =
+    (index: number) => (actionType: EvidenceVariableActionType) => {
+      const targetPath = [...currentPath, index];
+      onAction?.(actionType, targetPath);
+    };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -97,7 +114,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     <EvidenceVariableButtons
                       buttonType="characteristic"
                       editMode={editMode}
-                      onAction={onAction}
+                      onAction={handleAction(index)}
                     />
                   )}
                 </div>
@@ -141,6 +158,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 <CharacteristicDisplay
                   characteristics={char.definitionByCombination.characteristic}
                   editMode={editMode}
+                  currentPath={[...currentPath, index]}
                   onAction={onAction}
                 />
               )}
@@ -148,7 +166,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
               {char.definitionByCombination &&
                 (!char.definitionByCombination.characteristic ||
                   char.definitionByCombination.characteristic.length === 0) && (
-                  <Alert variant="info" className="mt-3">
+                  <Alert variant="warning" className="mt-3">
                     <FontAwesomeIcon icon={faWarning} className="me-2" />
                     {i18n.t("message.addcharacteristictocombination")}
                   </Alert>

@@ -11,7 +11,7 @@ import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
 import EvidenceVariableButtons from "../../components/EvidenceVariableButtons/EvidenceVariableButtons";
 import CharacteristicDisplay from "./CharacteristicDisplay";
 // Types
-import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
+import { EvidenceVariableActionType, EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps
@@ -82,6 +82,14 @@ const EvidenceVariableSection: FunctionComponent<
    */
   const getCharacteristics = (index: number) => {
     return evidenceVariableModels[index]?.getCharacteristics() || [];
+  };
+
+  /**
+   * Handles an action for the root/header level.
+   * @param actionType is the type of action to perform.
+   */
+  const handleHeaderAction = (actionType: EvidenceVariableActionType) => {
+    onAction?.(actionType, []);
   };
 
   /////////////////////////////////////////////
@@ -162,7 +170,7 @@ const EvidenceVariableSection: FunctionComponent<
                           <EvidenceVariableButtons
                             buttonType="characteristic"
                             editMode={editMode}
-                            onAction={onAction}
+                            onAction={handleHeaderAction}
                           />
                         )}
                       </Accordion.Header>
