@@ -168,7 +168,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                   char.definitionByCombination.characteristic.length === 0) && (
                   <Alert variant="warning" className="mt-3">
                     <FontAwesomeIcon icon={faWarning} className="me-2" />
-                    {i18n.t("message.addcharacteristictocombination")}
+                    {i18n.t("message.emptycombination")}
                   </Alert>
                 )}
             </Accordion.Body>

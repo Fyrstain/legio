@@ -137,7 +137,7 @@
     "message": {
         "studyupdated": "Study updated successfully.",
         "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?",
-        "addcharacteristictocombination": "Empty Combination - add characteristics"
+        "emptycombination": "Empty Combination - add characteristics"
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",

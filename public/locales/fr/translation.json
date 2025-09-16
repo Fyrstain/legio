@@ -136,7 +136,7 @@
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
     "unsavedchanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter sans enregistrer ?",
-    "addcharacteristictocombination": "Combinaison vide - ajoutez des caractéristiques"
+    "emptycombination": "Combinaison vide - ajoutez des caractéristiques"
   },
   "placeholder": {
     "selectstudydesign": "-- Sélectionnez une conception de l'étude --",
