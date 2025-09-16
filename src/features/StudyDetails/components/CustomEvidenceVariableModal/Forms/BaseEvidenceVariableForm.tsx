@@ -251,12 +251,12 @@ const BaseEvidenceVariableForm: FunctionComponent<
 
           {/* URL field */}
           <Form.Group className="mb-3">
-            <Form.Label>URL</Form.Label>
+            <Form.Label>URL *</Form.Label>
             <Form.Control
               type="text"
               placeholder={i18n.t("placeholder.url")}
               value={props.data.url || ""}
-              onChange={(e) => handleFieldChange("url", e.target.value, false)}
+              onChange={(e) => handleFieldChange("url", e.target.value, true)}
               disabled={props.readonly}
               isInvalid={!!props.errors?.url}
             />

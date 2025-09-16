@@ -1,7 +1,7 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Form, Card } from "react-bootstrap";
+import { Form, Card, Alert } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
 // Components
@@ -9,11 +9,14 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+import { ExistingCanonicalCriteriaFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
+// FontAwesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
 
 ////////////////////////////////
 //           Props            //
@@ -30,11 +33,8 @@ interface ExistingCanonicalCriteriaFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: ExistingCanonicalCriteriaFormData;
-}
-
-interface ExistingCanonicalCriteriaFormData {
-  exclude: boolean;
-  selectedEvidenceVariable?: FormEvidenceVariableData;
+  // To show the alert about combination absence
+  showCombinationAlert?: boolean;
 }
 
 const ExistingCanonicalCriteriaForm: FunctionComponent<
@@ -209,6 +209,14 @@ const ExistingCanonicalCriteriaForm: FunctionComponent<
       title={getModalTitle()}
       onClose={handleClose}
     >
+      {/* Warning Alert */}
+      {props.showCombinationAlert && (
+        <Alert variant="warning" className="mb-3">
+          <FontAwesomeIcon icon={faWarning} className="me-2" />
+          {i18n.t("message.warningcombinationconstraint")}
+        </Alert>
+      )}
+      
       {/* First Card: Exclude settings */}
       <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
 

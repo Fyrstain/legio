@@ -7,6 +7,10 @@ import InformationSection from "../components/InformationSection/InformationSect
 import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
 import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
 import ExistingInclusionCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
+import ExistingCanonicalCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingCanonicalCriteriaForm";
+import CanonicalForm from "../components/CustomEvidenceVariableModal/Modals/CanonicalForm";
+import ExpressionForm from "../components/CustomEvidenceVariableModal/Modals/ExpressionForm";
+import CombinationForm from "../components/CustomEvidenceVariableModal/Modals/CombinationForm";
 // Services
 import StudyService from "../services/study.service";
 import EvidenceVariableService from "../services/evidenceVariable.service";
@@ -42,7 +46,12 @@ import {
 import Client from "fhir-kit-client";
 // Types
 import {
+  CanonicalFormData,
+  CombinationFormData,
   EvidenceVariableActionType,
+  ExistingCanonicalCriteriaFormData,
+  ExistingCanonicalFormData,
+  ExpressionFormData,
   FormEvidenceVariableData,
 } from "../types/evidenceVariable.types";
 
@@ -104,6 +113,11 @@ const StudyDetails: FunctionComponent = () => {
   const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
     []
   );
+
+  // Current path for action (used for modals to know where to add the criteria)
+  const [currentActionPath, setCurrentActionPath] = useState<
+    number[] | undefined
+  >();
 
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
@@ -268,10 +282,13 @@ const StudyDetails: FunctionComponent = () => {
   /**
    * Handle actions for inclusion criteria
    * @param actionType The type of action to perform (new or existing).
+   * @param path The path to the characteristic where the action is performed.
    */
   const handleInclusionCriteriaAction = (
-    actionType: EvidenceVariableActionType
+    actionType: EvidenceVariableActionType,
+    path?: number[]
   ) => {
+    setCurrentActionPath(path);
     switch (actionType) {
       case "new":
         setShowNewCriteriaModal(true);
@@ -279,7 +296,35 @@ const StudyDetails: FunctionComponent = () => {
       case "existing":
         setShowExistingCriteriaModal(true);
         break;
+      case "combination":
+        setShowCombinationModal(true);
+        break;
+      case "expression":
+        setShowExpressionModal(true);
+        break;
+      case "existingCanonical":
+        setShowExistingCanonicalModal(true);
+        break;
+      case "newCanonical":
+        setShowNewCanonicalModal(true);
+        break;
+      default:
+        break;
     }
+  };
+
+  /**
+   * Determine if the alert about combination absence should be shown.
+   * @returns True if the alert about combination absence should be shown, false otherwise.
+   */
+  const showCombinationAbsenceAlert = () => {
+    if (
+      inclusionCriteria.length > 0 &&
+      !inclusionCriteria[0].hasCharacteristic()
+    ) {
+      return true;
+    }
+    return false;
   };
 
   /**
@@ -308,7 +353,7 @@ const StudyDetails: FunctionComponent = () => {
       setShowNewCriteriaModal(false);
     } catch (error) {
       console.error("Error creating criteria:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(i18n.t("errormessage.errorwhileaddingcriteria") + error);
     } finally {
       setLoading(false);
     }
@@ -327,7 +372,129 @@ const StudyDetails: FunctionComponent = () => {
       setShowExistingCriteriaModal(false);
     } catch (error) {
       console.error("Error adding existing criteria:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria"));
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the addition of a combination
+   */
+  const handleSaveCombination = async (data: CombinationFormData) => {
+    try {
+      setLoading(true);
+      // The inclusion criteria should only have one parent EvidenceVariable
+      if (inclusionCriteria.length > 0) {
+        const parentEVId = inclusionCriteria[0].getId();
+        await EvidenceVariableService.addDefinitionByCombination(
+          parentEVId!,
+          data,
+          currentActionPath
+        );
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowCombinationModal(false);
+        setCurrentActionPath(undefined);
+      } else {
+        alert(i18n.t("errormessage.noevidencevariablefound"));
+      }
+    } catch (error) {
+      console.error("Error adding combination:", error);
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the addition of an expression
+   */
+  const handleSaveExistingCanonical = async (
+    data: ExistingCanonicalCriteriaFormData
+  ) => {
+    try {
+      setLoading(true);
+      if (inclusionCriteria.length > 0) {
+        const parentEVId = inclusionCriteria[0].getId();
+        if (!data.selectedEvidenceVariable?.url) {
+          alert(i18n.t("errormessage.nourlontheevidencevariable"));
+          return;
+        }
+        // Data to create the canonical evidence variable
+        const canonicalData: ExistingCanonicalFormData = {
+          exclude: data.exclude,
+          canonicalUrl: data.selectedEvidenceVariable!.url,
+          canonicalId: data.selectedEvidenceVariable!.identifier,
+          canonicalDescription: data.selectedEvidenceVariable!.title,
+        };
+        await EvidenceVariableService.addExistingCanonical(
+          parentEVId!,
+          canonicalData,
+          currentActionPath
+        );
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowExistingCanonicalModal(false);
+        setCurrentActionPath(undefined);
+      }
+    } catch (error) {
+      console.error("Error adding existing canonical:", error);
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the creation of a new canonical evidence variable.
+   * @param data The data of the new canonical evidence variable to create.
+   */
+  const handleSaveNewCanonical = async (data: CanonicalFormData) => {
+    try {
+      setLoading(true);
+      if (inclusionCriteria.length > 0) {
+        const parentEVId = inclusionCriteria[0].getId();
+        await EvidenceVariableService.addNewCanonical(
+          parentEVId!,
+          data.evidenceVariable,
+          data.exclude,
+          currentActionPath
+        );
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowNewCanonicalModal(false);
+        setCurrentActionPath(undefined);
+      } else {
+        alert(i18n.t("errormessage.noevidencevariablefound"));
+      }
+    } catch (error) {
+      console.error("Error adding new canonical:", error);
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the addition of an expression
+   */
+  const handleSaveExpression = async (data: ExpressionFormData) => {
+    try {
+      setLoading(true);
+      if (inclusionCriteria.length > 0) {
+        const parentEVId = inclusionCriteria[0].getId();
+        await EvidenceVariableService.addDefinitionExpression(
+          parentEVId!,
+          data,
+          currentActionPath
+        );
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowExpressionModal(false);
+        setCurrentActionPath(undefined);
+      } else {
+        alert(i18n.t("errormessage.noevidencevariablefound"));
+      }
+    } catch (error) {
+      console.error("Error adding expression:", error);
+      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
     } finally {
       setLoading(false);
     }
@@ -356,7 +523,7 @@ const StudyDetails: FunctionComponent = () => {
       await loadStudy();
     } catch (error) {
       // Error message if the update fails
-      alert(i18n.t("errormessage.errorwhilesavingstudy"));
+      alert(`${i18n.t("errormessage.errorwhilesavingstudy")} ${error}`);
     }
   };
 
@@ -609,10 +776,12 @@ const StudyDetails: FunctionComponent = () => {
           type="inclusion"
           editMode={isEditingForm}
           onAction={handleInclusionCriteriaAction}
+          evidenceVariableModels={inclusionCriteria}
         />
         <EvidenceVariableSection
           evidenceVariables={studyVariablesDisplayObjects}
           type="study"
+          evidenceVariableModels={studyVariables}
         />
         {/* Warning message if no study variables are found */}
         {studyVariables.length === 0 && (
@@ -727,6 +896,44 @@ const StudyDetails: FunctionComponent = () => {
             mode="create"
             onHide={() => setShowExistingCriteriaModal(false)}
             onSave={handleSaveExistingCriteria}
+          />
+        )}
+        {/* To link an existing Canonical Criteria with a definitionCanonical */}
+        {showExistingCanonicalModal && (
+          <ExistingCanonicalCriteriaForm
+            show={showExistingCanonicalModal}
+            mode="create"
+            onHide={() => setShowExistingCanonicalModal(false)}
+            onSave={handleSaveExistingCanonical}
+            showCombinationAlert={showCombinationAbsenceAlert()}
+          />
+        )}
+        {/* To create a new Canonical Criteria with a definitionCanonical */}
+        {showNewCanonicalModal && (
+          <CanonicalForm
+            show={showNewCanonicalModal}
+            mode="create"
+            onHide={() => setShowNewCanonicalModal(false)}
+            onSave={handleSaveNewCanonical}
+            showCombinationAlert={showCombinationAbsenceAlert()}
+          />
+        )}
+        {/* To add a definitionExpression into the EvidenceVariable */}
+        {showExpressionModal && (
+          <ExpressionForm
+            show={showExpressionModal}
+            mode="create"
+            onHide={() => setShowExpressionModal(false)}
+            onSave={handleSaveExpression}
+            showCombinationAlert={showCombinationAbsenceAlert()}
+          />
+        )}
+        {showCombinationModal && (
+          <CombinationForm
+            show={showCombinationModal}
+            mode="create"
+            onHide={() => setShowCombinationModal(false)}
+            onSave={handleSaveCombination}
           />
         )}
       </>

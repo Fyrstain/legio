@@ -9,12 +9,19 @@ import { Title } from "@fyrstain/hl7-front-library";
 // Components
 import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
 import EvidenceVariableButtons from "../../components/EvidenceVariableButtons/EvidenceVariableButtons";
+import CharacteristicDisplay from "./CharacteristicDisplay";
 // Types
-import { EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
+import { EvidenceVariableActionType, EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps
-> = ({ evidenceVariables, type, editMode = false, onAction }) => {
+> = ({
+  evidenceVariables,
+  evidenceVariableModels,
+  type,
+  editMode = false,
+  onAction,
+}) => {
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -60,67 +67,147 @@ const EvidenceVariableSection: FunctionComponent<
     setObsolescenceFilter(value);
   };
 
+  /**
+   * To determine if the header for inclusion criteria should be displayed.
+   * The header is displayed if the type is "inclusion" and there is at least one evidence variable with characteristics.
+   */
+  const inclusionCriteriaHeader =
+    type === "inclusion" &&
+    filteredEvidenceVariables.some((ev) => ev.hasCharacteristic);
+
+  /**
+   * To get the characteristics of an evidence variable.
+   * @param index index of the evidence variable in the evidenceVariables array
+   * @returns the characteristics of the evidence variable or an empty array if not found.
+   */
+  const getCharacteristics = (index: number) => {
+    return evidenceVariableModels[index]?.getCharacteristics() || [];
+  };
+
+  /**
+   * Handles an action for the root/header level.
+   * @param actionType is the type of action to perform.
+   */
+  const handleHeaderAction = (actionType: EvidenceVariableActionType) => {
+    onAction?.(actionType, []);
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
 
   return (
     <Accordion defaultActiveKey="0" className="mb-4">
-      <Accordion.Item eventKey="0">
-        <Accordion.Header>
-          <Title
-            level={2}
-            content={
-              type === "inclusion"
-                ? i18n.t("title.inclusioncriteria")
-                : i18n.t("title.studyvariables")
-            }
-          />
-          <ObsolescenceFilter
-            value={obsolescenceFilter}
-            onChange={handleObsolescenceFilterChange}
-          />
-          {editMode && onAction && evidenceVariables.length === 0 && (
-            <EvidenceVariableButtons
-              buttonType={type === "inclusion" ? "criteria" : "studyVariable"}
-              editMode={editMode}
-              onAction={onAction}
-            />
-          )}
-        </Accordion.Header>
-        <Accordion.Body>
-          {filteredEvidenceVariables.length > 0 ? (
-            filteredEvidenceVariables.map((item, index) => (
-              <Accordion key={index} defaultActiveKey="0" className="mt-3">
-                <Accordion.Item eventKey="0">
-                  <Accordion.Header>
-                    <Title level={3} content={item.title} />
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <div className="d-flex align-items-center">
-                      <span className="me-2 fw-bold">Description : </span>
-                      <span>{item.description}</span>
-                    </div>
-                  </Accordion.Body>
-                </Accordion.Item>
-              </Accordion>
-            ))
-          ) : (
+      {/* if we have a header for inclusion criteria, we display it */}
+      {inclusionCriteriaHeader ? (
+        filteredEvidenceVariables.map((item, index) => (
+          <Accordion.Item eventKey={String(index)} key={index}>
+            <Accordion.Header>
+              <Title
+                level={2}
+                content={`${i18n.t("title.inclusioncriteria")} - ${item.title}`}
+              />
+              {editMode && onAction && !item.hasCharacteristic && (
+                <EvidenceVariableButtons
+                  buttonType="characteristic"
+                  editMode={editMode}
+                  onAction={onAction}
+                />
+              )}
+              <ObsolescenceFilter
+                value={obsolescenceFilter}
+                onChange={handleObsolescenceFilterChange}
+              />
+            </Accordion.Header>
+            <Accordion.Body>
+              <div className="d-flex gap-1">
+                <div className="fw-bold">Description :</div>
+                {item.description || "N/A"}
+              </div>
+              {item.hasCharacteristic && (
+                <CharacteristicDisplay
+                  characteristics={getCharacteristics(index)}
+                  editMode={editMode}
+                  onAction={onAction}
+                />
+              )}
+            </Accordion.Body>
+          </Accordion.Item>
+        ))
+      ) : (
+        // If we have no inclusion criteria, we display a single accordion with the title and the obsolescence filter
+        <Accordion.Item eventKey="0">
+          <Accordion.Header>
             <Title
-              level={3}
+              level={2}
               content={
-                obsolescenceFilter === "obsolete"
-                  ? i18n.t("errormessage.noobsoletevariables")
-                  : obsolescenceFilter === "not-obsolete"
-                  ? i18n.t("errormessage.nonotobsoletevariables")
-                  : type === "inclusion"
-                  ? i18n.t("errormessage.noinclusioncriteria")
-                  : i18n.t("errormessage.nostudyvariables")
+                type === "inclusion"
+                  ? i18n.t("title.inclusioncriteria")
+                  : i18n.t("title.studyvariables")
               }
             />
-          )}
-        </Accordion.Body>
-      </Accordion.Item>
+            <ObsolescenceFilter
+              value={obsolescenceFilter}
+              onChange={handleObsolescenceFilterChange}
+            />
+            {editMode && onAction && evidenceVariables.length === 0 && (
+              <EvidenceVariableButtons
+                buttonType={type === "inclusion" ? "criteria" : "studyVariable"}
+                editMode={editMode}
+                onAction={onAction}
+              />
+            )}
+          </Accordion.Header>
+          <Accordion.Body>
+            {filteredEvidenceVariables.length > 0 ? (
+              filteredEvidenceVariables.map((item, index) => (
+                <div key={index} className="mb-3">
+                  <Accordion defaultActiveKey="0">
+                    <Accordion.Item eventKey="0">
+                      <Accordion.Header>
+                        <Title level={3} content={item.title} />
+                        {editMode && onAction && !item.hasCharacteristic && (
+                          <EvidenceVariableButtons
+                            buttonType="characteristic"
+                            editMode={editMode}
+                            onAction={handleHeaderAction}
+                          />
+                        )}
+                      </Accordion.Header>
+                      <Accordion.Body>
+                        <div className="d-flex gap-1">
+                          <div className="fw-bold">Description :</div>
+                          {item.description || "N/A"}
+                        </div>
+                        {item.hasCharacteristic && (
+                          <CharacteristicDisplay
+                            characteristics={getCharacteristics(index)}
+                            editMode={editMode}
+                            onAction={onAction}
+                          />
+                        )}
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Accordion>
+                </div>
+              ))
+            ) : (
+              <Title
+                level={3}
+                content={
+                  obsolescenceFilter === "obsolete"
+                    ? i18n.t("errormessage.noobsoletevariables")
+                    : obsolescenceFilter === "not-obsolete"
+                    ? i18n.t("errormessage.nonotobsoletevariables")
+                    : type === "inclusion"
+                    ? i18n.t("errormessage.noinclusioncriteria")
+                    : i18n.t("errormessage.nostudyvariables")
+                }
+              />
+            )}
+          </Accordion.Body>
+        </Accordion.Item>
+      )}
     </Accordion>
   );
 };

@@ -72,11 +72,11 @@ const EvidenceVariableButtons: FunctionComponent<
         return [
           {
             key: "newCanonical" as const,
-            label: i18n.t("option.addnewcriteriacanonical"),
+            label: i18n.t("option.addnewcanonicalcriteria"),
           },
           {
             key: "existingCanonical" as const,
-            label: i18n.t("option.addexistingcriteriacanonical"),
+            label: i18n.t("option.addexistingcanonicalcriteria"),
           },
           { key: "expression" as const, label: i18n.t("option.addexpression") },
           {
