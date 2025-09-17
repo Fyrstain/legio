@@ -4,7 +4,7 @@ import { FunctionComponent } from "react";
 import { Accordion, Alert, Badge } from "react-bootstrap";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faWarning, faPen } from "@fortawesome/free-solid-svg-icons";
 // Types
 import { EvidenceVariableActionType } from "../../types/evidenceVariable.types";
 // Components
@@ -100,7 +100,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
             <Accordion.Header>
               {/* DefinitionByCombination Header */}
               {char.definitionByCombination && (
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
                     content={`${i18n.t(
@@ -110,6 +110,18 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                       char.definitionByCombination.extension
                     )}) - ${char.linkId || "N/A"}`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        //   onEdit();
+                      }}
+                    />
+                  )}
                   {editMode && onAction && (
                     <EvidenceVariableButtons
                       buttonType="characteristic"
@@ -121,22 +133,46 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
               )}
               {/* DefinitionCanonical Header */}
               {char.definitionCanonical && (
-                <div>
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
                     content={`${i18n.t("title.canonical")} - ${
                       char.linkId || "N/A"
                     }`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        //   onEdit();
+                      }}
+                    />
+                  )}
                 </div>
               )}
               {/* DefinitionExpression Header */}
               {char.definitionExpression && (
-                <div>
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
                     content={`Expression - ${char.linkId || "N/A"}`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        //   onEdit();
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </Accordion.Header>

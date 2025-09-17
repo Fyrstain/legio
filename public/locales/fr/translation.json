@@ -62,7 +62,9 @@
     "editstudy": "Modifier l'étude",
     "filterobsolescence": "Filtrer par obsolescence",
     "addcriteria": "Ajouter un critère",
-    "addcharacteristic": "Ajouter une caractéristique"
+    "addcharacteristic": "Ajouter une caractéristique",
+    "edittheevidencevariable": "Modifier la Variable d'Évidence",
+    "editthecharacteristic": "Modifier la Caractéristique"
   },
   "label": {
     "name": "Nom",
@@ -131,13 +133,16 @@
     "loadingcomparators": "Erreur lors du chargement des comparateurs :",
     "errorwhileaddingcriteria": "Erreur lors de l'ajout du critère. Veuillez réessayer.",
     "noevidencevariablefound": "Aucune Variable d'Évidence trouvée !",
-    "nourlontheevidencevariable": "Aucune URL sur la Variable d'Évidence sélectionnée ! Veuillez en sélectionner une autre."
+    "nourlontheevidencevariable": "Aucune URL sur la Variable d'Évidence sélectionnée ! Veuillez en sélectionner une autre.",
+    "errorwhileupdating": "Erreur lors de la mise à jour ! Veuillez réessayer.",
+    "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence."
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
     "unsavedchanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter sans enregistrer ?",
     "emptycombination": "Combinaison vide - ajoutez des caractéristiques",
-    "warningcombinationconstraint": "Veuillez noter que vous n'avez pas de “combinaison”. Si vous ajoutez une référence canonique avant, vous ne pourrez plus ajouter d'autres caractéristiques. "
+    "warningcombinationconstraint": "Veuillez noter que vous n'avez pas de “combinaison”. Si vous ajoutez une référence canonique avant, vous ne pourrez plus ajouter d'autres caractéristiques.",
+    "updatesuccessful": "Mise à jour réussie."
   },
   "placeholder": {
     "selectstudydesign": "-- Sélectionnez une conception de l'étude --",

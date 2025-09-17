@@ -167,6 +167,14 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * Get the underlying FHIR resource
+   * @returns The FHIR EvidenceVariable resource
+   */
+  getFhirResource(): EvidenceVariable {
+    return this.fhirResource;
+  }
+
+  /**
    * A static method to create EvidenceVariableModel instances from a FHIR Bundle
    * This method extracts EvidenceVariable resources from the bundle and creates models.
    *

@@ -4,16 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 // Components
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InformationSection from "../components/InformationSection/InformationSection";
-import EvidenceVariableSection from "../components/EvidenceVariableSection/EvidenceVariableSection";
-import EvidenceVariableModal from "../components/CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
-import ExistingInclusionCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingInclusionCriteriaForm";
-import ExistingCanonicalCriteriaForm from "../components/CustomEvidenceVariableModal/Modals/ExistingCanonicalCriteriaForm";
-import CanonicalForm from "../components/CustomEvidenceVariableModal/Modals/CanonicalForm";
-import ExpressionForm from "../components/CustomEvidenceVariableModal/Modals/ExpressionForm";
-import CombinationForm from "../components/CustomEvidenceVariableModal/Modals/CombinationForm";
+import EvidenceVariableManager from "../components/EvidenceVariableManager/EvidenceVariableManager";
 // Services
 import StudyService from "../services/study.service";
-import EvidenceVariableService from "../services/evidenceVariable.service";
 // Model
 import {
   EvidenceVariableModel,
@@ -44,16 +37,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 // Fhir
 import Client from "fhir-kit-client";
-// Types
-import {
-  CanonicalFormData,
-  CombinationFormData,
-  EvidenceVariableActionType,
-  ExistingCanonicalCriteriaFormData,
-  ExistingCanonicalFormData,
-  ExpressionFormData,
-  FormEvidenceVariableData,
-} from "../types/evidenceVariable.types";
 
 const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
@@ -104,20 +87,10 @@ const StudyDetails: FunctionComponent = () => {
   // State to manage editing mode
   const [isEditingForm, setIsEditingForm] = useState(false);
 
-  // Inclusion criteria array
-  const [inclusionCriteria, setInclusionCriteria] = useState<
-    EvidenceVariableModel[]
-  >([]);
-
   // Study variables array
   const [studyVariables, setStudyVariables] = useState<EvidenceVariableModel[]>(
     []
   );
-
-  // Current path for action (used for modals to know where to add the criteria)
-  const [currentActionPath, setCurrentActionPath] = useState<
-    number[] | undefined
-  >();
 
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
@@ -125,19 +98,6 @@ const StudyDetails: FunctionComponent = () => {
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
-
-  // TODO : To test the modals
-  const [showExistingStudyVariableModal, setShowExistingStudyVariableModal] =
-    useState(false);
-  const [showStudyVariableModal, setShowStudyVariableModal] = useState(false);
-  const [showExistingCriteriaModal, setShowExistingCriteriaModal] =
-    useState(false);
-  const [showNewCriteriaModal, setShowNewCriteriaModal] = useState(false);
-  const [showCombinationModal, setShowCombinationModal] = useState(false);
-  const [showExpressionModal, setShowExpressionModal] = useState(false);
-  const [showExistingCanonicalModal, setShowExistingCanonicalModal] =
-    useState(false);
-  const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
 
   //////////////////////////////
   //           Error          //
@@ -157,8 +117,6 @@ const StudyDetails: FunctionComponent = () => {
   useEffect(() => {
     if (studyId) {
       loadStudy();
-      loadEvidenceVariablesHandler("inclusion");
-      loadEvidenceVariablesHandler("study");
     }
   }, [studyId]);
 
@@ -280,227 +238,6 @@ const StudyDetails: FunctionComponent = () => {
   };
 
   /**
-   * Handle actions for inclusion criteria
-   * @param actionType The type of action to perform (new or existing).
-   * @param path The path to the characteristic where the action is performed.
-   */
-  const handleInclusionCriteriaAction = (
-    actionType: EvidenceVariableActionType,
-    path?: number[]
-  ) => {
-    setCurrentActionPath(path);
-    switch (actionType) {
-      case "new":
-        setShowNewCriteriaModal(true);
-        break;
-      case "existing":
-        setShowExistingCriteriaModal(true);
-        break;
-      case "combination":
-        setShowCombinationModal(true);
-        break;
-      case "expression":
-        setShowExpressionModal(true);
-        break;
-      case "existingCanonical":
-        setShowExistingCanonicalModal(true);
-        break;
-      case "newCanonical":
-        setShowNewCanonicalModal(true);
-        break;
-      default:
-        break;
-    }
-  };
-
-  /**
-   * Determine if the alert about combination absence should be shown.
-   * @returns True if the alert about combination absence should be shown, false otherwise.
-   */
-  const showCombinationAbsenceAlert = () => {
-    if (
-      inclusionCriteria.length > 0 &&
-      !inclusionCriteria[0].hasCharacteristic()
-    ) {
-      return true;
-    }
-    return false;
-  };
-
-  /**
-   * Save an evidence variable as inclusion criteria.
-   * @param evidenceVariableId The id of the evidence variable to save as inclusion criteria.
-   */
-  const saveInclusionCriteria = async (evidenceVariableId: string) => {
-    await StudyService.addEvidenceVariableToStudy(
-      studyId!,
-      evidenceVariableId,
-      "inclusion"
-    );
-    await loadEvidenceVariablesHandler("inclusion");
-  };
-
-  /**
-   * Handle the creation of a new evidence variable.
-   * @param data The data of the new evidence variable to create.
-   */
-  const handleSaveNewCriteria = async (data: FormEvidenceVariableData) => {
-    try {
-      setLoading(true);
-      const createdEV =
-        await EvidenceVariableService.createSimpleEvidenceVariable(data);
-      await saveInclusionCriteria(createdEV.id!);
-      setShowNewCriteriaModal(false);
-    } catch (error) {
-      console.error("Error creating criteria:", error);
-      alert(i18n.t("errormessage.errorwhileaddingcriteria") + error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle the addition of an existing evidence variable.
-   * @param data The data of the existing evidence variable to add.
-   */
-  const handleSaveExistingCriteria = async (data: {
-    selectedEvidenceVariable?: FormEvidenceVariableData;
-  }) => {
-    try {
-      setLoading(true);
-      await saveInclusionCriteria(data.selectedEvidenceVariable!.id!);
-      setShowExistingCriteriaModal(false);
-    } catch (error) {
-      console.error("Error adding existing criteria:", error);
-      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle the addition of a combination
-   */
-  const handleSaveCombination = async (data: CombinationFormData) => {
-    try {
-      setLoading(true);
-      // The inclusion criteria should only have one parent EvidenceVariable
-      if (inclusionCriteria.length > 0) {
-        const parentEVId = inclusionCriteria[0].getId();
-        await EvidenceVariableService.addDefinitionByCombination(
-          parentEVId!,
-          data,
-          currentActionPath
-        );
-        await loadEvidenceVariablesHandler("inclusion");
-        setShowCombinationModal(false);
-        setCurrentActionPath(undefined);
-      } else {
-        alert(i18n.t("errormessage.noevidencevariablefound"));
-      }
-    } catch (error) {
-      console.error("Error adding combination:", error);
-      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle the addition of an expression
-   */
-  const handleSaveExistingCanonical = async (
-    data: ExistingCanonicalCriteriaFormData
-  ) => {
-    try {
-      setLoading(true);
-      if (inclusionCriteria.length > 0) {
-        const parentEVId = inclusionCriteria[0].getId();
-        if (!data.selectedEvidenceVariable?.url) {
-          alert(i18n.t("errormessage.nourlontheevidencevariable"));
-          return;
-        }
-        // Data to create the canonical evidence variable
-        const canonicalData: ExistingCanonicalFormData = {
-          exclude: data.exclude,
-          canonicalUrl: data.selectedEvidenceVariable!.url,
-          canonicalId: data.selectedEvidenceVariable!.identifier,
-          canonicalDescription: data.selectedEvidenceVariable!.title,
-        };
-        await EvidenceVariableService.addExistingCanonical(
-          parentEVId!,
-          canonicalData,
-          currentActionPath
-        );
-        await loadEvidenceVariablesHandler("inclusion");
-        setShowExistingCanonicalModal(false);
-        setCurrentActionPath(undefined);
-      }
-    } catch (error) {
-      console.error("Error adding existing canonical:", error);
-      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle the creation of a new canonical evidence variable.
-   * @param data The data of the new canonical evidence variable to create.
-   */
-  const handleSaveNewCanonical = async (data: CanonicalFormData) => {
-    try {
-      setLoading(true);
-      if (inclusionCriteria.length > 0) {
-        const parentEVId = inclusionCriteria[0].getId();
-        await EvidenceVariableService.addNewCanonical(
-          parentEVId!,
-          data.evidenceVariable,
-          data.exclude,
-          currentActionPath
-        );
-        await loadEvidenceVariablesHandler("inclusion");
-        setShowNewCanonicalModal(false);
-        setCurrentActionPath(undefined);
-      } else {
-        alert(i18n.t("errormessage.noevidencevariablefound"));
-      }
-    } catch (error) {
-      console.error("Error adding new canonical:", error);
-      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle the addition of an expression
-   */
-  const handleSaveExpression = async (data: ExpressionFormData) => {
-    try {
-      setLoading(true);
-      if (inclusionCriteria.length > 0) {
-        const parentEVId = inclusionCriteria[0].getId();
-        await EvidenceVariableService.addDefinitionExpression(
-          parentEVId!,
-          data,
-          currentActionPath
-        );
-        await loadEvidenceVariablesHandler("inclusion");
-        setShowExpressionModal(false);
-        setCurrentActionPath(undefined);
-      } else {
-        alert(i18n.t("errormessage.noevidencevariablefound"));
-      }
-    } catch (error) {
-      console.error("Error adding expression:", error);
-      alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
    * Update the ResearchStudy resource with the new values.
    *
    * @param updatedValues The new values to update
@@ -547,45 +284,11 @@ const StudyDetails: FunctionComponent = () => {
   }
 
   /**
-   * Function to load evidence variables (inclusion criteria or study variables) from the backend.
-   *
-   * @param type The type of evidence variable to load (inclusion or study)
-   */
-  async function loadEvidenceVariablesHandler(type: "inclusion" | "study") {
-    try {
-      const evidencesVariables =
-        await EvidenceVariableService.loadEvidenceVariables(
-          studyId ?? "",
-          type
-        );
-      if (type === "inclusion") {
-        setInclusionCriteria(evidencesVariables);
-      } else {
-        setStudyVariables(evidencesVariables);
-      }
-    } catch (error) {
-      onError();
-    }
-  }
-
-  /**
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
   const studyVariablesExpressions =
     EvidenceVariableUtils.extractExpressions(studyVariables);
-
-  /**
-   * To display the Inclusion Criteria
-   */
-  const inclusionCriteriaDisplayObjects =
-    EvidenceVariableUtils.toDisplayObjects(inclusionCriteria);
-
-  /**
-   * To display the Study Variable
-   */
-  const studyVariablesDisplayObjects =
-    EvidenceVariableUtils.toDisplayObjects(studyVariables);
 
   /**
    * Handle the cohorting and datamart generation.
@@ -771,17 +474,12 @@ const StudyDetails: FunctionComponent = () => {
           ]}
         />
         {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
-        <EvidenceVariableSection
-          evidenceVariables={inclusionCriteriaDisplayObjects}
-          type="inclusion"
+        <EvidenceVariableManager
+          studyId={studyId!}
           editMode={isEditingForm}
-          onAction={handleInclusionCriteriaAction}
-          evidenceVariableModels={inclusionCriteria}
-        />
-        <EvidenceVariableSection
-          evidenceVariables={studyVariablesDisplayObjects}
-          type="study"
-          evidenceVariableModels={studyVariables}
+          onLoading={setLoading}
+          onError={onError}
+          onStudyVariablesChange={setStudyVariables}
         />
         {/* Warning message if no study variables are found */}
         {studyVariables.length === 0 && (
@@ -877,64 +575,6 @@ const StudyDetails: FunctionComponent = () => {
           <Button className="mt-3" onClick={handleSave}>
             {i18n.t("button.savechanges")}
           </Button>
-        )}
-
-        {/* To create a new Inclusion Criteria */}
-        {showNewCriteriaModal && (
-          <EvidenceVariableModal
-            show={showNewCriteriaModal}
-            mode="create"
-            type="inclusion"
-            onHide={() => setShowNewCriteriaModal(false)}
-            onSave={handleSaveNewCriteria}
-          />
-        )}
-        {/* To link an existing Inclusion Criteria */}
-        {showExistingCriteriaModal && (
-          <ExistingInclusionCriteriaForm
-            show={showExistingCriteriaModal}
-            mode="create"
-            onHide={() => setShowExistingCriteriaModal(false)}
-            onSave={handleSaveExistingCriteria}
-          />
-        )}
-        {/* To link an existing Canonical Criteria with a definitionCanonical */}
-        {showExistingCanonicalModal && (
-          <ExistingCanonicalCriteriaForm
-            show={showExistingCanonicalModal}
-            mode="create"
-            onHide={() => setShowExistingCanonicalModal(false)}
-            onSave={handleSaveExistingCanonical}
-            showCombinationAlert={showCombinationAbsenceAlert()}
-          />
-        )}
-        {/* To create a new Canonical Criteria with a definitionCanonical */}
-        {showNewCanonicalModal && (
-          <CanonicalForm
-            show={showNewCanonicalModal}
-            mode="create"
-            onHide={() => setShowNewCanonicalModal(false)}
-            onSave={handleSaveNewCanonical}
-            showCombinationAlert={showCombinationAbsenceAlert()}
-          />
-        )}
-        {/* To add a definitionExpression into the EvidenceVariable */}
-        {showExpressionModal && (
-          <ExpressionForm
-            show={showExpressionModal}
-            mode="create"
-            onHide={() => setShowExpressionModal(false)}
-            onSave={handleSaveExpression}
-            showCombinationAlert={showCombinationAbsenceAlert()}
-          />
-        )}
-        {showCombinationModal && (
-          <CombinationForm
-            show={showCombinationModal}
-            mode="create"
-            onHide={() => setShowCombinationModal(false)}
-            onSave={handleSaveCombination}
-          />
         )}
       </>
     </LegioPage>

@@ -46,6 +46,7 @@ interface EvidenceVariableSectionProps {
   type: "inclusion" | "study";
   onAction?: (actionType: EvidenceVariableActionType, path?: number[]) => void;
   editMode?: boolean;
+  onEditEV?: (id: string) => void;
 }
 
 /**
@@ -159,9 +160,9 @@ export type {
   InclusionCriteriaValue,
   CombinationFormData,
   ExistingCanonicalFormData,
-  ExistingCanonicalCriteriaFormData, 
+  ExistingCanonicalCriteriaFormData,
   CanonicalFormData,
-  ExpressionFormData, 
+  ExpressionFormData,
   EvidenceVariableButtonType,
   EvidenceVariableActionType,
   EvidenceVariableButtonsProps,

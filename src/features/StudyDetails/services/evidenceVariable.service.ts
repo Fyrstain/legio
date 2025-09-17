@@ -147,6 +147,39 @@ async function loadEvidenceVariables(
 }
 
 /**
+ * Map form data to a FHIR EvidenceVariable resource
+ * To be used for creating or updating an EvidenceVariable
+ *
+ * @param data FormEvidenceVariableData
+ * @param existingEV Optionally, the existing EvidenceVariable to update
+ * @returns EvidenceVariable
+ */
+function mapFormDataToEvidenceVariable(
+  data: FormEvidenceVariableData,
+  existingEV?: EvidenceVariable
+): EvidenceVariable {
+  const base: EvidenceVariable = existingEV
+    ? { ...existingEV }
+    : ({ resourceType: "EvidenceVariable" } as EvidenceVariable);
+  base.title = data.title;
+  base.description = data.description;
+  base.status = data.status as any;
+  base.url = data.url;
+  base.identifier = data.identifier
+    ? [{ value: data.identifier }]
+    : existingEV?.identifier;
+  if (data.selectedLibrary?.url) {
+    base.extension = [
+      {
+        url: "http://hl7.org/fhir/StructureDefinition/cqf-library",
+        valueCanonical: data.selectedLibrary.url,
+      },
+    ];
+  }
+  return base;
+}
+
+/**
  * Create a new EvidenceVariable.
  *
  * @param data The form data to create the EvidenceVariable
@@ -155,25 +188,37 @@ async function loadEvidenceVariables(
 async function createSimpleEvidenceVariable(
   data: FormEvidenceVariableData
 ): Promise<EvidenceVariable> {
-  const evidenceVariable: EvidenceVariable = {
-    resourceType: "EvidenceVariable",
-    status: data.status as any,
-    identifier: [{ value: data.identifier }],
-    title: data.title,
-    description: data.description,
-    url: data.url,
-    extension: [
-      {
-        url: "http://hl7.org/fhir/StructureDefinition/cqf-library",
-        valueCanonical: data.selectedLibrary?.url,
-      },
-    ],
-  };
+  const evidenceVariable = mapFormDataToEvidenceVariable(data);
   const createdEvidenceVariable = (await fhirKnowledgeClient.create({
     resourceType: "EvidenceVariable",
     body: evidenceVariable,
   })) as EvidenceVariable;
   return createdEvidenceVariable;
+}
+
+/**
+ * To update an existing EvidenceVariable with new data.
+ *
+ * @param evidenceVariableId is the id of the EV to update
+ * @param updatedData is the updated data to apply
+ * @param existingEV is the current state of the EV
+ * @returns a promise of the updated EvidenceVariable
+ */
+async function updateEvidenceVariable(
+  evidenceVariableId: string,
+  updatedData: FormEvidenceVariableData,
+  existingEV: EvidenceVariable
+): Promise<EvidenceVariable> {
+  try {
+    const updatedEV = mapFormDataToEvidenceVariable(updatedData, existingEV);
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: updatedEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EvidenceVariable: ${error}`);
+  }
 }
 
 /**
@@ -516,6 +561,7 @@ const EvidenceVariableService = {
   readEvidenceVariableByUrl,
   loadEvidenceVariables,
   createSimpleEvidenceVariable,
+  updateEvidenceVariable,
   addDefinitionByCombination,
   addExistingCanonical,
   addNewCanonical,
