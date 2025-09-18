@@ -44,7 +44,11 @@ interface EvidenceVariableSectionProps {
   evidenceVariables: EvidenceVariableProps[];
   evidenceVariableModels: EvidenceVariableModel[];
   type: "inclusion" | "study";
-  onAction?: (actionType: EvidenceVariableActionType, path?: number[]) => void;
+  onAction?: (
+    actionType: EvidenceVariableActionType,
+    path?: number[],
+    editData?: any
+  ) => void;
   editMode?: boolean;
   onEditEV?: (id: string) => void;
 }
@@ -52,7 +56,7 @@ interface EvidenceVariableSectionProps {
 /**
  * Type for the inclusion criteria types
  */
-type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code";
+type InclusionCriteriaTypes = "boolean" | "integer" | "datetime" | "coding";
 
 /**
  * Interface for the value of the Inclusion Criteria
@@ -60,7 +64,13 @@ type InclusionCriteriaTypes = "boolean" | "integer" | "date" | "code";
 interface InclusionCriteriaValue {
   type: InclusionCriteriaTypes;
   operator?: string;
-  value?: number | boolean | string | Date | string[];
+  value?:
+    | number
+    | boolean
+    | string
+    | Date
+    | string[]
+    | { system?: string; code?: string };
   minValue?: number | Date;
   maxValue?: number | Date;
   valueSetUrl?: string;
@@ -135,6 +145,7 @@ type EvidenceVariableActionType =
   | "combination"
   | "newCanonical"
   | "existingCanonical"
+  | "editCanonical"
   | "edit";
 
 /**

@@ -193,7 +193,7 @@ const EvidenceVariableSection: FunctionComponent<
                     <Accordion.Item eventKey="0">
                       <Accordion.Header>
                         <Title level={3} content={item.title} />
-                        <div className="d-flex align-items-center ms-3">
+                        <div className="d-flex align-items-center gap-4 ms-4">
                           {editMode && (
                             <FontAwesomeIcon
                               className="actionIcon"
@@ -202,6 +202,7 @@ const EvidenceVariableSection: FunctionComponent<
                               title={i18n.t("button.edittheevidencevariable")}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                onEditEV?.(item.id || "");
                               }}
                             />
                           )}

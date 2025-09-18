@@ -45,7 +45,7 @@ const EvidenceVariableManager: FunctionComponent<
   //           State            //
   ////////////////////////////////
 
-  // EvidenceVariables
+  // EvidenceVariables (inclusion criteria and study variables)
   const [inclusionCriteria, setInclusionCriteria] = useState<
     EvidenceVariableModel[]
   >([]);
@@ -53,20 +53,43 @@ const EvidenceVariableManager: FunctionComponent<
     []
   );
 
-  // Modals state
+  // EvidenceVariable modal state
   const [showExistingCriteriaModal, setShowExistingCriteriaModal] =
     useState(false);
   const [showNewCriteriaModal, setShowNewCriteriaModal] = useState(false);
-  const [showCombinationModal, setShowCombinationModal] = useState(false);
-  const [showExpressionModal, setShowExpressionModal] = useState(false);
-  const [showExistingCanonicalModal, setShowExistingCanonicalModal] =
-    useState(false);
-  const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
-
-  // Edit modal state
   const [showEditEVModal, setShowEditEVModal] = useState(false);
   const [editEVData, setEditEVData] = useState<
     FormEvidenceVariableData | undefined
+  >();
+
+  // definitionByCombination modal state
+  const [showCombinationModal, setShowCombinationModal] = useState(false);
+  const [combinationMode, setCombinationMode] = useState<"create" | "update">(
+    "create"
+  );
+  const [combinationEditData, setCombinationEditData] = useState<
+    CombinationFormData | undefined
+  >();
+
+  // definitionExpression modal state
+  const [showExpressionModal, setShowExpressionModal] = useState(false);
+  const [expressionMode, setExpressionMode] = useState<"create" | "update">(
+    "create"
+  );
+  const [expressionEditData, setExpressionEditData] = useState<
+    ExpressionFormData | undefined
+  >();
+
+  // definitionCanonical state
+  const [showExistingCanonicalModal, setShowExistingCanonicalModal] =
+    useState(false);
+  const [showNewCanonicalModal, setShowNewCanonicalModal] = useState(false);
+  const [showEditCanonicalModal, setShowEditCanonicalModal] = useState(false);
+  const [editCanonicalData, setEditCanonicalData] = useState<
+    CanonicalFormData | undefined
+  >();
+  const [originalCanonicalUrl, setOriginalCanonicalUrl] = useState<
+    string | undefined
   >();
 
   // Current path for action (used for modals to know where to add the criteria)
@@ -104,7 +127,11 @@ const EvidenceVariableManager: FunctionComponent<
    * Handle actions for inclusion criteria
    */
   const handleInclusionCriteriaAction = useCallback(
-    (actionType: EvidenceVariableActionType, path?: number[]) => {
+    async (
+      actionType: EvidenceVariableActionType,
+      path?: number[],
+      editData?: any
+    ) => {
       setCurrentActionPath(path);
       switch (actionType) {
         case "new":
@@ -114,9 +141,32 @@ const EvidenceVariableManager: FunctionComponent<
           setShowExistingCriteriaModal(true);
           break;
         case "combination":
+          if (editData) {
+            // Edit Mode
+            setCombinationEditData(editData);
+            setCombinationMode("update");
+          } else {
+            // Create Mode
+            setCombinationEditData(undefined);
+            setCombinationMode("create");
+          }
           setShowCombinationModal(true);
           break;
         case "expression":
+          if (editData) {
+            // To find and populate library reference from URL
+            if (editData.selectedLibrary?.url) {
+              editData.selectedLibrary = await findLibraryByUrl(
+                editData.selectedLibrary.url
+              );
+            }
+            setExpressionEditData(editData);
+            setExpressionMode("update");
+          } else {
+            // Create Mode
+            setExpressionEditData(undefined);
+            setExpressionMode("create");
+          }
           setShowExpressionModal(true);
           break;
         case "existingCanonical":
@@ -124,6 +174,24 @@ const EvidenceVariableManager: FunctionComponent<
           break;
         case "newCanonical":
           setShowNewCanonicalModal(true);
+          break;
+        case "editCanonical":
+          // To find and populate library reference from URL
+          if (editData.evidenceVariable.id) {
+            const referencedEVModel =
+              await EvidenceVariableService.getEvidenceVariableById(
+                editData.evidenceVariable.id
+              );
+            const libraryUrl = referencedEVModel.getLibraryUrl();
+            // If the evidence variable is linked to a library, find and set the library reference
+            if (libraryUrl) {
+              editData.evidenceVariable.selectedLibrary =
+                await findLibraryByUrl(libraryUrl);
+            }
+          }
+          setEditCanonicalData(editData);
+          setOriginalCanonicalUrl(editData.evidenceVariable.url);
+          setShowEditCanonicalModal(true);
           break;
         default:
           break;
@@ -199,27 +267,46 @@ const EvidenceVariableManager: FunctionComponent<
       try {
         onLoading(true);
         // The inclusion criteria should only have one parent EvidenceVariable
-        if (inclusionCriteria.length > 0) {
-          const parentEVId = inclusionCriteria[0].getId();
+        if (inclusionCriteria.length === 0) {
+          alert(i18n.t("errormessage.noevidencevariablefound"));
+          return;
+        }
+        const parentEVId = inclusionCriteria[0].getId();
+        if (combinationMode === "update" && currentActionPath) {
+          // Edit mode
+          await EvidenceVariableService.updateDefinitionByCombination(
+            parentEVId!,
+            data,
+            currentActionPath
+          );
+        } else {
+          // Create mode
           await EvidenceVariableService.addDefinitionByCombination(
             parentEVId!,
             data,
             currentActionPath
           );
-          await loadEvidenceVariablesHandler("inclusion");
-          setShowCombinationModal(false);
-          setCurrentActionPath(undefined);
-        } else {
-          alert(i18n.t("errormessage.noevidencevariablefound"));
         }
+        // Refresh the inclusion criteria list
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowCombinationModal(false);
+        setCurrentActionPath(undefined);
+        setCombinationEditData(undefined);
+        setCombinationMode("create");
       } catch (error) {
-        console.error("Error adding combination:", error);
+        console.error("Error saving combination:", error);
         alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
       } finally {
         onLoading(false);
       }
     },
-    [inclusionCriteria, currentActionPath, loadEvidenceVariablesHandler]
+    [
+      inclusionCriteria,
+      currentActionPath,
+      combinationMode,
+      loadEvidenceVariablesHandler,
+      onLoading,
+    ]
   );
 
   /**
@@ -304,21 +391,36 @@ const EvidenceVariableManager: FunctionComponent<
     async (data: ExpressionFormData) => {
       try {
         onLoading(true);
-        if (inclusionCriteria.length > 0) {
-          const parentEVId = inclusionCriteria[0].getId();
+        // The inclusion criteria should only have one parent EvidenceVariable
+        if (inclusionCriteria.length === 0) {
+          alert(i18n.t("errormessage.noevidencevariablefound"));
+          return;
+        }
+        const parentEVId = inclusionCriteria[0].getId();
+        // Depending on the mode, call the appropriate service function
+        if (expressionMode === "update" && currentActionPath) {
+          // EDIT mode
+          await EvidenceVariableService.updateDefinitionExpression(
+            parentEVId!,
+            data,
+            currentActionPath
+          );
+        } else {
+          // CREATE mode
           await EvidenceVariableService.addDefinitionExpression(
             parentEVId!,
             data,
             currentActionPath
           );
-          await loadEvidenceVariablesHandler("inclusion");
-          setShowExpressionModal(false);
-          setCurrentActionPath(undefined);
-        } else {
-          alert(i18n.t("errormessage.noevidencevariablefound"));
         }
+        // Refresh the inclusion criteria list
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowExpressionModal(false);
+        setCurrentActionPath(undefined);
+        setExpressionEditData(undefined);
+        setExpressionMode("create");
       } catch (error) {
-        console.error("Error adding expression:", error);
+        console.error("Error saving expression:", error);
         alert(`${i18n.t("errormessage.errorwhileaddingcriteria")} ${error}`);
       } finally {
         onLoading(false);
@@ -327,6 +429,7 @@ const EvidenceVariableManager: FunctionComponent<
     [
       inclusionCriteria,
       currentActionPath,
+      expressionMode,
       loadEvidenceVariablesHandler,
       onLoading,
     ]
@@ -352,21 +455,9 @@ const EvidenceVariableManager: FunctionComponent<
           // If the evidence variable is linked to a library, find and set the library reference
           const currentLibraryUrl = evToEdit.getLibraryUrl();
           if (currentLibraryUrl) {
-            try {
-              // Load all available libraries
-              const availableLibraries = await LibraryService.loadLibraries();
-              // Find the library that matches the current URL
-              const matchingLibrary = availableLibraries.find(
-                (lib) => lib.getUrl() === currentLibraryUrl
-              );
-              // If a matching library is found, set it as the selected library
-              if (matchingLibrary) {
-                editData.selectedLibrary =
-                  matchingLibrary.toDisplayLibraryReference();
-              }
-            } catch (error) {
-              console.error("Error loading libraries:", error);
-            }
+            editData.selectedLibrary = await findLibraryByUrl(
+              currentLibraryUrl
+            );
           }
           setEditEVData(editData);
           setShowEditEVModal(true);
@@ -413,6 +504,46 @@ const EvidenceVariableManager: FunctionComponent<
   );
 
   /**
+   * Handle the saving of an edited canonical evidence variable.
+   */
+  const handleSaveEditCanonical = useCallback(
+    async (data: CanonicalFormData) => {
+      try {
+        onLoading(true);
+        // The inclusion criteria should only have one parent EvidenceVariable
+        if (inclusionCriteria.length > 0 && originalCanonicalUrl) {
+          const parentEVId = inclusionCriteria[0].getId();
+          // If the current action path is defined, proceed to update
+          await EvidenceVariableService.updateCanonicalCharacteristic(
+            parentEVId!,
+            currentActionPath!,
+            data,
+            originalCanonicalUrl
+          );
+        }
+        // Reload the inclusion criteria to reflect the changes
+        await loadEvidenceVariablesHandler("inclusion");
+        setShowEditCanonicalModal(false);
+        setCurrentActionPath(undefined);
+        setEditCanonicalData(undefined);
+        setOriginalCanonicalUrl(undefined);
+      } catch (error) {
+        console.error("Error updating canonical:", error);
+        alert(`${i18n.t("errormessage.errorwhileupdating")} ${error}`);
+      } finally {
+        onLoading(false);
+      }
+    },
+    [
+      inclusionCriteria,
+      currentActionPath,
+      originalCanonicalUrl,
+      loadEvidenceVariablesHandler,
+      onLoading,
+    ]
+  );
+
+  /**
    * Determine if the alert about combination absence should be shown.
    * @returns True if the alert about combination absence should be shown, false otherwise.
    */
@@ -425,6 +556,25 @@ const EvidenceVariableManager: FunctionComponent<
     }
     return false;
   };
+
+  /**
+   * Find and populate library reference from URL
+   * @param libraryUrl The URL of the library to find
+   * @returns LibraryReference or undefined if not found
+   */
+  const findLibraryByUrl = useCallback(async (libraryUrl: string) => {
+    if (!libraryUrl) return undefined;
+    try {
+      const availableLibraries = await LibraryService.loadLibraries();
+      const matchingLibrary = availableLibraries.find(
+        (lib) => lib.getUrl() === libraryUrl
+      );
+      return matchingLibrary?.toDisplayLibraryReference();
+    } catch (error) {
+      console.error("Error loading libraries:", error);
+      return undefined;
+    }
+  }, []);
 
   /**
    * To display the Inclusion Criteria
@@ -514,9 +664,15 @@ const EvidenceVariableManager: FunctionComponent<
       {showExpressionModal && (
         <ExpressionForm
           show={showExpressionModal}
-          mode="create"
-          onHide={() => setShowExpressionModal(false)}
+          mode={expressionMode}
+          onHide={() => {
+            setShowExpressionModal(false);
+            setExpressionEditData(undefined);
+            setExpressionMode("create");
+            setCurrentActionPath(undefined);
+          }}
           onSave={handleSaveExpression}
+          initialData={expressionEditData}
           showCombinationAlert={showCombinationAbsenceAlert()}
         />
       )}
@@ -524,9 +680,14 @@ const EvidenceVariableManager: FunctionComponent<
       {showCombinationModal && (
         <CombinationForm
           show={showCombinationModal}
-          mode="create"
-          onHide={() => setShowCombinationModal(false)}
+          mode={combinationMode}
+          onHide={() => {
+            setShowCombinationModal(false);
+            setCombinationEditData(undefined);
+            setCombinationMode("create");
+          }}
           onSave={handleSaveCombination}
+          initialData={combinationEditData}
         />
       )}
 
@@ -538,6 +699,22 @@ const EvidenceVariableManager: FunctionComponent<
           mode="update"
           type="inclusion"
           initialData={editEVData}
+        />
+      )}
+
+      {showEditCanonicalModal && (
+        <CanonicalForm
+          show={showEditCanonicalModal}
+          mode="update"
+          onHide={() => {
+            setShowEditCanonicalModal(false);
+            setEditCanonicalData(undefined);
+            setCurrentActionPath(undefined);
+            setOriginalCanonicalUrl(undefined);
+          }}
+          onSave={handleSaveEditCanonical}
+          initialData={editCanonicalData}
+          showCombinationAlert={showCombinationAbsenceAlert()}
         />
       )}
     </>
