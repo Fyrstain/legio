@@ -334,6 +334,7 @@ function mapFormDataToCombination(
     ? { ...existingCombination }
     : { definitionByCombination: { characteristic: [] } };
   // Set the fields from form data
+  combination.exclude = combinationData.exclude;
   combination.linkId = combinationData.combinationId;
   combination.description = combinationData.combinationDescription;
   combination.definitionByCombination.code = combinationData.code;

@@ -62,7 +62,9 @@
       "editstudy": "Edit Study",
       "filterobsolescence": "Filter by Obsolescence",
       "addcriteria": "Add Criteria",
-      "addcharacteristic": "Add Characteristic"
+      "addcharacteristic": "Add Characteristic",
+      "edittheevidencevariable": "Edit the Evidence Variable",
+      "editthecharacteristic": "Edit the Characteristic"
     },
     "label": {
         "name": "Name",
