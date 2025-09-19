@@ -267,6 +267,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
    * Validate form data
    */
   const isFormValid = (): boolean => {
+    const idError = validateField(
+        "expressionId", 
+        formData.expressionId, 
+        false
+    );
     const nameError = validateField(
       "expressionName",
       formData.expressionName,
@@ -313,6 +318,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
       }
     }
     return !(
+      idError ||
       nameError ||
       descError ||
       libError ||
@@ -404,7 +410,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                     e.target.required
                   )
                 }
+                isInvalid={!!errors.expressionId}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors?.expressionId}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Name field */}

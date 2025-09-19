@@ -134,7 +134,8 @@
         "noevidencevariablefound": "No Evidence Variable found !",
         "nourlontheevidencevariable": "No URL on the selected Evidence Variable ! Please select another one.",
         "errorwhileupdating": "Error while updating ! Please try again.",
-        "noselectionmade": "No selection made ! Please select an Evidence Variable."
+        "noselectionmade": "No selection made ! Please select an Evidence Variable.",
+        "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters)."
     },
     "message": {
         "studyupdated": "Study updated successfully.",

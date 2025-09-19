@@ -135,7 +135,8 @@
     "noevidencevariablefound": "Aucune Variable d'Évidence trouvée !",
     "nourlontheevidencevariable": "Aucune URL sur la Variable d'Évidence sélectionnée ! Veuillez en sélectionner une autre.",
     "errorwhileupdating": "Erreur lors de la mise à jour ! Veuillez réessayer.",
-    "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence."
+    "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence.",
+    "invalidid": "ID invalide ! Un ID doit être alphanumérique, peut contenir des tirets et des points, et doit comporter entre 1 et 64 caractères."
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",

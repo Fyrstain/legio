@@ -244,7 +244,11 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     )} (${getLogicalOperatorFromCode(
                       characteristic.definitionByCombination.code,
                       characteristic.definitionByCombination.extension
-                    )}) - ${characteristic.linkId || "N/A"}`}
+                    )}) - ${
+                      characteristic.linkId ||
+                      characteristic.definitionByCombination.name ||
+                      "N/A"
+                    }`}
                   />
                   {editMode && (
                     <FontAwesomeIcon
@@ -273,7 +277,9 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                   <Title
                     level={3}
                     content={`${i18n.t("title.canonical")} - ${
-                      characteristic.linkId || "N/A"
+                      characteristic.linkId ||
+                      characteristic.definitionCanonical.name ||
+                      "N/A"
                     }`}
                   />
                   {editMode && (
@@ -295,7 +301,11 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
-                    content={`Expression - ${characteristic.linkId || "N/A"}`}
+                    content={`Expression - ${
+                      characteristic.linkId ||
+                      characteristic.definitionExpression.name ||
+                      "N/A"
+                    }`}
                   />
                   {editMode && (
                     <FontAwesomeIcon
