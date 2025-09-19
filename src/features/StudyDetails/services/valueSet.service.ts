@@ -22,13 +22,13 @@ const COMPARATOR_VALUESETS = {
   integer:
     process.env.REACT_APP_VALUESET_INTEGER_COMPARATOR_URL ||
     "https://www.centreantoinelacassagne.org/ValueSet/VS-integer-comparator",
-  date:
+  datetime:
     process.env.REACT_APP_VALUESET_DATE_COMPARATOR_URL ||
     "https://www.centreantoinelacassagne.org/ValueSet/VS-date-comparator",
   boolean:
     process.env.REACT_APP_VALUESET_BOOLEAN_COMPARATOR_URL ||
     "https://www.centreantoinelacassagne.org/ValueSet/VS-boolean-comparator",
-  code:
+  coding:
     process.env.REACT_APP_VALUESET_CODE_COMPARATOR_URL ||
     "https://www.centreantoinelacassagne.org/ValueSet/VS-code-comparator",
 } as const;

@@ -112,7 +112,7 @@ const EvidenceVariableButtons: FunctionComponent<
           as={Button}
           variant="secondary"
           disabled={disabled}
-          className={`ms-4 ${styles["dropdown-toggle"]}`}
+          className={styles["dropdown-toggle"]}
         >
           {getButtonText()}
         </Dropdown.Toggle>

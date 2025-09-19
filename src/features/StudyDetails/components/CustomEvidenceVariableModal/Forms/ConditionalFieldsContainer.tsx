@@ -3,8 +3,8 @@ import { FunctionComponent } from "react";
 // Components
 import BooleanParameter from "./ConditionalFields/BooleanParameter";
 import IntegerParameter from "./ConditionalFields/IntegerParameter";
-import DateParameter from "./ConditionalFields/DateParameter";
-import CodeParameter from "./ConditionalFields/CodeParameter";
+import DateTimeParameter from "./ConditionalFields/DateTimeParameter";
+import CodingParameter from "./ConditionalFields/CodingParameter";
 // React Bootstrap
 import { Form } from "react-bootstrap";
 // Translation
@@ -31,13 +31,13 @@ const ConditionalFieldsContainer: FunctionComponent<{
   const renderConditionalField = () => {
     switch (value.type) {
       case "boolean":
-        return <BooleanParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+        return <BooleanParameter value={value} onChange={onChange} />;
       case "integer":
         return <IntegerParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
-      case "date":
-        return <DateParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
-      case "code":
-        return <CodeParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+      case "datetime":
+        return <DateTimeParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+      case "coding":
+        return <CodingParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
       default:
         return null;
     }
@@ -54,9 +54,7 @@ const ConditionalFieldsContainer: FunctionComponent<{
         <Form.Control
           type="text"
           value={
-            value.type
-              ? i18n.t(`label.${value.type}`)
-              : i18n.t(`label.filltheotherfields`)
+            value.type ?? i18n.t(`label.filltheotherfields`)
           }
           disabled
           readOnly

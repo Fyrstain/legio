@@ -78,7 +78,7 @@ const ObsolescenceFilter: FunctionComponent<ObsolescenceFilterProps> = (props: O
         title={getDisplayTitle()}
         size="sm"
         variant="secondary"
-        className={`ms-4 ${styles["dropdown-toggle"]}`}
+        className={styles["dropdown-toggle"]}
       >
         {filterOptions.map((option) => (
           <Dropdown.Item

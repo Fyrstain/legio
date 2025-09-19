@@ -13,13 +13,14 @@ import {
   LibraryReference,
   LibraryParameter,
 } from "../../../types/library.types";
-import { ExpressionFormData, InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
+import {
+  ExpressionFormData,
+  InclusionCriteriaValue,
+} from "../../../types/evidenceVariable.types";
 // Models
 import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
 import LibraryService from "../../../services/library.service";
-// Utils
-import { getUITypeFromLibraryParameter } from "../../../../../shared/utils/libraryParameterMapping";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
 // FontAwesome
@@ -238,12 +239,12 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
         (p) => p.name === parameterName
       );
       if (parameter) {
-        const uiType = getUITypeFromLibraryParameter(parameter.type);
+        const fhirType = parameter.type.toLowerCase();
         handleFieldChange(
           "criteriaValue",
           {
-            type: uiType,
-            value: uiType === "boolean" ? false : undefined,
+            type: fhirType,
+            value: fhirType === "boolean" ? false : undefined,
           },
           false
         );
@@ -266,6 +267,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
    * Validate form data
    */
   const isFormValid = (): boolean => {
+    const idError = validateField(
+        "expressionId", 
+        formData.expressionId, 
+        false
+    );
     const nameError = validateField(
       "expressionName",
       formData.expressionName,
@@ -290,67 +296,29 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
     let parameterErrors = false;
     if (formData.selectedParameter && formData.criteriaValue) {
       const cv = formData.criteriaValue;
-      const operatorError = validateField(
-        "criteriaOperator",
-        cv.operator,
-        true
-      );
       // Code type requires valueSet and code
-      if (cv.type === "code") {
+      if (cv.type === "coding") {
         const valueSetError = validateField(
           "criteriaValueSet",
           cv.valueSetUrl,
           true
         );
         const codeError = validateField("criteriaCode", cv.value, true);
-        parameterErrors = !!(operatorError || valueSetError || codeError);
+        parameterErrors = !!(valueSetError || codeError);
       }
-      // Boolean type requires operator
-      if (cv.type === "boolean") {
-        const operatorError = validateField(
-          "criteriaOperator",
-          cv.operator,
-          true
-        );
-        parameterErrors = !!operatorError;
+      // Date type requires value(s)
+      if (cv.type === "datetime") {
+        const dateError = validateField("criteriaValue", cv.value, true);
+        parameterErrors = !!dateError;
       }
-      // Date type requires operator and value(s)
-      if (cv.type === "date") {
-        const operatorError = validateField(
-          "criteriaOperator",
-          cv.operator,
-          true
-        );
-        if (
-          cv.operator?.toLowerCase().includes("inperiod") ||
-          cv.operator?.toLowerCase().includes("notinperiod")
-        ) {
-          const minError = validateField("minValue", cv.minValue, true);
-          const maxError = validateField("maxValue", cv.maxValue, true);
-          parameterErrors = !!(operatorError || minError || maxError);
-        } else {
-          const dateError = validateField("criteriaValue", cv.value, true);
-          parameterErrors = !!(operatorError || dateError);
-        }
-      }
-      // Integer type requires operator and value(s)
+      // Integer type requires value(s)
       if (cv.type === "integer") {
-        const operatorError = validateField(
-          "criteriaOperator",
-          cv.operator,
-          true
-        );
-        if (cv.operator?.toLowerCase().includes("between")) {
-          const minError = validateField("minValue", cv.minValue, true);
-          const maxError = validateField("maxValue", cv.maxValue, true);
-          parameterErrors = !!(operatorError || minError || maxError);
-        } else {
-          const intError = validateField("criteriaValue", cv.value, true);
-          parameterErrors = !!(operatorError || intError);
-        }
+        const intError = validateField("criteriaValue", cv.value, true);
+        parameterErrors = !!intError;
       }
     }
     return !(
+      idError ||
       nameError ||
       descError ||
       libError ||
@@ -442,7 +410,11 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                     e.target.required
                   )
                 }
+                isInvalid={!!errors.expressionId}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors?.expressionId}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Name field */}
@@ -453,11 +425,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
                 placeholder={i18n.t("placeholder.name")}
                 value={formData.expressionName}
                 onChange={(e) =>
-                  handleFieldChange(
-                    "expressionName",
-                    e.target.value,
-                    true
-                  )
+                  handleFieldChange("expressionName", e.target.value, true)
                 }
                 isInvalid={!!errors.expressionName}
               />

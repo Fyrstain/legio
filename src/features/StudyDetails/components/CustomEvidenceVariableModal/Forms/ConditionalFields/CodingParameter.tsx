@@ -19,7 +19,6 @@ import { ValueSet } from "fhir/r5";
 // Services
 import ValueSetService from "../../../../services/valueSet.service";
 // Hook
-import { useComparators } from "../../../../hooks/useComparators";
 import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
@@ -30,18 +29,12 @@ import { ValidationErrors } from "../../../../hooks/useFormValidation";
  * @param errors - Optional errors object for validation messages
  * @returns JSX.Element representing the code parameter form
  */
-const CodeParameter: FunctionComponent<{
+const CodingParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
   validateField: (field: string, value: any, isRequired?: boolean) => void;
 }> = ({ value, onChange, errors, validateField }) => {
-  ////////////////////////////////
-  //           Hooks            //
-  ////////////////////////////////
-
-  const { comparatorOptions, error } = useComparators("code");
-
   /////////////////////////////////////
   //             Client              //
   /////////////////////////////////////
@@ -60,9 +53,17 @@ const CodeParameter: FunctionComponent<{
 
   const navigate = useNavigate();
 
+  // All the ValueSets available
   const [valueSets, setValueSets] = useState<ValueSet[]>([]);
+  // The currently selected ValueSet URL
   const [selectedValueSet, setSelectedValueSet] = useState<string>("");
+  // The CodeSystem URL associated with the selected ValueSet
+  const [selectedCodeSystem, setSelectedCodeSystem] = useState<string | null>(
+    null
+  );
+  // The codes available for the selected ValueSet
   const [availableCodes, setAvailableCodes] = useState<SimpleCode[]>([]);
+  // The currently selected code
   const [selectedCode, setSelectedCode] = useState<string>("");
 
   //////////////////////////////
@@ -98,19 +99,40 @@ const CodeParameter: FunctionComponent<{
   ////////////////////////////////
 
   /**
+   * Get the CodeSystem URL from a ValueSet
+   * @param valueSet The ValueSet from which to extract the CodeSystem
+   * @returns The CodeSystem URL or null if not found
+   */
+  const getCodeSystemFromValueSet = (valueSet: ValueSet): string | null => {
+    if (valueSet.compose?.include && valueSet.compose.include.length > 0) {
+      const firstInclude = valueSet.compose.include[0];
+      return firstInclude.system || null;
+    }
+    return null;
+  };
+
+  /**
    * This function handles the change of the ValueSet selection.
    * @param valueSetUrl The URL of the ValueSet to load
    */
   const handleValueSetChange = async (valueSetUrl: string) => {
     setSelectedValueSet(valueSetUrl);
-    setSelectedCode("");
     setAvailableCodes([]);
-    // If a ValueSet URL is provided, fetch the codes or set to empty if not available
+    setSelectedCode("");
+    setSelectedCodeSystem(null);
+    // If a ValueSet URL is provided, fetch the codes
     if (valueSetUrl) {
       try {
+        // Fetch the codes
         const codes = await valueSetLoader.searchValueSet(valueSetUrl);
         setAvailableCodes(codes);
+        // Extract the CodeSystem URL from a ValueSet (first include only)
+        const selectedValueSetResource = valueSets.find((vs) => vs.url === valueSetUrl);
+        setSelectedCodeSystem(
+          selectedValueSetResource ? getCodeSystemFromValueSet(selectedValueSetResource) : null
+        );
       } catch (error) {
+        console.error("Error loading codes:", error);
         setAvailableCodes([]);
       }
     }
@@ -129,28 +151,23 @@ const CodeParameter: FunctionComponent<{
    */
   const handleCodeSelection = (codeValue: string) => {
     setSelectedCode(codeValue);
+    // Check if CodeSystem is available
+    if (!selectedCodeSystem) {
+      console.error("Cannot determine CodeSystem URL from ValueSet");
+      return;
+    }
+    // Create the coding value object
+    const codingValue = {
+      system: selectedCodeSystem,
+      code: codeValue,
+    };
     // Update the parent component
     onChange({
       ...value,
-      value: codeValue,
+      value: codingValue,
       valueSetUrl: selectedValueSet,
     });
     validateField("criteriaCode", codeValue, true);
-  };
-
-  /**
-   * Function to handle changes in the operator select input
-   * @param event - The change event from the select input
-   */
-  const handleOperatorChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    onChange({
-      ...value,
-      operator: event.target.value,
-      value: undefined,
-    });
-    validateField("criteriaOperator", event.target.value, true);
   };
 
   /////////////////////////////////////////////
@@ -159,34 +176,6 @@ const CodeParameter: FunctionComponent<{
 
   return (
     <>
-      {/* Operator Selection */}
-      <Form.Group className="mb-2">
-        <Form.Label>{i18n.t("label.comparisonoperator")} *</Form.Label>
-        {error ? (
-          <Alert variant="warning" className="mb-2">
-            {i18n.t("error.loadingcomparators")} {error}
-          </Alert>
-        ) : (
-          <>
-            <Form.Select
-              value={value.operator || ""}
-              onChange={handleOperatorChange}
-              isInvalid={!!errors?.criteriaOperator}
-            >
-              <option value="">{i18n.t("placeholder.logicaloperator")}</option>
-              {comparatorOptions.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.display || option.code}
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              {errors?.criteriaOperator}
-            </Form.Control.Feedback>
-          </>
-        )}
-      </Form.Group>
-
       {/* ValueSet Selection */}
       <Form.Group className="mb-2">
         <Form.Label>{i18n.t("label.valueset")} *</Form.Label>
@@ -246,4 +235,4 @@ const CodeParameter: FunctionComponent<{
   );
 };
 
-export default CodeParameter;
+export default CodingParameter;

@@ -62,7 +62,9 @@
       "editstudy": "Edit Study",
       "filterobsolescence": "Filter by Obsolescence",
       "addcriteria": "Add Criteria",
-      "addcharacteristic": "Add Characteristic"
+      "addcharacteristic": "Add Characteristic",
+      "edittheevidencevariable": "Edit the Evidence Variable",
+      "editthecharacteristic": "Edit the Characteristic"
     },
     "label": {
         "name": "Name",
@@ -132,13 +134,17 @@
         "loadingcomparators": "Error loading comparators:",
         "errorwhileaddingcriteria": "Error while adding criteria. Please try again.",
         "noevidencevariablefound": "No Evidence Variable found !",
-        "nourlontheevidencevariable": "No URL on the selected Evidence Variable ! Please select another one."
+        "nourlontheevidencevariable": "No URL on the selected Evidence Variable ! Please select another one.",
+        "errorwhileupdating": "Error while updating ! Please try again.",
+        "noselectionmade": "No selection made ! Please select an Evidence Variable.",
+        "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters)."
     },
     "message": {
         "studyupdated": "Study updated successfully.",
         "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?",
         "emptycombination": "Empty Combination - add characteristics",
-        "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics."
+        "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics.",
+        "updatesuccessful": "Update successful."
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",

@@ -10,8 +10,14 @@ import { Title } from "@fyrstain/hl7-front-library";
 import ObsolescenceFilter from "../ObsolescenceFilter/ObsolescenceFilter";
 import EvidenceVariableButtons from "../../components/EvidenceVariableButtons/EvidenceVariableButtons";
 import CharacteristicDisplay from "./CharacteristicDisplay";
+// FontAwesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 // Types
-import { EvidenceVariableActionType, EvidenceVariableSectionProps } from "../../types/evidenceVariable.types";
+import {
+  EvidenceVariableActionType,
+  EvidenceVariableSectionProps,
+} from "../../types/evidenceVariable.types";
 
 const EvidenceVariableSection: FunctionComponent<
   EvidenceVariableSectionProps
@@ -21,6 +27,7 @@ const EvidenceVariableSection: FunctionComponent<
   type,
   editMode = false,
   onAction,
+  onEditEV,
 }) => {
   /////////////////////////////////////
   //      Constants / ValueSet       //
@@ -103,21 +110,37 @@ const EvidenceVariableSection: FunctionComponent<
         filteredEvidenceVariables.map((item, index) => (
           <Accordion.Item eventKey={String(index)} key={index}>
             <Accordion.Header>
-              <Title
-                level={2}
-                content={`${i18n.t("title.inclusioncriteria")} - ${item.title}`}
-              />
-              {editMode && onAction && !item.hasCharacteristic && (
-                <EvidenceVariableButtons
-                  buttonType="characteristic"
-                  editMode={editMode}
-                  onAction={onAction}
+              <div className="d-flex align-items-center gap-4">
+                <Title
+                  level={2}
+                  content={`${i18n.t("title.inclusioncriteria")} - ${
+                    item.title
+                  }`}
                 />
-              )}
-              <ObsolescenceFilter
-                value={obsolescenceFilter}
-                onChange={handleObsolescenceFilterChange}
-              />
+                {editMode && (
+                  <FontAwesomeIcon
+                    className="actionIcon"
+                    icon={faPen}
+                    size="xl"
+                    title={i18n.t("button.edittheevidencevariable")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditEV?.(item.id || "");
+                    }}
+                  />
+                )}
+                {editMode && onAction && !item.hasCharacteristic && (
+                  <EvidenceVariableButtons
+                    buttonType="characteristic"
+                    editMode={editMode}
+                    onAction={onAction}
+                  />
+                )}
+                <ObsolescenceFilter
+                  value={obsolescenceFilter}
+                  onChange={handleObsolescenceFilterChange}
+                />
+              </div>
             </Accordion.Header>
             <Accordion.Body>
               <div className="d-flex gap-1">
@@ -138,25 +161,29 @@ const EvidenceVariableSection: FunctionComponent<
         // If we have no inclusion criteria, we display a single accordion with the title and the obsolescence filter
         <Accordion.Item eventKey="0">
           <Accordion.Header>
-            <Title
-              level={2}
-              content={
-                type === "inclusion"
-                  ? i18n.t("title.inclusioncriteria")
-                  : i18n.t("title.studyvariables")
-              }
-            />
-            <ObsolescenceFilter
-              value={obsolescenceFilter}
-              onChange={handleObsolescenceFilterChange}
-            />
-            {editMode && onAction && evidenceVariables.length === 0 && (
-              <EvidenceVariableButtons
-                buttonType={type === "inclusion" ? "criteria" : "studyVariable"}
-                editMode={editMode}
-                onAction={onAction}
+            <div className="d-flex align-items-center gap-4">
+              <Title
+                level={2}
+                content={
+                  type === "inclusion"
+                    ? i18n.t("title.inclusioncriteria")
+                    : i18n.t("title.studyvariables")
+                }
               />
-            )}
+              <ObsolescenceFilter
+                value={obsolescenceFilter}
+                onChange={handleObsolescenceFilterChange}
+              />
+              {editMode && onAction && evidenceVariables.length === 0 && (
+                <EvidenceVariableButtons
+                  buttonType={
+                    type === "inclusion" ? "criteria" : "studyVariable"
+                  }
+                  editMode={editMode}
+                  onAction={onAction}
+                />
+              )}
+            </div>
           </Accordion.Header>
           <Accordion.Body>
             {filteredEvidenceVariables.length > 0 ? (
@@ -166,13 +193,27 @@ const EvidenceVariableSection: FunctionComponent<
                     <Accordion.Item eventKey="0">
                       <Accordion.Header>
                         <Title level={3} content={item.title} />
-                        {editMode && onAction && !item.hasCharacteristic && (
-                          <EvidenceVariableButtons
-                            buttonType="characteristic"
-                            editMode={editMode}
-                            onAction={handleHeaderAction}
-                          />
-                        )}
+                        <div className="d-flex align-items-center gap-4 ms-4">
+                          {editMode && (
+                            <FontAwesomeIcon
+                              className="actionIcon"
+                              icon={faPen}
+                              size="xl"
+                              title={i18n.t("button.edittheevidencevariable")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditEV?.(item.id || "");
+                              }}
+                            />
+                          )}
+                          {editMode && onAction && !item.hasCharacteristic && (
+                            <EvidenceVariableButtons
+                              buttonType="characteristic"
+                              editMode={editMode}
+                              onAction={handleHeaderAction}
+                            />
+                          )}
+                        </div>
                       </Accordion.Header>
                       <Accordion.Body>
                         <div className="d-flex gap-1">

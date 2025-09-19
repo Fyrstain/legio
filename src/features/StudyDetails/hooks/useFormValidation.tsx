@@ -26,10 +26,22 @@ export interface SimpleValidationResult {
 //         Hook         //
 //////////////////////////
 export const useFormValidation = (): SimpleValidationResult => {
+  // State to hold validation errors
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  // Determine if the form is valid (no errors)
   const hasNoErrors = Object.keys(errors).length === 0;
 
+  // Regular expression for validating IDs (LinkId) (alphanumeric, dashes, dots, 1-64 chars)
+  const idRegex = /^[A-Za-z0-9\-\.]{1,64}$/;
+
+  /**
+   * Validate a form field.
+   * @param fieldName The name of the field to validate.
+   * @param value The value of the field.
+   * @param isRequired Whether the field is required.
+   * @returns An error message if validation fails, or null if it passes.
+   */
   const validateField = (
     fieldName: string,
     value: any,
@@ -57,6 +69,18 @@ export const useFormValidation = (): SimpleValidationResult => {
         error = i18n.t("errormessage.invalidurl");
       }
     }
+    // Validation for ID fields
+    if (
+      !error &&
+      (fieldName.toLowerCase().includes("id") ||
+        fieldName === "combinationId") &&
+      value &&
+      typeof value === "string"
+    ) {
+      if (!idRegex.test(value)) {
+        error = i18n.t("errormessage.invalidid");
+      }
+    }
     // Update errors state
     setErrors((prev) => {
       if (error) {
@@ -69,6 +93,9 @@ export const useFormValidation = (): SimpleValidationResult => {
     return error;
   };
 
+  /**
+   * Clear all validation errors.
+   */
   const clearErrors = () => {
     setErrors({});
   };

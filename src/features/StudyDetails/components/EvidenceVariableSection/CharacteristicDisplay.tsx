@@ -4,7 +4,7 @@ import { FunctionComponent } from "react";
 import { Accordion, Alert, Badge } from "react-bootstrap";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faWarning, faPen } from "@fortawesome/free-solid-svg-icons";
 // Types
 import { EvidenceVariableActionType } from "../../types/evidenceVariable.types";
 // Components
@@ -13,6 +13,8 @@ import EvidenceVariableButtons from "../EvidenceVariableButtons/EvidenceVariable
 import { Title } from "@fyrstain/hl7-front-library";
 // Translation
 import i18n from "i18next";
+// Services
+import EvidenceVariableService from "../../services/evidenceVariable.service";
 
 /////////////////////////////////
 //          Interface        ////
@@ -23,7 +25,11 @@ interface CharacteristicDisplayProps {
   // Boolean indicating if the component is in edit mode
   editMode: boolean;
   // Optional action handler for evidence variable actions
-  onAction?: (actionType: EvidenceVariableActionType, path?: number[]) => void;
+  onAction?: (
+    actionType: EvidenceVariableActionType,
+    path?: number[],
+    editData?: any
+  ) => void;
   // Optional current path in the characteristics hierarchy
   currentPath?: number[];
 }
@@ -88,28 +94,174 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
       onAction?.(actionType, targetPath);
     };
 
+  /**
+   * Handles the editing of a combination characteristic.
+   * @param characteristic is the characteristic to edit.
+   * @param index is the index of the characteristic in the list.
+   */
+  const handleEditCombination = (characteristic: any, index: number) => {
+    // Prepare the data to edit the combination
+    const editData = {
+      exclude: characteristic.exclude || false,
+      code: characteristic.definitionByCombination.code,
+      isXor:
+        characteristic.definitionByCombination.extension?.some(
+          (ext: any) =>
+            ext.url ===
+              "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR" &&
+            ext.valueBoolean === true
+        ) || false,
+      combinationId: characteristic.linkId || "",
+      combinationDescription: characteristic.description || "",
+    };
+    // Build the path to the characteristic
+    const targetPath = [...currentPath, index];
+    // Call the onAction handler with the combination action type, path, and edit data
+    onAction?.("combination", targetPath, editData);
+  };
+
+  /**
+   * Handles the editing of an expression characteristic.
+   * @param characteristic is the characteristic to edit.
+   * @param index is the index of the characteristic in the list.
+   */
+  const handleEditExpression = (characteristic: any, index: number) => {
+    // To extract parameters from extensions
+    let selectedParameter = "";
+    let criteriaValue = undefined;
+    // Find the parameterization extension
+    const paramExtension = characteristic.definitionExpression?.extension?.find(
+      (ext: any) =>
+        ext.url ===
+        "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation"
+    );
+    if (paramExtension) {
+      // Extract the name of the parameter
+      const nameExt = paramExtension.extension?.find(
+        (ext: any) => ext.url === "name"
+      );
+      selectedParameter = nameExt?.valueString || "";
+      // Extract the value and determine the type
+      const valueExtension = paramExtension.extension?.find(
+        (ext: any) => ext.url === "value"
+      );
+      // Determine the type of the value
+      if (valueExtension) {
+        if (valueExtension.valueInteger !== undefined) {
+          criteriaValue = {
+            type: "integer",
+            value: valueExtension.valueInteger,
+          };
+        } else if (valueExtension.valueBoolean !== undefined) {
+          criteriaValue = {
+            type: "boolean",
+            value: valueExtension.valueBoolean,
+          };
+        } else if (valueExtension.valueDateTime !== undefined) {
+          const dateValue = new Date(valueExtension.valueDateTime);
+          criteriaValue = {
+            type: "datetime",
+            value: dateValue,
+          };
+        } else if (valueExtension.valueCoding !== undefined) {
+          criteriaValue = { type: "coding", value: valueExtension.valueCoding };
+        }
+      }
+    }
+    // Prepare the data to edit the expression
+    const editData = {
+      exclude: characteristic.exclude || false,
+      expressionId: characteristic.linkId || "",
+      expressionName: characteristic.definitionExpression?.name || "",
+      expressionDescription: characteristic.description || "",
+      selectedLibrary: characteristic.definitionExpression?.reference
+        ? { url: characteristic.definitionExpression.reference }
+        : undefined,
+      selectedExpression: characteristic.definitionExpression?.expression || "",
+      selectedParameter: selectedParameter,
+      criteriaValue: criteriaValue,
+    };
+    // Build the path to the characteristic
+    const targetPath = [...currentPath, index];
+    onAction?.("expression", targetPath, editData);
+  };
+
+  /**
+   * Handles the editing of a canonical characteristic.
+   */
+  const handleEditCanonical = async (characteristic: any, index: number) => {
+    try {
+      // Fetch the referenced EvidenceVariable using the canonical URL
+      const canonicalUrl = characteristic.definitionCanonical;
+      const canonicalEV =
+        await EvidenceVariableService.readEvidenceVariableByUrl(canonicalUrl);
+      // Check if an entry was found
+      if (!canonicalEV.entry || canonicalEV.entry.length === 0) {
+        throw new Error(
+          `EvidenceVariable not found at canonical URL: ${canonicalUrl}`
+        );
+      }
+      // TODO : Remplace the ANY with the correct type for referencedEV
+      const referencedEV = canonicalEV.entry[0].resource as any;
+      // Prepare the data to edit the canonical
+      const editData = {
+        exclude: characteristic.exclude || false,
+        evidenceVariable: {
+          id: referencedEV.id,
+          title: referencedEV.title || "",
+          description: referencedEV.description || "",
+          identifier: referencedEV.identifier?.[0]?.value || "",
+          status: referencedEV.status || "",
+          url: referencedEV.url || "",
+          selectedLibrary: undefined,
+        },
+      };
+      // Build the path to the characteristic
+      const targetPath = [...currentPath, index];
+      onAction?.("editCanonical", targetPath, editData);
+    } catch (error) {
+      console.error("Error during the canonical edit data:", error);
+    }
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
 
   return (
     <div className="mt-4">
-      {characteristics.map((char, index) => (
+      {characteristics.map((characteristic, index) => (
         <Accordion defaultActiveKey="0" key={index} className="mb-4">
           <Accordion.Item eventKey="0">
             <Accordion.Header>
               {/* DefinitionByCombination Header */}
-              {char.definitionByCombination && (
-                <div className="d-flex align-items-center">
+              {characteristic.definitionByCombination && (
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
                     content={`${i18n.t(
                       "title.combination"
                     )} (${getLogicalOperatorFromCode(
-                      char.definitionByCombination.code,
-                      char.definitionByCombination.extension
-                    )}) - ${char.linkId || "N/A"}`}
+                      characteristic.definitionByCombination.code,
+                      characteristic.definitionByCombination.extension
+                    )}) - ${
+                      characteristic.linkId ||
+                      characteristic.definitionByCombination.name ||
+                      "N/A"
+                    }`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditCombination(characteristic, index);
+                      }}
+                    />
+                  )}
                   {editMode && onAction && (
                     <EvidenceVariableButtons
                       buttonType="characteristic"
@@ -120,23 +272,53 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 </div>
               )}
               {/* DefinitionCanonical Header */}
-              {char.definitionCanonical && (
-                <div>
+              {characteristic.definitionCanonical && (
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
                     content={`${i18n.t("title.canonical")} - ${
-                      char.linkId || "N/A"
+                      characteristic.linkId ||
+                      characteristic.definitionCanonical.name ||
+                      "N/A"
                     }`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditCanonical(characteristic, index);
+                      }}
+                    />
+                  )}
                 </div>
               )}
               {/* DefinitionExpression Header */}
-              {char.definitionExpression && (
-                <div>
+              {characteristic.definitionExpression && (
+                <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
-                    content={`Expression - ${char.linkId || "N/A"}`}
+                    content={`Expression - ${
+                      characteristic.linkId ||
+                      characteristic.definitionExpression.name ||
+                      "N/A"
+                    }`}
                   />
+                  {editMode && (
+                    <FontAwesomeIcon
+                      className="actionIcon"
+                      icon={faPen}
+                      size="xl"
+                      title={i18n.t("button.editthecharacteristic")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditExpression(characteristic, index);
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </Accordion.Header>
@@ -145,27 +327,31 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
               {/* Description */}
               <div className="d-flex gap-1">
                 <div className="fw-bold">Description : </div>
-                {char.description || "N/A"}
+                {characteristic.description || "N/A"}
               </div>
               {/* Excluded Badge */}
-              {char.exclude && (
+              {characteristic.exclude && (
                 <Badge bg="warning" className="mb-2">
                   {i18n.t("label.excluded")}
                 </Badge>
               )}
               {/* Recursion for combinations */}
-              {char.definitionByCombination?.characteristic?.length > 0 && (
+              {characteristic.definitionByCombination?.characteristic?.length >
+                0 && (
                 <CharacteristicDisplay
-                  characteristics={char.definitionByCombination.characteristic}
+                  characteristics={
+                    characteristic.definitionByCombination.characteristic
+                  }
                   editMode={editMode}
                   currentPath={[...currentPath, index]}
                   onAction={onAction}
                 />
               )}
               {/* Message if combination is empty */}
-              {char.definitionByCombination &&
-                (!char.definitionByCombination.characteristic ||
-                  char.definitionByCombination.characteristic.length === 0) && (
+              {characteristic.definitionByCombination &&
+                (!characteristic.definitionByCombination.characteristic ||
+                  characteristic.definitionByCombination.characteristic
+                    .length === 0) && (
                   <Alert variant="warning" className="mt-3">
                     <FontAwesomeIcon icon={faWarning} className="me-2" />
                     {i18n.t("message.emptycombination")}

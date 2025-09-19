@@ -6,6 +6,7 @@ import Client from "fhir-kit-client";
 import { EvidenceVariableModel } from "../../../shared/models/EvidenceVariable.model";
 // Types
 import {
+  CanonicalFormData,
   CombinationFormData,
   ExistingCanonicalFormData,
   ExpressionFormData,
@@ -147,47 +148,50 @@ async function loadEvidenceVariables(
 }
 
 /**
- * Create a new EvidenceVariable.
+ * Map form data to a FHIR EvidenceVariable resource
+ * To be used for creating or updating an EvidenceVariable
  *
- * @param data The form data to create the EvidenceVariable
- * @returns A promise of the created EvidenceVariable
+ * @param data FormEvidenceVariableData
+ * @param existingEV Optionally, the existing EvidenceVariable to update
+ * @returns EvidenceVariable
  */
-async function createSimpleEvidenceVariable(
-  data: FormEvidenceVariableData
-): Promise<EvidenceVariable> {
-  const evidenceVariable: EvidenceVariable = {
-    resourceType: "EvidenceVariable",
-    status: data.status as any,
-    identifier: [{ value: data.identifier }],
-    title: data.title,
-    description: data.description,
-    url: data.url,
-    extension: [
+function mapFormDataToEvidenceVariable(
+  data: FormEvidenceVariableData,
+  existingEV?: EvidenceVariable
+): EvidenceVariable {
+  const base: EvidenceVariable = existingEV
+    ? { ...existingEV }
+    : ({ resourceType: "EvidenceVariable" } as EvidenceVariable);
+  base.title = data.title;
+  base.description = data.description;
+  base.status = data.status as any;
+  base.url = data.url;
+  base.identifier = data.identifier
+    ? [{ value: data.identifier }]
+    : existingEV?.identifier;
+  if (data.selectedLibrary?.url) {
+    base.extension = [
       {
         url: "http://hl7.org/fhir/StructureDefinition/cqf-library",
-        valueCanonical: data.selectedLibrary?.url,
+        valueCanonical: data.selectedLibrary.url,
       },
-    ],
-  };
-  const createdEvidenceVariable = (await fhirKnowledgeClient.create({
-    resourceType: "EvidenceVariable",
-    body: evidenceVariable,
-  })) as EvidenceVariable;
-  return createdEvidenceVariable;
+    ];
+  }
+  return base;
 }
 
 /**
- * Navigate to a target combination using the provided path
+ * Navigate to a target characteristic using the provided path
  * @param parentEV The parent EvidenceVariable to navigate within
  * @param targetPath The path to navigate to
- * @return The characteristic at the target path
+ * @return The characteristic at the target path (any type: combination, expression, canonical)
  */
-function navigateToTargetCombination(
+function navigateToTargetCharacteristic(
   parentEV: EvidenceVariable,
   targetPath: number[]
 ): any {
   let currentCharacteristic = parentEV.characteristic?.[targetPath[0]];
-  // Check if the current characteristic is defined
+  // Check if the characteristic exists
   if (!currentCharacteristic) {
     throw new Error(`Characteristic not found at path index ${targetPath[0]}`);
   }
@@ -202,13 +206,49 @@ function navigateToTargetCombination(
         targetPath[i]
       ];
   }
-  // Check that the final characteristic is indeed a combination
-  if (!currentCharacteristic.definitionByCombination) {
-    throw new Error(
-      "Target characteristic is not a combination. Cannot add to non-combination."
-    );
-  }
   return currentCharacteristic;
+}
+
+/**
+ * Create a new EvidenceVariable.
+ *
+ * @param data The form data to create the EvidenceVariable
+ * @returns A promise of the created EvidenceVariable
+ */
+async function createSimpleEvidenceVariable(
+  data: FormEvidenceVariableData
+): Promise<EvidenceVariable> {
+  const evidenceVariable = mapFormDataToEvidenceVariable(data);
+  const createdEvidenceVariable = (await fhirKnowledgeClient.create({
+    resourceType: "EvidenceVariable",
+    body: evidenceVariable,
+  })) as EvidenceVariable;
+  return createdEvidenceVariable;
+}
+
+/**
+ * To update an existing EvidenceVariable with new data.
+ *
+ * @param evidenceVariableId is the id of the EV to update
+ * @param updatedData is the updated data to apply
+ * @param existingEV is the current state of the EV
+ * @returns a promise of the updated EvidenceVariable
+ */
+async function updateEvidenceVariable(
+  evidenceVariableId: string,
+  updatedData: FormEvidenceVariableData,
+  existingEV: EvidenceVariable
+): Promise<EvidenceVariable> {
+  try {
+    const updatedEV = mapFormDataToEvidenceVariable(updatedData, existingEV);
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: updatedEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EvidenceVariable: ${error}`);
+  }
 }
 
 /**
@@ -224,7 +264,10 @@ function addCharacteristicToEV(
 ): void {
   if (targetPath && targetPath.length > 0) {
     // Add to specific combination
-    const targetCombination = navigateToTargetCombination(parentEV, targetPath);
+    const targetCombination = navigateToTargetCharacteristic(
+      parentEV,
+      targetPath
+    );
     // Ensure the characteristic array exists
     if (!targetCombination.definitionByCombination.characteristic) {
       targetCombination.definitionByCombination.characteristic = [];
@@ -278,6 +321,44 @@ function addCharacteristicAtRootLevel(
 }
 
 /**
+ * To map form data to a combination characteristic.
+ * @param combinationData is the form data for the combination.
+ * @param existingCombination is the existing combination to update.
+ * @returns The mapped combination characteristic.
+ */
+function mapFormDataToCombination(
+  combinationData: CombinationFormData,
+  existingCombination?: any
+): any {
+  const combination: any = existingCombination
+    ? { ...existingCombination }
+    : { definitionByCombination: { characteristic: [] } };
+  // Set the fields from form data
+  combination.exclude = combinationData.exclude;
+  combination.linkId = combinationData.combinationId;
+  combination.description = combinationData.combinationDescription;
+  combination.definitionByCombination.code = combinationData.code;
+  // Handle the XOR extension
+  if (combinationData.isXor && combinationData.code === "any-of") {
+    combination.definitionByCombination.extension = [
+      {
+        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR",
+        valueBoolean: true,
+      },
+    ];
+  } else {
+    // Remove the extension if it existed before
+    combination.definitionByCombination.extension =
+      combination.definitionByCombination.extension?.filter(
+        (ext: { url: string }) =>
+          ext.url !==
+          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR"
+      );
+  }
+  return combination;
+}
+
+/**
  * Adds a definition by combination to an existing EvidenceVariable.
  *
  * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
@@ -296,23 +377,7 @@ async function addDefinitionByCombination(
       id: parentEvidenceVariableId,
     })) as EvidenceVariable;
     // Create the new combination characteristic
-    const newCombination: any = {
-      linkId: combinationData.combinationId,
-      description: combinationData.combinationDescription,
-      definitionByCombination: {
-        code: combinationData.code,
-        characteristic: [],
-      },
-    };
-    // Add XOR extension if needed
-    if (combinationData.isXor && combinationData.code === "any-of") {
-      newCombination.definitionByCombination.extension = [
-        {
-          url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR",
-          valueBoolean: true,
-        },
-      ];
-    }
+    const newCombination = mapFormDataToCombination(combinationData);
     // Add the new combination characteristic to the parent EV at the specified path or root
     addCharacteristicToEV(parentEV, newCombination, targetPath);
     return (await fhirKnowledgeClient.update({
@@ -322,6 +387,56 @@ async function addDefinitionByCombination(
     })) as EvidenceVariable;
   } catch (error) {
     throw new Error(`Failed to add combination: ${error}`);
+  }
+}
+
+/**
+ * Updates a definition by combination in an existing EvidenceVariable.
+ *
+ * @param evidenceVariableId The ID of the EvidenceVariable to update.
+ * @param combinationData The combination data to update.
+ * @param targetPath The path to the target combination within the EvidenceVariable.
+ * @returns The updated EvidenceVariable.
+ */
+async function updateDefinitionByCombination(
+  evidenceVariableId: string,
+  combinationData: CombinationFormData,
+  targetPath?: number[]
+): Promise<EvidenceVariable> {
+  if (!targetPath || targetPath.length === 0) {
+    throw new Error("targetPath is required to update a combination");
+  }
+  try {
+    // Load the parent EvidenceVariable
+    const parentEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Navigate to the target combination
+    const targetCombination = navigateToTargetCharacteristic(
+      parentEV,
+      targetPath
+    );
+    // Map the form data to the existing combination
+    const updatedCombination = mapFormDataToCombination(
+      combinationData,
+      targetCombination
+    );
+    // Replace the existing combination in the parentEV tree
+    let currentLevel = parentEV.characteristic!;
+    for (let i = 0; i < targetPath.length - 1; i++) {
+      currentLevel =
+        currentLevel[targetPath[i]].definitionByCombination!.characteristic!;
+    }
+    currentLevel[targetPath[targetPath.length - 1]] = updatedCombination;
+    // Send the updated parentEV back to the FHIR server
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: parentEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update combination: ${error}`);
   }
 }
 
@@ -413,6 +528,79 @@ async function addNewCanonical(
   }
 }
 
+function mapFormDataToDefinitionExpression(
+  expressionData: ExpressionFormData
+): any {
+  const definitionExpression: any = {
+    name: expressionData.expressionName,
+    description: expressionData.expressionDescription,
+    language: "text/cql-identifier",
+    expression: expressionData.selectedExpression,
+    reference: expressionData.selectedLibrary?.url,
+  };
+  // If a criteriaValue and selectedParameter are provided, add the extension
+  if (expressionData.criteriaValue && expressionData.selectedParameter) {
+    definitionExpression.extension = [];
+    const paramExtension: any = {
+      url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation",
+      extension: [
+        { url: "name", valueString: expressionData.selectedParameter },
+      ],
+    };
+    // Add the value based on the type
+    const criteriaValue = expressionData.criteriaValue;
+    switch (criteriaValue.type) {
+      case "integer":
+        if (criteriaValue.value !== undefined) {
+          paramExtension.extension.push({
+            url: "value",
+            valueInteger: criteriaValue.value,
+          });
+        }
+        break;
+      case "boolean":
+        if (criteriaValue.value !== undefined) {
+          paramExtension.extension.push({
+            url: "value",
+            valueBoolean: criteriaValue.value,
+          });
+        }
+        break;
+      case "datetime":
+        if (criteriaValue.value !== undefined) {
+          paramExtension.extension.push({
+            url: "value",
+            valueDateTime: criteriaValue.value,
+          });
+        }
+        break;
+      case "coding":
+        if (
+          criteriaValue.value !== undefined &&
+          typeof criteriaValue.value === "object" &&
+          "system" in criteriaValue.value &&
+          "code" in criteriaValue.value
+        ) {
+          paramExtension.extension.push({
+            url: "value",
+            valueCoding: {
+              system: criteriaValue.value.system,
+              code: criteriaValue.value.code,
+            },
+          });
+        }
+        break;
+      default:
+        console.error(
+          "Type of criteriaValue not handled in mapFormDataToDefinitionExpression:",
+          criteriaValue.type
+        );
+    }
+    definitionExpression.extension.push(paramExtension);
+  }
+  return definitionExpression;
+}
+
 /**
  * Add a definitionExpression to an existing EvidenceVariable.
  *
@@ -431,67 +619,14 @@ async function addDefinitionExpression(
       resourceType: "EvidenceVariable",
       id: parentEvidenceVariableId,
     })) as EvidenceVariable;
-    // Create the new definitionExpression
-    const newExpression: any = {
-      description: expressionData.expressionDescription,
-      language: "text/cql-identifier",
-      expression: expressionData.selectedExpression,
-    };
-    // Add parameterization extensions if needed
-    if (expressionData.criteriaValue && expressionData.selectedParameter) {
-      newExpression.extension = [];
-      const paramExtension: any = {
-        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation",
-        extension: [
-          {
-            url: "name",
-            valueCode: expressionData.selectedParameter,
-          },
-        ],
-      };
-      // Add the value based on the type
-      const criteriaValue = expressionData.criteriaValue;
-      if (
-        criteriaValue.type === "integer" &&
-        criteriaValue.value !== undefined
-      ) {
-        paramExtension.extension.push({
-          url: "value",
-          valueInteger: criteriaValue.value as number,
-        });
-      } else if (
-        criteriaValue.type === "boolean" &&
-        criteriaValue.value !== undefined
-      ) {
-        paramExtension.extension.push({
-          url: "value",
-          valueBoolean: criteriaValue.value as boolean,
-        });
-      } else if (
-        criteriaValue.type === "date" &&
-        criteriaValue.value !== undefined
-      ) {
-        paramExtension.extension.push({
-          url: "value",
-          valueDate: criteriaValue.value as string,
-        });
-      } else if (
-        criteriaValue.type === "code" &&
-        criteriaValue.value !== undefined
-      ) {
-        paramExtension.extension.push({
-          url: "value",
-          valueCode: criteriaValue.value as string,
-        });
-      }
-      newExpression.extension.push(paramExtension);
-    }
-    // Create the new characteristic
+    // Create the new expression characteristic
     const newCharacteristic: any = {
+      name: expressionData.expressionName,
       description: expressionData.expressionDescription,
       exclude: expressionData.exclude,
-      definitionExpression: newExpression,
+      definitionExpression: mapFormDataToDefinitionExpression(expressionData),
       linkId: expressionData.expressionId || undefined,
+      reference: expressionData.selectedLibrary?.url,
     };
     // Add the new characteristic to the parent EV at the specified path or root
     addCharacteristicToEV(parentEV, newCharacteristic, targetPath);
@@ -502,6 +637,131 @@ async function addDefinitionExpression(
     })) as EvidenceVariable;
   } catch (error) {
     throw new Error(`Failed to add definition expression: ${error}`);
+  }
+}
+
+/**
+ * Update the definition expression of a specific characteristic within an EvidenceVariable
+ *
+ * @param evidenceVariableId The ID of the EvidenceVariable to update
+ * @param expressionData The new expression data to apply
+ * @param targetPath The path to the target characteristic
+ * @returns The updated EvidenceVariable
+ */
+async function updateDefinitionExpression(
+  evidenceVariableId: string,
+  expressionData: ExpressionFormData,
+  targetPath: number[]
+): Promise<EvidenceVariable> {
+  if (!targetPath || targetPath.length === 0) {
+    throw new Error("targetPath is required to update an expression");
+  }
+  try {
+    const parentEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Navigate to the target characteristic
+    const targetCharacteristic = navigateToTargetCharacteristic(
+      parentEV,
+      targetPath
+    );
+    // Update the fields of definitionExpression via the utility function
+    targetCharacteristic.name = expressionData.expressionName;
+    targetCharacteristic.description = expressionData.expressionDescription;
+    targetCharacteristic.exclude = expressionData.exclude;
+    targetCharacteristic.linkId = expressionData.expressionId || undefined;
+    targetCharacteristic.definitionExpression =
+      mapFormDataToDefinitionExpression(expressionData);
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: parentEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update definition expression: ${error}`);
+  }
+}
+
+/**
+ * Get an EvidenceVariable by its ID and return as EvidenceVariableModel
+ * @param evidenceVariableId is the ID of the EvidenceVariable to retrieve
+ * @returns The EvidenceVariableModel instance
+ */
+async function getEvidenceVariableById(
+  evidenceVariableId: string
+): Promise<EvidenceVariableModel> {
+  try {
+    // Load the EvidenceVariable from the FHIR server
+    const evidenceVariable = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Convert to EvidenceVariableModel and return
+    return new EvidenceVariableModel(evidenceVariable);
+  } catch (error) {
+    throw new Error(`Failed to get EvidenceVariable by ID: ${error}`);
+  }
+}
+
+/**
+ * To update a characteristic of type definitionCanonical within an EvidenceVariable.
+ * @param parentEvidenceVariableId is the ID of the parent EvidenceVariable to update
+ * @param targetPath is the path to the target characteristic
+ * @param canonicalData is the new canonical data to apply
+ * @param originalCanonicalUrl is the original canonical URL
+ * @returns the updated EvidenceVariable
+ */
+async function updateCanonicalCharacteristic(
+  parentEvidenceVariableId: string,
+  targetPath: number[],
+  canonicalData: CanonicalFormData,
+  originalCanonicalUrl: string
+): Promise<EvidenceVariable> {
+  try {
+    // Update the referenced EvidenceVariable if an ID is provided
+    if (canonicalData.evidenceVariable.id) {
+      const originalEV = await getEvidenceVariableById(
+        canonicalData.evidenceVariable.id
+      );
+      await updateEvidenceVariable(
+        canonicalData.evidenceVariable.id,
+        canonicalData.evidenceVariable,
+        originalEV.getFhirResource()
+      );
+    }
+    // Load the parent EvidenceVariable
+    const parentEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: parentEvidenceVariableId,
+    })) as EvidenceVariable;
+    // Navigate to the target characteristic
+    const targetCharacteristic = navigateToTargetCharacteristic(
+      parentEV,
+      targetPath
+    );
+    // Check if it's a definitionCanonical characteristic
+    if (!targetCharacteristic.definitionCanonical) {
+      throw new Error("Target characteristic is not a definitionCanonical");
+    }
+    // Update the properties of the characteristic
+    targetCharacteristic.exclude = canonicalData.exclude;
+    targetCharacteristic.description =
+      canonicalData.evidenceVariable.description;
+    targetCharacteristic.linkId = canonicalData.evidenceVariable.identifier;
+    // Update the canonical URL if it has changed
+    if (canonicalData.evidenceVariable.url !== originalCanonicalUrl) {
+      targetCharacteristic.definitionCanonical =
+        canonicalData.evidenceVariable.url;
+    }
+    // Save the updated parent EvidenceVariable
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: parentEvidenceVariableId,
+      body: parentEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update canonical characteristic: ${error}`);
   }
 }
 
@@ -516,10 +776,15 @@ const EvidenceVariableService = {
   readEvidenceVariableByUrl,
   loadEvidenceVariables,
   createSimpleEvidenceVariable,
+  updateEvidenceVariable,
   addDefinitionByCombination,
+  updateDefinitionByCombination,
   addExistingCanonical,
   addNewCanonical,
   addDefinitionExpression,
+  updateDefinitionExpression,
+  getEvidenceVariableById,
+  updateCanonicalCharacteristic,
 };
 
 export default EvidenceVariableService;

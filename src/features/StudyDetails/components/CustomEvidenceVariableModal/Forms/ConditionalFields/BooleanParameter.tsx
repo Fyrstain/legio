@@ -3,12 +3,9 @@ import { FunctionComponent } from "react";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
 // React Bootstrap
-import { Alert, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
-// Hooks
-import { useComparators } from "../../../../hooks/useComparators";
-import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
  * Component for handling boolean parameters in inclusion criteria.
@@ -21,32 +18,10 @@ import { ValidationErrors } from "../../../../hooks/useFormValidation";
 const BooleanParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-  errors?: ValidationErrors;
-  validateField: (field: string, value: any, isRequired?: boolean) => void;
-}> = ({ value, onChange, errors, validateField }) => {
-  ////////////////////////////////
-  //           Hooks            //
-  ////////////////////////////////
-
-  const { comparatorOptions, error } = useComparators("boolean");
-
+}> = ({ value, onChange }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
-
-  /**
-   * Function to handle changes in the operator select input
-   * @param event - The change event from the select input
-   */
-  const handleOperatorChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    onChange({
-      ...value,
-      operator: event.target.value,
-    });
-    validateField("criteriaOperator", event.target.value, true);
-  };
 
   /**
    * Function to handle the toggle switch change
@@ -65,33 +40,6 @@ const BooleanParameter: FunctionComponent<{
 
   return (
     <>
-      {/* Comparator selection */}
-      <Form.Group className="mb-3">
-        <Form.Label>{i18n.t("label.comparisonoperator")}</Form.Label>
-        {error ? (
-          <Alert variant="warning" className="mb-2">
-            {i18n.t("error.loadingcomparators")} {error}
-          </Alert>
-        ) : (
-          <>
-            <Form.Select
-              value={value.operator || ""}
-              onChange={handleOperatorChange}
-              isInvalid={!!errors?.criteriaOperator}
-            >
-              <option value="">{i18n.t("placeholder.logicaloperator")}</option>
-              {comparatorOptions.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.display || option.code}
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              {errors?.criteriaOperator}
-            </Form.Control.Feedback>
-          </>
-        )}
-      </Form.Group>
       {/* Boolean toggle switch */}
       <Form.Group className="mb-3">
         <Form.Check
