@@ -9,7 +9,10 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { ExistingCanonicalCriteriaFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+import {
+  ExistingCanonicalCriteriaFormData,
+  FormEvidenceVariableData,
+} from "../../../types/evidenceVariable.types";
 // Service
 import EvidenceVariableService from "../../../services/evidenceVariable.service";
 // Hooks
@@ -22,7 +25,7 @@ import { faWarning } from "@fortawesome/free-solid-svg-icons";
 //           Props            //
 ////////////////////////////////
 
-interface ExistingCanonicalCriteriaFormProps {
+interface ExistingCanonicalFormProps {
   // To show or hide the modal
   show: boolean;
   // Callback to hide the modal
@@ -35,11 +38,13 @@ interface ExistingCanonicalCriteriaFormProps {
   initialData?: ExistingCanonicalCriteriaFormData;
   // To show the alert about combination absence
   showCombinationAlert?: boolean;
+  // Type of form (inclusion or study variable)
+  type?: "inclusion" | "study";
 }
 
-const ExistingCanonicalCriteriaForm: FunctionComponent<
-  ExistingCanonicalCriteriaFormProps
-> = (props: ExistingCanonicalCriteriaFormProps) => {
+const ExistingCanonicalForm: FunctionComponent<ExistingCanonicalFormProps> = (
+  props: ExistingCanonicalFormProps
+) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -110,7 +115,11 @@ const ExistingCanonicalCriteriaForm: FunctionComponent<
   const getModalTitle = (): string => {
     const actionText =
       props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
-    return `${actionText} ${i18n.t("title.existingcanonicalcriteria")}`;
+    if (props.type === "inclusion") {
+      return `${actionText} ${i18n.t("title.existingcanonicalcriteria")}`;
+    } else {
+      return `${actionText} ${i18n.t("title.existingcanonicalstudyvariable")}`;
+    }
   };
 
   /**
@@ -216,19 +225,33 @@ const ExistingCanonicalCriteriaForm: FunctionComponent<
           {i18n.t("message.warningcombinationconstraint")}
         </Alert>
       )}
-      
+
       {/* First Card: Exclude settings */}
-      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
+      {props.type === "inclusion" && (
+        <ExcludeCard
+          exclude={formData.exclude}
+          onChange={handleExcludeChange}
+        />
+      )}
 
       {/* Second Card: Evidence Variable Selection */}
       <Card>
         <Card.Header>
-          <Card.Title>{i18n.t("title.criteria")}</Card.Title>
+          <Card.Title>
+            {props.type === "inclusion"
+              ? i18n.t("title.criteria")
+              : i18n.t("title.studyvariable")}
+          </Card.Title>
         </Card.Header>
         <Card.Body>
           {/* EvidenceVariable dropdown */}
           <Form.Group className="mb-3">
-            <Form.Label>{i18n.t("label.criteria")} *</Form.Label>
+            <Form.Label>
+              {props.type === "inclusion"
+                ? i18n.t("label.criteria")
+                : i18n.t("label.studyvariable")}
+              *
+            </Form.Label>
             <Form.Select
               value={formData.selectedEvidenceVariable?.id || ""}
               onChange={handleDropdownChange}
@@ -253,11 +276,15 @@ const ExistingCanonicalCriteriaForm: FunctionComponent<
               data={formData.selectedEvidenceVariable}
               onChange={() => {}}
               readonly={true}
-              type="inclusion"
+              type={props.type}
               libraryDisplayValue={
                 formData.selectedEvidenceVariable.libraryUrl || "N/A"
               }
               validateField={validateField}
+              showExpressionField={props.type === "study"}
+              selectedExpression={
+                formData.selectedEvidenceVariable.selectedExpression
+              }
             />
           )}
         </Card.Body>
@@ -266,4 +293,4 @@ const ExistingCanonicalCriteriaForm: FunctionComponent<
   );
 };
 
-export default ExistingCanonicalCriteriaForm;
+export default ExistingCanonicalForm;

@@ -40,7 +40,9 @@
         "existingcriteria": "an existing Criteria",
         "newcanonicalcriteria": "New Canonical Criteria",
         "combination": "Combination",
-        "canonical": "Canonical"
+        "canonical": "Canonical",
+        "existingcanonicalstudyvariable": "Existing Canonical Study Variable",
+        "newcanonicalstudyvariable": "New Canonical Study Variable"
     },
     "footer": {
         "items": {
@@ -64,7 +66,8 @@
       "addcriteria": "Add Criteria",
       "addcharacteristic": "Add Characteristic",
       "edittheevidencevariable": "Edit the Evidence Variable",
-      "editthecharacteristic": "Edit the Characteristic"
+      "editthecharacteristic": "Edit the Characteristic",
+      "addstudyvariable": "Add a Study Variable"
     },
     "label": {
         "name": "Name",
@@ -173,8 +176,8 @@
         "addexistingcriteria": "Add existing Criteria",
         "addnewstudyvariable": "Add new Study Variable",
         "addexistingstudyvariable": "Add existing Study Variable",
-        "addnewcanonicalcriteria": "Add new Canonical Criteria",
-        "addexistingcanonicalcriteria": "Add existing Canonical Criteria",
+        "addnewcanonicalreference": "Add new Canonical Reference",
+        "addexistingcanonicalreference": "Add existing Canonical Reference",
         "addexpression": "Add Expression",
         "addcombination": "Add Combination"
     }

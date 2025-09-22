@@ -17,6 +17,7 @@ interface EvidenceVariableProps {
   characteristicDescription?: string;
   hasCharacteristic?: boolean;
   libraryUrl?: string;
+  selectedExpression?: string;
 }
 
 /**
@@ -29,6 +30,13 @@ interface EvidenceVariableFormData {
   selectedParameter?: string;
   selectedComparator?: string;
   criteriaValue?: InclusionCriteriaValue;
+}
+
+/**
+ * Interface for existing study variable form data
+ */
+interface ExistingStudyVariableFormData {
+  selectedStudyVariable?: FormEvidenceVariableData;
 }
 
 /**
@@ -81,7 +89,7 @@ interface InclusionCriteriaValue {
  */
 interface CombinationFormData {
   exclude: boolean;
-  code: "all-of" | "any-of" | undefined;
+  code: "all-of" | "any-of" | "dataset" | undefined;
   isXor: boolean;
   combinationId: string;
   combinationDescription?: string;
@@ -111,6 +119,7 @@ interface ExistingCanonicalCriteriaFormData {
 interface CanonicalFormData {
   exclude: boolean;
   evidenceVariable: FormEvidenceVariableData;
+  selectedExpression?: string;
 }
 
 /**
@@ -156,6 +165,8 @@ interface EvidenceVariableButtonsProps {
   editMode: boolean;
   onAction: (actionType: EvidenceVariableActionType) => void;
   disabled?: boolean;
+  type?: "inclusion" | "study";
+  hasExistingCombination?: boolean;
 }
 
 ////////////////////////////
@@ -165,6 +176,7 @@ interface EvidenceVariableButtonsProps {
 export type {
   EvidenceVariableProps,
   EvidenceVariableFormData,
+  ExistingStudyVariableFormData,
   FormEvidenceVariableData,
   EvidenceVariableSectionProps,
   InclusionCriteriaTypes,

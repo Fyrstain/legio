@@ -101,8 +101,6 @@ async function loadEvidenceVariables(
   studyId: string,
   type: "inclusion" | "study"
 ): Promise<EvidenceVariableModel[]> {
-  const fetchEvidenceVariableByType =
-    type === "inclusion" ? loadInclusionCriteria : loadStudyVariables;
   try {
     if (type === "inclusion") {
       // 1. Load the ResearchStudy
@@ -124,24 +122,34 @@ async function loadEvidenceVariables(
       }
       return [];
     } else {
-      // Load the bundle of evidence variables for the study
-      const bundle = await fetchEvidenceVariableByType(studyId ?? "");
-      const { models, canonicalUrls } =
-        EvidenceVariableModel.fromBundle(bundle);
-      // If canonical URLs were found, read the EvidenceVariables by their URLs
-      if (canonicalUrls.length > 0) {
-        const canonicalResults = await Promise.all(
-          canonicalUrls.map((url) => readEvidenceVariableByUrl(url))
-        );
-        // Convert the canonical results to EvidenceVariableModel instances
-        return EvidenceVariableModel.fromCanonicalBundles(canonicalResults);
-      }
-      if (models.length > 0) {
+      // Extract the study variables from the Study resource
+      const study = await StudyService.loadStudy(studyId);
+      const datamartExtension = study.extension?.find(
+        (ext) =>
+          ext.url ===
+          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+      );
+      // Extract the study variables from the datamart extension
+      if (datamartExtension?.extension) {
+        const models: EvidenceVariableModel[] = [];
+        // For each variable extension, load the referenced EvidenceVariable
+        for (const varExt of datamartExtension.extension) {
+          if (varExt.url === "variable" && varExt.valueReference?.reference) {
+            const evidenceVariableId = varExt.valueReference.reference.replace(
+              "EvidenceVariable/",
+              ""
+            );
+            const ev = (await fhirKnowledgeClient.read({
+              resourceType: "EvidenceVariable",
+              id: evidenceVariableId,
+            })) as EvidenceVariable;
+            models.push(new EvidenceVariableModel(ev));
+          }
+        }
         return models;
       }
+      return [];
     }
-    // Ensure a return value in all code paths
-    return [];
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
@@ -216,9 +224,25 @@ function navigateToTargetCharacteristic(
  * @returns A promise of the created EvidenceVariable
  */
 async function createSimpleEvidenceVariable(
-  data: FormEvidenceVariableData
+  data: FormEvidenceVariableData,
+  selectedExpression?: string
 ): Promise<EvidenceVariable> {
   const evidenceVariable = mapFormDataToEvidenceVariable(data);
+  // Add expression characteristic if provided (for study variables only when we need to add a new definitionCanonical)
+  if (selectedExpression && data.selectedLibrary) {
+    evidenceVariable.characteristic = [
+      {
+        description: `Expression: ${selectedExpression}`,
+        definitionExpression: {
+          description: `Expression: ${selectedExpression}`,
+          name: selectedExpression,
+          language: "text/cql-identifier",
+          expression: selectedExpression,
+          reference: data.selectedLibrary.url,
+        },
+      },
+    ];
+  }
   const createdEvidenceVariable = (await fhirKnowledgeClient.create({
     resourceType: "EvidenceVariable",
     body: evidenceVariable,
@@ -504,11 +528,15 @@ async function addNewCanonical(
   parentEvidenceVariableId: string,
   newEVData: FormEvidenceVariableData,
   exclude: boolean = false,
-  targetPath?: number[]
+  targetPath?: number[],
+  selectedExpression?: string
 ): Promise<EvidenceVariable> {
   try {
-    // 1. Create the new EvidenceVariable
-    const newEV = await createSimpleEvidenceVariable(newEVData);
+    // 1. Create the new EvidenceVariable with optional expression
+    const newEV = await createSimpleEvidenceVariable(
+      newEVData,
+      selectedExpression
+    );
     // 2. Use the URL of the new EV as canonical
     const canonicalData: ExistingCanonicalFormData = {
       exclude: exclude,

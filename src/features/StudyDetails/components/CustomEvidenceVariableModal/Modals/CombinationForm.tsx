@@ -27,6 +27,8 @@ interface CombinationFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: CombinationFormData;
+  // Type of form (inclusion or study variable)
+  type?: "inclusion" | "study";
 }
 
 const CombinationForm: FunctionComponent<CombinationFormProps> = (
@@ -66,7 +68,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
         // Reset for create mode
         setFormData({
           exclude: false,
-          code: undefined,
+          code: props.type === "study" ? "dataset" : undefined,
           isXor: false,
           combinationId: "",
           combinationDescription: "",
@@ -74,7 +76,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, props.type]);
 
   ////////////////////////////////
   //          Actions           //
@@ -92,20 +94,30 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
   /**
    * Get logic type options for the dropdown
    */
-  const getLogicTypeOptions = () => [
-    {
-      value: "all-of",
-      label: i18n.t("label.and"),
-    },
-    {
-      value: "any-of",
-      label: i18n.t("label.or"),
-    },
-    {
-      value: "any-of-xor",
-      label: i18n.t("label.xor"),
-    },
-  ];
+  const getLogicTypeOptions = () => {
+    if (props.type === "study") {
+      return [
+        {
+          value: "dataset",
+          label: "Dataset",
+        },
+      ];
+    }
+    return [
+      {
+        value: "all-of",
+        label: i18n.t("label.and"),
+      },
+      {
+        value: "any-of",
+        label: i18n.t("label.or"),
+      },
+      {
+        value: "any-of-xor",
+        label: i18n.t("label.xor"),
+      },
+    ];
+  };
 
   /**
    * Handle field changes
@@ -233,7 +245,12 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       onClose={handleClose}
     >
       {/* First Card: Exclude settings */}
-      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
+      {props.type === "inclusion" && (
+        <ExcludeCard
+          exclude={formData.exclude}
+          onChange={handleExcludeChange}
+        />
+      )}
 
       {/* Second Card: Combination definition */}
       <Card>

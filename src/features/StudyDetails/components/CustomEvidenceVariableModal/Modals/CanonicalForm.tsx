@@ -7,7 +7,11 @@ import ExcludeCard from "../shared/ExcludeCard";
 import BaseEvidenceVariableForm from "../Forms/BaseEvidenceVariableForm";
 import BaseModalWrapper from "../shared/BaseModalWrapper";
 // Types
-import { CanonicalFormData, FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
+import {
+  CanonicalFormData,
+  FormEvidenceVariableData,
+} from "../../../types/evidenceVariable.types";
+import { LibraryParameter } from "../../../types/library.types";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
 // React Bootstrap
@@ -15,6 +19,10 @@ import { Alert } from "react-bootstrap";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
+// Models
+import { LibraryModel } from "../../../../../shared/models/Library.model";
+// Services
+import LibraryService from "../../../services/library.service";
 
 ////////////////////////////////
 //           Props            //
@@ -33,6 +41,10 @@ interface CanonicalFormProps {
   initialData?: CanonicalFormData;
   // To show the alert about combination absence
   showCombinationAlert?: boolean;
+  // Type of form (inclusion or study variable)
+  type?: "inclusion" | "study";
+  // Currently selected expression
+  selectedExpression?: string;
 }
 
 const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
@@ -54,6 +66,14 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
     },
   });
 
+  // List of available libraries
+  const [libraries, setLibraries] = useState<LibraryModel[]>([]);
+
+  // Currently available expressions for the selected library
+  const [availableExpressions, setAvailableExpressions] = useState<
+    LibraryParameter[]
+  >([]);
+
   // State to track if there are unsaved changes
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -71,6 +91,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
   useEffect(() => {
     if (props.show) {
       clearErrors();
+      // Initialize form data
       if (props.mode === "update" && props.initialData) {
         setFormData(props.initialData);
       } else {
@@ -85,11 +106,38 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
             url: "",
             selectedLibrary: undefined,
           },
+          selectedExpression: undefined,
         });
       }
       setHasChanges(false);
+      // Load libraries
+      const loadLibraries = async () => {
+        try {
+          const librariesData = await LibraryService.loadLibraries();
+          setLibraries(librariesData);
+        } catch (error) {
+          console.error("Error loading libraries:", error);
+        }
+      };
+      loadLibraries();
     }
   }, [props.show, props.mode, props.initialData]);
+
+  // Update selected library and available expressions when selectedLibrary changes
+  useEffect(() => {
+    if (formData.evidenceVariable.selectedLibrary && libraries.length > 0) {
+      const library = libraries.find(
+        (lib) => lib.getId() === formData.evidenceVariable.selectedLibrary?.id
+      );
+      if (library) {
+        setAvailableExpressions(library.getExpressions());
+      } else {
+        setAvailableExpressions([]);
+      }
+    } else {
+      setAvailableExpressions([]);
+    }
+  }, [formData.evidenceVariable.selectedLibrary, libraries]);
 
   ////////////////////////////////
   //          Actions           //
@@ -101,7 +149,11 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
   const getModalTitle = (): string => {
     const actionText =
       props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
-    return `${actionText} ${i18n.t("title.newcanonicalcriteria")}`;
+      if (props.type === "inclusion") {
+        return `${actionText} ${i18n.t("title.newcanonicalcriteria")}`;
+      } else {
+        return `${actionText} ${i18n.t("title.newcanonicalstudyvariable")}`;
+      }
   };
 
   /**
@@ -220,16 +272,30 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       )}
 
       {/* First Card: Exclude settings */}
-      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
+      {props.type === "inclusion" && (
+        <ExcludeCard
+          exclude={formData.exclude}
+          onChange={handleExcludeChange}
+        />
+      )}
 
       {/* Second Card: Evidence Variable Form */}
       <BaseEvidenceVariableForm
         data={formData.evidenceVariable}
         onChange={handleEvidenceVariableChange}
         readonly={false}
-        type="inclusion"
+        type={props.type}
         errors={errors}
         validateField={validateField}
+        showExpressionField={props.type === "study"}
+        selectedExpression={formData.selectedExpression}
+        availableExpressions={availableExpressions}
+        onExpressionChange={(expressionName) =>
+          setFormData((prev) => ({
+            ...prev,
+            selectedExpression: expressionName,
+          }))
+        }
       />
     </BaseModalWrapper>
   );

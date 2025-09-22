@@ -32,6 +32,10 @@ interface CharacteristicDisplayProps {
   ) => void;
   // Optional current path in the characteristics hierarchy
   currentPath?: number[];
+  // Type of evidence variable (inclusion or study)
+  type?: "inclusion" | "study";
+  // Indicates if there is an existing combination characteristic
+  hasExistingCombination?: boolean;
 }
 
 const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
@@ -39,6 +43,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   editMode,
   onAction,
   currentPath = [],
+  type = "inclusion",
+  hasExistingCombination = false,
 }) => {
   ////////////////////////////////
   //           Actions          //
@@ -68,15 +74,15 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   function getLogicalOperatorFromCode(code: string, extensions?: any[]) {
     switch (code) {
       case "all-of":
-        return i18n.t("label.and");
+        return `(${i18n.t("label.and")})`;
       case "any-of":
         if (hasXorExtension(extensions)) {
-          return i18n.t("label.xor");
+          return `(${i18n.t("label.xor")})`;
         } else {
-          return i18n.t("label.or");
+          return `(${i18n.t("label.or")})`;
         }
       default:
-        return "N/A";
+        return "";
     }
   }
 
@@ -241,10 +247,10 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     level={3}
                     content={`${i18n.t(
                       "title.combination"
-                    )} (${getLogicalOperatorFromCode(
+                    )} ${getLogicalOperatorFromCode(
                       characteristic.definitionByCombination.code,
                       characteristic.definitionByCombination.extension
-                    )}) - ${
+                    )} - ${
                       characteristic.linkId ||
                       characteristic.definitionByCombination.name ||
                       "N/A"
@@ -267,6 +273,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                       buttonType="characteristic"
                       editMode={editMode}
                       onAction={handleAction(index)}
+                      type={type}
+                      hasExistingCombination={hasExistingCombination}
                     />
                   )}
                 </div>
