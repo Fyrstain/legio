@@ -27,6 +27,8 @@ interface CombinationFormProps {
   mode: "create" | "update";
   // Initial data (for update mode)
   initialData?: CombinationFormData;
+  // Type of form (inclusion or study variable)
+  type?: "inclusion" | "study";
 }
 
 const CombinationForm: FunctionComponent<CombinationFormProps> = (
@@ -74,7 +76,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, props.type]);
 
   ////////////////////////////////
   //          Actions           //
@@ -92,20 +94,30 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
   /**
    * Get logic type options for the dropdown
    */
-  const getLogicTypeOptions = () => [
-    {
-      value: "all-of",
-      label: i18n.t("label.and"),
-    },
-    {
-      value: "any-of",
-      label: i18n.t("label.or"),
-    },
-    {
-      value: "any-of-xor",
-      label: i18n.t("label.xor"),
-    },
-  ];
+  const getLogicTypeOptions = () => {
+    if (props.type === "study") {
+      return [
+        {
+          value: "dataset",
+          label: "Dataset",
+        },
+      ];
+    }
+    return [
+      {
+        value: "all-of",
+        label: i18n.t("label.and"),
+      },
+      {
+        value: "any-of",
+        label: i18n.t("label.or"),
+      },
+      {
+        value: "any-of-xor",
+        label: i18n.t("label.xor"),
+      },
+    ];
+  };
 
   /**
    * Handle field changes
@@ -233,7 +245,12 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       onClose={handleClose}
     >
       {/* First Card: Exclude settings */}
-      <ExcludeCard exclude={formData.exclude} onChange={handleExcludeChange} />
+      {props.type === "inclusion" && (
+        <ExcludeCard
+          exclude={formData.exclude}
+          onChange={handleExcludeChange}
+        />
+      )}
 
       {/* Second Card: Combination definition */}
       <Card>
@@ -279,14 +296,14 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
 
             {/* Logic type selection */}
             <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.logictype")} *</Form.Label>
+              <Form.Label>{i18n.t("label.combinationtype")} *</Form.Label>
               <Form.Select
                 value={getCurrentLogicType()}
                 onChange={handleLogicTypeChange}
                 isInvalid={!!errors?.code}
               >
                 <option value="" disabled hidden>
-                  {i18n.t("placeholder.logicaloperator")}
+                  {i18n.t("placeholder.selectcombinationtype")}
                 </option>
                 {getLogicTypeOptions().map((option) => (
                   <option key={option.value} value={option.value}>

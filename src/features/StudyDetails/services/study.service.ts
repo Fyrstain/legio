@@ -592,7 +592,7 @@ async function addEvidenceVariableToStudy(
     datamartExtension.extension.push({
       url: "variable",
       valueReference: {
-        reference: evidenceVariableId,
+        reference: `EvidenceVariable/${evidenceVariableId}`,
       },
     });
   }

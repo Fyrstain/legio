@@ -14,7 +14,7 @@ import styles from "./EvidenceVariableButtons.css";
 
 const EvidenceVariableButtons: FunctionComponent<
   EvidenceVariableButtonsProps
-> = ({ buttonType, editMode, onAction, disabled = false }) => {
+> = ({ buttonType, editMode, onAction, disabled = false, type, hasExistingCombination }) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -69,21 +69,37 @@ const EvidenceVariableButtons: FunctionComponent<
         ];
       // Options for Characteristic (To create new canonical, link existing canonical, create expression or combination)
       case "characteristic":
-        return [
+        const options: Array<{
+          key: EvidenceVariableActionType;
+          label: string;
+        }> = [
           {
             key: "newCanonical" as const,
-            label: i18n.t("option.addnewcanonicalcriteria"),
+            label: i18n.t("option.addnewcanonicalreference"),
           },
           {
             key: "existingCanonical" as const,
-            label: i18n.t("option.addexistingcanonicalcriteria"),
-          },
-          { key: "expression" as const, label: i18n.t("option.addexpression") },
-          {
-            key: "combination" as const,
-            label: i18n.t("option.addcombination"),
+            label: i18n.t("option.addexistingcanonicalreference"),
           },
         ];
+        // Add expression only for inclusion criteria
+        if (type === "inclusion") {
+          options.push({
+            key: "expression" as const,
+            label: i18n.t("option.addexpression"),
+          });
+        }
+        // Add combination for inclusion criteria or study variables if no existing combination is present
+        if (
+          type === "inclusion" ||
+          (type === "study" && !hasExistingCombination)
+        ) {
+          options.push({
+            key: "combination" as const,
+            label: i18n.t("option.addcombination"),
+          });
+        }
+        return options;
       // Default to empty array if no type matches
       default:
         return [];

@@ -167,6 +167,18 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * To check if the EvidenceVariable has at least one characteristic with definitionByCombination
+   * @returns True if the EvidenceVariable has at least one characteristic with definitionByCombination, false otherwise
+   */
+  hasDefinitionByCombination(): boolean {
+    return (
+      this.fhirResource.characteristic?.some(
+        (char) => !!char.definitionByCombination
+      ) ?? false
+    );
+  }
+  
+  /**
    * Get the underlying FHIR resource
    * @returns The FHIR EvidenceVariable resource
    */
@@ -258,6 +270,7 @@ export class EvidenceVariableModel {
       characteristicDescription: this.getCharacteristicDescription(),
       hasCharacteristic: this.hasCharacteristic(),
       libraryUrl: this.getLibraryUrl(),
+      selectedExpression: this.getExpression(),
     };
   }
 }

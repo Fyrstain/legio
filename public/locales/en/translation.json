@@ -40,7 +40,9 @@
         "existingcriteria": "an existing Criteria",
         "newcanonicalcriteria": "New Canonical Criteria",
         "combination": "Combination",
-        "canonical": "Canonical"
+        "canonical": "Canonical",
+        "existingcanonicalstudyvariable": "Existing Canonical Study Variable",
+        "newcanonicalstudyvariable": "New Canonical Study Variable"
     },
     "footer": {
         "items": {
@@ -64,7 +66,8 @@
       "addcriteria": "Add Criteria",
       "addcharacteristic": "Add Characteristic",
       "edittheevidencevariable": "Edit the Evidence Variable",
-      "editthecharacteristic": "Edit the Characteristic"
+      "editthecharacteristic": "Edit the Characteristic",
+      "addstudyvariable": "Add a Study Variable"
     },
     "label": {
         "name": "Name",
@@ -107,7 +110,7 @@
         "hasnot": "Has Not",
         "parametertype": "Parameter Type",
         "filltheotherfields": "Fill the other fields",
-        "logictype": "Logic Type",
+        "combinationtype": "Combination Type",
         "and": "AND",
         "or": "OR",
         "xor": "XOR",
@@ -153,7 +156,7 @@
         "library": "-- Select a library --",
         "expression": "-- Select an expression --",
         "criteriatype": "-- Select a criteria type --",
-        "logicaloperator": "-- Select a logical operator --",
+        "selectcombinationtype": "-- Select a combination type --",
         "value": "Please fill in the value",
         "minvalue": "Minimum value",
         "maxvalue": "Maximum value",
@@ -173,8 +176,8 @@
         "addexistingcriteria": "Add existing Criteria",
         "addnewstudyvariable": "Add new Study Variable",
         "addexistingstudyvariable": "Add existing Study Variable",
-        "addnewcanonicalcriteria": "Add new Canonical Criteria",
-        "addexistingcanonicalcriteria": "Add existing Canonical Criteria",
+        "addnewcanonicalreference": "Add new Canonical Reference",
+        "addexistingcanonicalreference": "Add existing Canonical Reference",
         "addexpression": "Add Expression",
         "addcombination": "Add Combination"
     }

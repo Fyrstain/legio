@@ -10,7 +10,10 @@ import { StatusSelect } from "@fyrstain/fhir-front-library";
 import { FhirStatus, StatusTag } from "@fyrstain/hl7-front-library";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
-import { LibraryReference } from "../../../types/library.types";
+import {
+  LibraryParameter,
+  LibraryReference,
+} from "../../../types/library.types";
 // Models
 import { LibraryModel } from "../../../../../shared/models/Library.model";
 // Services
@@ -41,6 +44,14 @@ interface BaseEvidenceVariableFormProps {
     value: any,
     isRequired?: boolean
   ) => string | null;
+  // To conditionally show the expression field
+  showExpressionField?: boolean;
+  // The selected expression
+  selectedExpression?: string;
+  // The available expressions for the selected library
+  availableExpressions?: LibraryParameter[];
+  // Callback when the expression changes
+  onExpressionChange?: (expressionName: string) => void;
 }
 
 //////////////////////////////////
@@ -293,6 +304,48 @@ const BaseEvidenceVariableForm: FunctionComponent<
               {props.errors?.selectedLibrary}
             </Form.Control.Feedback>
           </Form.Group>
+
+          {/* Selected Expression - display only when readonly and for study variable */}
+          {props.type === "study" &&
+            props.readonly &&
+            props.selectedExpression && (
+              <Form.Group className="mb-3">
+                <Form.Label>Expression</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={props.selectedExpression}
+                  disabled={true}
+                />
+              </Form.Group>
+            )}
+            
+          {/* Expression field - conditional */}
+          {props.showExpressionField && props.data.selectedLibrary && (
+            <Form.Group className="mb-3">
+              <Form.Label>Expression *</Form.Label>
+              <Form.Select
+                value={props.selectedExpression || ""}
+                onChange={(e) => props.onExpressionChange?.(e.target.value)}
+                disabled={
+                  !props.availableExpressions ||
+                  props.availableExpressions.length === 0
+                }
+                isInvalid={!!props.errors?.selectedExpression}
+              >
+                <option value="">{i18n.t("placeholder.expression")}</option>
+                {props.availableExpressions?.map((expression) => (
+                  <option key={expression.name} value={expression.name}>
+                    {expression.name}
+                    {expression.documentation &&
+                      ` - ${expression.documentation}`}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                {props.errors?.selectedExpression}
+              </Form.Control.Feedback>
+            </Form.Group>
+          )}
         </Card.Body>
       </Form>
     </Card>

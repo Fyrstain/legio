@@ -121,7 +121,7 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
       formData.selectedLibrary?.id,
       true
     );
-    const urlError = validateField("url", formData.url);
+    const urlError = validateField("url", formData.url, true);
     // Return true if no errors
     return !(
       identifierError ||

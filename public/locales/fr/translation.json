@@ -40,7 +40,9 @@
     "existingcriteria": "un Critère existant",
     "newcanonicalcriteria": "Nouveau Critère Canonique",
     "combination": "Combinaison",
-    "canonical": "Canonique"
+    "canonical": "Canonique",
+    "existingcanonicalstudyvariable": "Variable d'Étude Canonique Existante",
+    "newcanonicalstudyvariable": "Nouvelle Variable d'Étude Canonique"
   },
   "footer": {
     "items": {
@@ -64,7 +66,8 @@
     "addcriteria": "Ajouter un critère",
     "addcharacteristic": "Ajouter une caractéristique",
     "edittheevidencevariable": "Modifier la Variable d'Évidence",
-    "editthecharacteristic": "Modifier la Caractéristique"
+    "editthecharacteristic": "Modifier la Caractéristique",
+    "addstudyvariable": "Ajouter une Variable d'Étude"
   },
   "label": {
     "name": "Nom",
@@ -107,7 +110,7 @@
     "hasnot": "Ne contient pas",
     "parametertype": "Type de paramètre",
     "filltheotherfields": "Remplissez les autres champs",
-    "logictype": "Type de logique",
+    "combinationtype": "Type de combinaison",
     "and": "ET",
     "or": "OU",
     "xor": "OU exclusif",
@@ -152,7 +155,7 @@
     "library": "-- Sélectionnez une librairie --",
     "expression": "-- Sélectionnez une expression --",
     "criteriatype": "-- Sélectionnez un type de critère --",
-    "logicaloperator": "-- Sélectionnez un opérateur logique --",
+    "selectcombinationtype": "-- Sélectionnez un type de combinaison --",
     "value": "Veuillez remplir avec une valeur",
     "minvalue": "Valeur minimale",
     "maxvalue": "Valeur maximale",
@@ -172,8 +175,8 @@
     "addexistingcriteria": "Ajouter un critère existant",
     "addnewstudyvariable": "Ajouter une nouvelle variable d'étude",
     "addexistingstudyvariable": "Ajouter une variable d'étude existante",
-    "addnewcanonicalcriteria": "Ajouter un nouveau critère canonique",
-    "addexistingcanonicalcriteria": "Ajouter un critère canonique existant",
+    "addnewcanonicalreference": "Ajouter une nouvelle référence canonique",
+    "addexistingcanonicalreference": "Ajouter une référence canonique existante",
     "addexpression": "Ajouter une expression",
     "addcombination": "Ajouter une combinaison"
   }

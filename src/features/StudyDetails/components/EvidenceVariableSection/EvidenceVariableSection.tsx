@@ -134,6 +134,10 @@ const EvidenceVariableSection: FunctionComponent<
                     buttonType="characteristic"
                     editMode={editMode}
                     onAction={onAction}
+                    type={type}
+                    hasExistingCombination={evidenceVariableModels[
+                      index
+                    ]?.hasDefinitionByCombination()}
                   />
                 )}
                 <ObsolescenceFilter
@@ -152,6 +156,10 @@ const EvidenceVariableSection: FunctionComponent<
                   characteristics={getCharacteristics(index)}
                   editMode={editMode}
                   onAction={onAction}
+                  type={type}
+                  hasExistingCombination={evidenceVariableModels[
+                    index
+                  ]?.hasDefinitionByCombination()}
                 />
               )}
             </Accordion.Body>
@@ -181,6 +189,7 @@ const EvidenceVariableSection: FunctionComponent<
                   }
                   editMode={editMode}
                   onAction={onAction}
+                  type={type}
                 />
               )}
             </div>
@@ -211,6 +220,7 @@ const EvidenceVariableSection: FunctionComponent<
                               buttonType="characteristic"
                               editMode={editMode}
                               onAction={handleHeaderAction}
+                              type={type}
                             />
                           )}
                         </div>
@@ -225,6 +235,10 @@ const EvidenceVariableSection: FunctionComponent<
                             characteristics={getCharacteristics(index)}
                             editMode={editMode}
                             onAction={onAction}
+                            type={type}
+                            hasExistingCombination={evidenceVariableModels[
+                              index
+                            ]?.hasDefinitionByCombination()}
                           />
                         )}
                       </Accordion.Body>
