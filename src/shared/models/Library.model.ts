@@ -1,7 +1,10 @@
 // Resources
 import { Library, ParameterDefinition, Bundle } from "fhir/r5";
 // Types
-import { LibraryParameter, LibraryReference } from "../../features/StudyDetails/types/library.types";
+import {
+  LibraryParameter,
+  LibraryReference,
+} from "../../features/StudyDetails/types/library.types";
 
 /**
  * Class representing a FHIR Library resource
@@ -81,13 +84,21 @@ export class LibraryModel {
   }
 
   /**
+   * Get boolean expressions for inclusion criteria - use="out" and type="boolean"
+   * @returns array of boolean expressions for inclusion criteria
+   */
+  getBooleanExpressions(): LibraryParameter[] {
+    return this.getLibraryParameters().filter(
+      (param) => param.use === "out" && param.type === "boolean"
+    );
+  }
+
+  /**
    * Get output parameters (expressions) - use="out" and type="boolean"
    * @returns array of boolean expressions
    */
   getExpressions(): LibraryParameter[] {
-    return this.getLibraryParameters().filter(
-      (param) => param.use === "out" && param.type === "boolean"
-    );
+    return this.getLibraryParameters().filter((param) => param.use === "out");
   }
 
   /**

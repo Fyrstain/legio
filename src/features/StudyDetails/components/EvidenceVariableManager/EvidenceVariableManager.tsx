@@ -165,7 +165,25 @@ const EvidenceVariableManager: FunctionComponent<
           setShowNewCanonicalModal(true);
           break;
         case "existingCanonical":
+          setCurrentContext("study");
           setShowExistingCanonicalModal(true);
+          break;
+        case "editCanonical":
+          if (editData.evidenceVariable.id) {
+            const referencedEVModel =
+              await EvidenceVariableService.getEvidenceVariableById(
+                editData.evidenceVariable.id
+              );
+            const libraryUrl = referencedEVModel.getLibraryUrl();
+            if (libraryUrl) {
+              editData.evidenceVariable.selectedLibrary =
+                await findLibraryByUrl(libraryUrl);
+            }
+          }
+          setEditCanonicalData(editData);
+          setOriginalCanonicalUrl(editData.evidenceVariable.url);
+          setShowEditCanonicalModal(true);
+          break;
         default:
           break;
       }
@@ -605,10 +623,16 @@ const EvidenceVariableManager: FunctionComponent<
    * Handle opening edit EV modal
    */
   const handleOpenEditEVModal = useCallback(
-    async (evId: string) => {
+    async (evId: string, contextOverride?: "inclusion" | "study") => {
+      // Determine the context to use
+      const context = contextOverride || currentContext;
+      // Find the evidence variable to edit
       try {
-        const evToEdit = inclusionCriteria.find((ev) => ev.getId() === evId);
-        // If the evidence variable to edit is found, populate the edit form data and show the modal
+        const evToEdit =
+          context === "inclusion"
+            ? inclusionCriteria.find((ev) => ev.getId() === evId)
+            : studyVariables.find((ev) => ev.getId() === evId);
+        // If the evidence variable is found, prepare the edit data
         if (evToEdit) {
           const editData: FormEvidenceVariableData = {
             title: evToEdit.getTitle(),
@@ -618,13 +642,15 @@ const EvidenceVariableManager: FunctionComponent<
             url: evToEdit.getUrl() || "",
             selectedLibrary: undefined,
           };
-          // If the evidence variable is linked to a library, find and set the library reference
+          // To find and populate library reference from URL
           const currentLibraryUrl = evToEdit.getLibraryUrl();
           if (currentLibraryUrl) {
             editData.selectedLibrary = await findLibraryByUrl(
               currentLibraryUrl
             );
           }
+          // Open the modal with the prepared data
+          setCurrentContext(context);
           setEditEVData(editData);
           setShowEditEVModal(true);
         }
@@ -632,7 +658,7 @@ const EvidenceVariableManager: FunctionComponent<
         console.error("Error preparing edit data:", error);
       }
     },
-    [inclusionCriteria]
+    [inclusionCriteria, studyVariables, currentContext]
   );
 
   /**
@@ -642,9 +668,11 @@ const EvidenceVariableManager: FunctionComponent<
     async (data: FormEvidenceVariableData) => {
       try {
         onLoading(true);
+        const currentEvidenceVariableType =
+          currentContext === "inclusion" ? inclusionCriteria : studyVariables;
         // The inclusion criteria should only have one parent EvidenceVariable
-        if (inclusionCriteria.length > 0) {
-          const evToUpdate = inclusionCriteria[0];
+        if (currentEvidenceVariableType.length > 0) {
+          const evToUpdate = currentEvidenceVariableType[0];
           const evId = evToUpdate.getId();
           // If the evidence variable ID is found, proceed to update
           if (evId) {
@@ -655,7 +683,7 @@ const EvidenceVariableManager: FunctionComponent<
               evToUpdate.getFhirResource()
             );
             // Reload the inclusion criteria to reflect the changes
-            await loadEvidenceVariablesHandler("inclusion");
+            await loadEvidenceVariablesHandler(currentContext);
             setShowEditEVModal(false);
           }
         }
@@ -666,7 +694,13 @@ const EvidenceVariableManager: FunctionComponent<
         onLoading(false);
       }
     },
-    [inclusionCriteria, loadEvidenceVariablesHandler, onLoading]
+    [
+      inclusionCriteria,
+      studyVariables,
+      currentContext,
+      loadEvidenceVariablesHandler,
+      onLoading,
+    ]
   );
 
   /**
@@ -674,21 +708,40 @@ const EvidenceVariableManager: FunctionComponent<
    */
   const handleSaveEditCanonical = useCallback(
     async (data: CanonicalFormData) => {
+      console.log("handleSaveEditCanonical - Received data:", data);
+
       try {
         onLoading(true);
-        // The inclusion criteria should only have one parent EvidenceVariable
-        if (inclusionCriteria.length > 0 && originalCanonicalUrl) {
-          const parentEVId = inclusionCriteria[0].getId();
-          // If the current action path is defined, proceed to update
+        // Find the parent EvidenceVariable (the one to which we will update the canonical characteristic)
+        let parentEVId: string | undefined;
+        // If it's a study context, we need to check if there are study variables
+        if (currentContext === "study") {
+          if (studyVariables.length > 0) {
+            parentEVId = studyVariables[0].getId();
+          } else {
+            alert(i18n.t("errormessage.noevidencevariablefound"));
+            return;
+          }
+        } else {
+          // The inclusion criteria should only have one parent EvidenceVariable
+          if (inclusionCriteria.length > 0) {
+            parentEVId = inclusionCriteria[0].getId();
+          } else {
+            alert(i18n.t("errormessage.noevidencevariablefound"));
+            return;
+          }
+        }
+        // Ensure we have the original canonical URL to identify which characteristic to update
+        if (originalCanonicalUrl && parentEVId) {
           await EvidenceVariableService.updateCanonicalCharacteristic(
-            parentEVId!,
+            parentEVId,
             currentActionPath!,
             data,
             originalCanonicalUrl
           );
         }
-        // Reload the inclusion criteria to reflect the changes
-        await loadEvidenceVariablesHandler("inclusion");
+        // Refresh the inclusion criteria list
+        await loadEvidenceVariablesHandler(currentContext);
         setShowEditCanonicalModal(false);
         setCurrentActionPath(undefined);
         setEditCanonicalData(undefined);
@@ -701,7 +754,9 @@ const EvidenceVariableManager: FunctionComponent<
       }
     },
     [
+      currentContext,
       inclusionCriteria,
+      studyVariables,
       currentActionPath,
       originalCanonicalUrl,
       loadEvidenceVariablesHandler,
@@ -783,15 +838,16 @@ const EvidenceVariableManager: FunctionComponent<
         editMode={editMode}
         onAction={handleInclusionCriteriaAction}
         evidenceVariableModels={inclusionCriteria}
-        onEditEV={handleOpenEditEVModal}
+        onEditEV={(evId) => handleOpenEditEVModal(evId, "inclusion")}
       />
 
       <EvidenceVariableSection
         evidenceVariables={studyVariablesDisplayObjects}
         type="study"
-        evidenceVariableModels={studyVariables}
         editMode={editMode}
         onAction={handleStudyVariableAction}
+        evidenceVariableModels={studyVariables}
+        onEditEV={(evId) => handleOpenEditEVModal(evId, "study")}
       />
 
       {/* Modals - Only render when needed */}
@@ -894,7 +950,7 @@ const EvidenceVariableManager: FunctionComponent<
           onHide={() => setShowEditEVModal(false)}
           onSave={handleSaveEditEV}
           mode="update"
-          type="inclusion"
+          type={currentContext}
           initialData={editEVData}
         />
       )}
@@ -903,6 +959,7 @@ const EvidenceVariableManager: FunctionComponent<
         <CanonicalForm
           show={showEditCanonicalModal}
           mode="update"
+          type={currentContext}
           onHide={() => {
             setShowEditCanonicalModal(false);
             setEditCanonicalData(undefined);

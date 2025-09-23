@@ -265,6 +265,30 @@ async function updateEvidenceVariable(
 ): Promise<EvidenceVariable> {
   try {
     const updatedEV = mapFormDataToEvidenceVariable(updatedData, existingEV);
+    // If an expression is provided, update or add the definitionExpression characteristic
+    if (updatedData.selectedExpression && updatedData.selectedLibrary) {
+      // Find or create the characteristic with definitionExpression
+      if (!updatedEV.characteristic) updatedEV.characteristic = [];
+      // Look for existing definitionExpression characteristic
+      let exprIndex = updatedEV.characteristic.findIndex(
+        (characteristic) => characteristic.definitionExpression
+      );
+      const exprChar = {
+        description: `Expression: ${updatedData.selectedExpression}`,
+        definitionExpression: {
+          name: updatedData.selectedExpression,
+          language: "text/cql-identifier",
+          expression: updatedData.selectedExpression,
+          reference: updatedData.selectedLibrary.url,
+        },
+      };
+      // Update or add the characteristic
+      if (exprIndex >= 0) {
+        updatedEV.characteristic[exprIndex] = exprChar;
+      } else {
+        updatedEV.characteristic.push(exprChar);
+      }
+    }
     return (await fhirKnowledgeClient.update({
       resourceType: "EvidenceVariable",
       id: evidenceVariableId,
@@ -746,6 +770,11 @@ async function updateCanonicalCharacteristic(
   canonicalData: CanonicalFormData,
   originalCanonicalUrl: string
 ): Promise<EvidenceVariable> {
+  console.log("updateCanonicalCharacteristic - Received data:", {
+    selectedExpression: canonicalData.selectedExpression,
+    evidenceVariableId: canonicalData.evidenceVariable.id,
+    canonicalData,
+  });
   try {
     // Update the referenced EvidenceVariable if an ID is provided
     if (canonicalData.evidenceVariable.id) {
@@ -754,7 +783,10 @@ async function updateCanonicalCharacteristic(
       );
       await updateEvidenceVariable(
         canonicalData.evidenceVariable.id,
-        canonicalData.evidenceVariable,
+        {
+          ...canonicalData.evidenceVariable,
+          selectedExpression: canonicalData.selectedExpression,
+        },
         originalEV.getFhirResource()
       );
     }

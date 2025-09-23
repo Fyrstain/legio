@@ -130,12 +130,9 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
         (lib) => lib.getId() === formData.evidenceVariable.selectedLibrary?.id
       );
       if (library) {
-        setAvailableExpressions(library.getExpressions());
-      } else {
-        setAvailableExpressions([]);
+        const expressions = library.getExpressions();
+        setAvailableExpressions(expressions);
       }
-    } else {
-      setAvailableExpressions([]);
     }
   }, [formData.evidenceVariable.selectedLibrary, libraries]);
 
@@ -149,11 +146,11 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
   const getModalTitle = (): string => {
     const actionText =
       props.mode === "create" ? i18n.t("title.add") : i18n.t("title.update");
-      if (props.type === "inclusion") {
-        return `${actionText} ${i18n.t("title.newcanonicalcriteria")}`;
-      } else {
-        return `${actionText} ${i18n.t("title.newcanonicalstudyvariable")}`;
-      }
+    if (props.type === "inclusion") {
+      return `${actionText} ${i18n.t("title.newcanonicalcriteria")}`;
+    } else {
+      return `${actionText} ${i18n.t("title.newcanonicalstudyvariable")}`;
+    }
   };
 
   /**
@@ -192,6 +189,11 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       true
     );
     const urlError = validateField("url", ev.url, true);
+    // Validate expression field if type is study variable
+    const expressionError =
+      props.type === "study"
+        ? validateField("selectedExpression", formData.selectedExpression, true)
+        : null;
     // Return true if no errors
     return !(
       identifierError ||
@@ -199,7 +201,8 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       descError ||
       statusError ||
       libError ||
-      urlError
+      urlError ||
+      expressionError
     );
   };
 

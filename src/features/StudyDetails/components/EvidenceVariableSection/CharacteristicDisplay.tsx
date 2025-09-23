@@ -15,6 +15,8 @@ import { Title } from "@fyrstain/hl7-front-library";
 import i18n from "i18next";
 // Services
 import EvidenceVariableService from "../../services/evidenceVariable.service";
+// Models
+import { EvidenceVariableModel } from "../../../../shared/models/EvidenceVariable.model";
 
 /////////////////////////////////
 //          Interface        ////
@@ -209,6 +211,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
       }
       // TODO : Remplace the ANY with the correct type for referencedEV
       const referencedEV = canonicalEV.entry[0].resource as any;
+      const evModel = new EvidenceVariableModel(referencedEV);
+      const selectedExpression = evModel.getExpression();
       // Prepare the data to edit the canonical
       const editData = {
         exclude: characteristic.exclude || false,
@@ -221,6 +225,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
           url: referencedEV.url || "",
           selectedLibrary: undefined,
         },
+        selectedExpression: selectedExpression,
       };
       // Build the path to the characteristic
       const targetPath = [...currentPath, index];

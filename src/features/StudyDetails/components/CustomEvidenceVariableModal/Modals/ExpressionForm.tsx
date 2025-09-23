@@ -105,7 +105,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
   // Update expressions and parameters when library changes
   useEffect(() => {
     if (selectedLibrary) {
-      setAvailableExpressions(selectedLibrary.getExpressions());
+      setAvailableExpressions(selectedLibrary.getBooleanExpressions());
       setAvailableParameters(selectedLibrary.getInputParameters());
     } else {
       setAvailableExpressions([]);
