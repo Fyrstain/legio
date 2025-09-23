@@ -68,7 +68,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
         // Reset for create mode
         setFormData({
           exclude: false,
-          code: props.type === "study" ? "dataset" : undefined,
+          code: undefined,
           isXor: false,
           combinationId: "",
           combinationDescription: "",
@@ -296,14 +296,14 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
 
             {/* Logic type selection */}
             <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.logictype")} *</Form.Label>
+              <Form.Label>{i18n.t("label.combinationtype")} *</Form.Label>
               <Form.Select
                 value={getCurrentLogicType()}
                 onChange={handleLogicTypeChange}
                 isInvalid={!!errors?.code}
               >
                 <option value="" disabled hidden>
-                  {i18n.t("placeholder.logicaloperator")}
+                  {i18n.t("placeholder.selectcombinationtype")}
                 </option>
                 {getLogicTypeOptions().map((option) => (
                   <option key={option.value} value={option.value}>
