@@ -302,7 +302,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
                 onChange={handleLogicTypeChange}
                 isInvalid={!!errors?.code}
               >
-                <option value="" disabled hidden>
+                <option value="">
                   {i18n.t("placeholder.selectcombinationtype")}
                 </option>
                 {getLogicTypeOptions().map((option) => (

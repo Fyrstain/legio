@@ -75,12 +75,22 @@ const EvidenceVariableSection: FunctionComponent<
   };
 
   /**
-   * To determine if the header for inclusion criteria should be displayed.
-   * The header is displayed if the type is "inclusion" and there is at least one evidence variable with characteristics.
+   * To determine if the header should be displayed for this type.
+   * The header is displayed if there is at least one evidence variable with characteristics.
    */
-  const inclusionCriteriaHeader =
-    type === "inclusion" &&
-    filteredEvidenceVariables.some((ev) => ev.hasCharacteristic);
+  const shouldDisplayHeader = filteredEvidenceVariables.some(
+    (ev) => ev.hasCharacteristic
+  );
+
+  /**
+   * To determine if the header for inclusion criteria should be displayed.
+   */
+  const inclusionCriteriaHeader = type === "inclusion" && shouldDisplayHeader;
+
+  /**
+   * To determine if the header for study variables should be displayed.
+   */
+  const studyVariablesHeader = type === "study" && shouldDisplayHeader;
 
   /**
    * To get the characteristics of an evidence variable.
@@ -106,16 +116,18 @@ const EvidenceVariableSection: FunctionComponent<
   return (
     <Accordion defaultActiveKey="0" className="mb-4">
       {/* if we have a header for inclusion criteria, we display it */}
-      {inclusionCriteriaHeader ? (
+      {inclusionCriteriaHeader || studyVariablesHeader ? (
         filteredEvidenceVariables.map((item, index) => (
           <Accordion.Item eventKey={String(index)} key={index}>
             <Accordion.Header>
               <div className="d-flex align-items-center gap-4">
                 <Title
                   level={2}
-                  content={`${i18n.t("title.inclusioncriteria")} - ${
-                    item.title
-                  }`}
+                  content={`${
+                    type === "inclusion"
+                      ? i18n.t("title.inclusioncriteria")
+                      : i18n.t("title.studyvariables")
+                  } - ${item.title}`}
                 />
                 {editMode && (
                   <FontAwesomeIcon
