@@ -5,7 +5,7 @@ import Client from "fhir-kit-client";
 // Model
 
 /////////////////////////////////////
-//             Client              //
+//             Client              //F
 /////////////////////////////////////
 
 const fhirClient = new Client({
@@ -228,7 +228,7 @@ async function loadDatamartForStudy(
   const datamartExtension = study.extension?.find(
     (extension) =>
       extension.url ===
-      "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+      "https://www.isis.com/StructureDefinition/EXT-Datamart"
   );
   // Check if the datamart extension exists and has a valueReference
   if (datamartExtension) {
@@ -313,7 +313,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_KNOWLEDGE_URL || "",
+          address: "http://fhir-r5:8080/fhir",
           header: ["Content-Type: application/json"],
         },
       },
@@ -349,7 +349,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_FHIR_URL || "",
+          address: "http://fhir-r5:8080/fhir",
           header: ["Content-Type: application/json"],
         },
       },
@@ -385,7 +385,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_TERMINOLOGY_URL || "",
+          address: "http://fhir-r5:8080/fhir",
           header: ["Content-Type: application/json"],
         },
       },
@@ -421,7 +421,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_CQL_URL || "",
+          address: "http://cql-engine-r4:8080/fhir",
           header: ["Content-Type: application/json"],
         },
       },
@@ -447,7 +447,43 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
       name: "structureMapUrl",
       valueCanonical:
         "https://www.centreantoinelacassagne.org/StructureMap/SM-ListParams-2-CSV",
-    }
+    },
+    {
+        name: "remoteEndpoint",
+        resource: {
+          resourceType: "Endpoint",
+          status: "active",
+          connectionType: [
+            {
+              coding: [
+                {
+                  system:
+                    "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                  code: "hl7-fhir-rest",
+                },
+              ],
+            },
+          ],
+          payload: [
+            {
+              type: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                      code: "hl7-fhir-rest",
+                      display: "HL7 FHIR",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          address: process.env.REACT_APP_Mapping_URL || "",
+          header: ["Content-Type: application/json"],
+        },
+      }
   );
   return baseParameters;
 }
@@ -512,22 +548,29 @@ async function generateCohortAndDatamart(
 }
 
   /**
-   * A function to get the value of a parameter.
-   *
-   * @param param The parameter to get the value from
-   * @returns The value of the parameter as a string
-   */
-  function getParameterValue(param: any): string {
-    if (!param) return "";
-    if (param.valueAge !== undefined) return param.valueAge.value;
-    if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
-    if (param.valueString) return param.valueString;
-    if (param.valueInteger !== undefined) return param.valueInteger.toString();
-    if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
-    if (param.valueQuantity !== undefined)
-      return param.valueQuantity.value + " " + param.valueQuantity.unit;
-    return "";
-  }
+ * A function to get the value of a parameter.
+ *
+ * @param param The parameter to get the value from
+ * @returns The value of the parameter as a string
+ */
+function getParameterValue(param: any): string {
+  if (!param) return "";
+  if (param.valueAge !== undefined) return param.valueAge.value;
+  if (param.valueBoolean !== undefined)
+    return param.valueBoolean.toString();
+  if (param.valueString) return param.valueString;
+  if (param.valueInteger !== undefined)
+    return param.valueInteger.toString();
+  if (param.valueDecimal !== undefined)
+    return param.valueDecimal.toString();
+  if (param.valueDateTime !== undefined) return param.valueDateTime.toString();
+  if (param.valueDate !== undefined) return param.valueDate.toString();
+  if (param.valueIdentifier && param.valueIdentifier.value)
+    return param.valueIdentifier.value.toString();
+  if (param.valueQuantity !== undefined)
+    return param.valueQuantity.value + " " + param.valueQuantity.unit;
+  return "";
+}
 
 /**
  * A function to execute the datamart export operation.
@@ -577,11 +620,11 @@ async function addEvidenceVariableToStudy(
     let datamartExtension = study.extension.find(
       (ext) =>
         ext.url ===
-        "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
+        "https://www.isis.com/StructureDefinition/EXT-Datamart"
     );
     if (!datamartExtension) {
       datamartExtension = {
-        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart",
+        url: "https://www.isis.com/StructureDefinition/EXT-Datamart",
         extension: [],
       };
       study.extension.push(datamartExtension);

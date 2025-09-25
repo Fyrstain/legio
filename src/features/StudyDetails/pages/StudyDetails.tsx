@@ -58,6 +58,7 @@ const StudyDetails: FunctionComponent = () => {
     process.env.REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL ??
     "http://hl7.org/fhir/ValueSet/study-design";
 
+  const [datamartListId, setDatamartListId] = useState<string>("");
   // State to manage the ResearchStudy study design value set
   const [researchStudyStudyDesign, setResearchStudyStudyDesign] = useState(
     [] as SimpleCode[]
@@ -283,6 +284,12 @@ const StudyDetails: FunctionComponent = () => {
     }
   }
 
+  function extractListIdFromRef(ref?: string): string {
+    if (!ref) return "";
+    const m = ref.match(/(?:^|\/)List\/([^/?#]+)/);
+    return m ? m[1] : ref.replace(/^List\//, "");
+  }
+
   /**
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
@@ -346,6 +353,31 @@ const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
+  useEffect(() => {
+    // Quand le résultat du datamart change, on recharge la ResearchStudy pour récupérer la List d'évaluation
+    if (!studyId || !datamartResult?.id) return;
+
+    (async () => {
+      try {
+        const rs = await StudyService.loadStudy(studyId);
+        const evalRef = rs.extension
+          ?.find(
+            (e: any) =>
+              e.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
+          )
+          ?.extension?.find((se: any) => se.url === "evaluation")
+          ?.valueReference?.reference;
+
+        setDatamartListId(extractListIdFromRef(evalRef));
+      } catch (e) {
+        console.error(
+          "[Datamart] Unable to reload ResearchStudy for evaluation List:",
+          e
+        );
+        setDatamartListId("");
+      }
+    })();
+  }, [studyId, datamartResult?.id]);
 
   return (
     <LegioPage
@@ -502,10 +534,7 @@ const StudyDetails: FunctionComponent = () => {
           <Button
             variant="primary"
             onClick={handleExportDatamart}
-            disabled={
-              !isExistingDatamartListId ||
-              studyVariablesExpressions.length === 0
-            }
+            disabled={!isExistingDatamartListId || studyVariables.length === 0}
             className="ms-2"
           >
             <FontAwesomeIcon icon={faDownload} className="me-2" />
@@ -516,7 +545,7 @@ const StudyDetails: FunctionComponent = () => {
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
-            {studyVariablesExpressions.length > 0 && (
+            {studyVariables.length > 0 && (
               <>
                 <Title
                   level={3}
@@ -562,7 +591,7 @@ const StudyDetails: FunctionComponent = () => {
                     serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
                     resourceType: "Parameters",
                     searchParameters: {
-                      "_has:List:item:_id": datamartResult.id ?? "",
+                      "_has:List:item:_id": datamartListId || "",
                     },
                   }}
                   onError={onError}

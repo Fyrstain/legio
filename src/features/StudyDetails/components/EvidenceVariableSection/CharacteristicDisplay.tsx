@@ -62,7 +62,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     return extensions.some(
       (ext) =>
         ext.url ===
-          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR" &&
+          "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR" &&
         ext.valueBoolean === true
     );
   }
@@ -116,7 +116,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         characteristic.definitionByCombination.extension?.some(
           (ext: any) =>
             ext.url ===
-              "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR" &&
+              "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR" &&
             ext.valueBoolean === true
         ) || false,
       combinationId: characteristic.linkId || "",
@@ -141,7 +141,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     const paramExtension = characteristic.definitionExpression?.extension?.find(
       (ext: any) =>
         ext.url ===
-        "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation"
+        "https://www.isis.com/StructureDefinition/EXT-EVParametrisation"
     );
     if (paramExtension) {
       // Extract the name of the parameter

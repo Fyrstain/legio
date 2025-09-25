@@ -15,6 +15,8 @@ import {
 // Service
 import StudyService from "./study.service";
 
+const MAX_CANONICAL_DEPTH = 5;
+
 /////////////////////////////////////
 //             Client              //
 /////////////////////////////////////
@@ -103,56 +105,139 @@ async function loadEvidenceVariables(
 ): Promise<EvidenceVariableModel[]> {
   try {
     if (type === "inclusion") {
-      // 1. Load the ResearchStudy
+      // Existing inclusion logic stays as-is
       const study = await StudyService.loadStudy(studyId);
       const eligibilityRef = study.recruitment?.eligibility?.reference;
-      if (eligibilityRef) {
-        // 2. Extract the ID of the parent EV (ex: "EvidenceVariable/1323" -> "1323")
-        const evidenceVariableId = eligibilityRef.replace(
-          "EvidenceVariable/",
-          ""
-        );
-        // 3. Load the parent EV directly
-        const parentEV = (await fhirKnowledgeClient.read({
-          resourceType: "EvidenceVariable",
-          id: evidenceVariableId,
-        })) as EvidenceVariable;
-        // 4. Return the parent EV (not the children for now)
-        return [new EvidenceVariableModel(parentEV)];
-      }
-      return [];
-    } else {
-      // Extract the study variables from the Study resource
-      const study = await StudyService.loadStudy(studyId);
-      const datamartExtension = study.extension?.find(
-        (ext) =>
-          ext.url ===
-          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
-      );
-      // Extract the study variables from the datamart extension
-      if (datamartExtension?.extension) {
-        const models: EvidenceVariableModel[] = [];
-        // For each variable extension, load the referenced EvidenceVariable
-        for (const varExt of datamartExtension.extension) {
-          if (varExt.url === "variable" && varExt.valueReference?.reference) {
-            const evidenceVariableId = varExt.valueReference.reference.replace(
-              "EvidenceVariable/",
-              ""
-            );
-            const ev = (await fhirKnowledgeClient.read({
-              resourceType: "EvidenceVariable",
-              id: evidenceVariableId,
-            })) as EvidenceVariable;
-            models.push(new EvidenceVariableModel(ev));
-          }
-        }
-        return models;
-      }
-      return [];
+      if (!eligibilityRef) return [];
+
+      const evId = eligibilityRef.replace("EvidenceVariable/", "");
+      const root = (await fhirKnowledgeClient.read({
+        resourceType: "EvidenceVariable",
+        id: evId,
+      })) as EvidenceVariable;
+
+      const all = await resolveCanonicalsRecursive([root]);
+      return dedupeEVs(all).map((ev) => new EvidenceVariableModel(ev));
     }
+
+    // type === "study"
+    // 1) Load Study
+    const study = await StudyService.loadStudy(studyId);
+
+    // 2) Find EXT-Datamart and collect variable references
+    const datamartExtension = study.extension?.find(
+      (ext) =>
+        ext.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
+    );
+
+    if (!datamartExtension?.extension?.length) return [];
+
+    const baseRefs = datamartExtension.extension
+      .filter((sx) => sx.url === "variable" && sx.valueReference?.reference)
+      .map((sx) => sx.valueReference!.reference as string); // e.g., "EvidenceVariable/123"
+
+    if (baseRefs.length === 0) return [];
+
+    // 3) Read the root EVs from references
+    const roots = (
+      await Promise.all(
+        baseRefs.map(async (ref) => {
+          const id = ref.includes("/") ? ref.split("/")[1] : ref;
+          try {
+            return (await fhirKnowledgeClient.read({
+              resourceType: "EvidenceVariable",
+              id,
+            })) as EvidenceVariable;
+          } catch {
+            return null;
+          }
+        })
+      )
+    ).filter(Boolean) as EvidenceVariable[];
+
+    if (roots.length === 0) return [];
+
+    // 4) Resolve canonical chains (definitionCanonical) recursively
+    const all = await resolveCanonicalsRecursive(roots);
+
+    // 5) Dedup + map to models
+    return dedupeEVs(all)
+      .map((ev) => new EvidenceVariableModel(ev))
+      .filter((m) => !!m.getExpression());
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
+}
+
+function dedupeEVs(list: EvidenceVariable[]): EvidenceVariable[] {
+  const map = new Map<string, EvidenceVariable>();
+  for (const ev of list) {
+    const key = ev.url || ev.id || JSON.stringify(ev);
+    if (!map.has(key)) map.set(key, ev);
+  }
+  return Array.from(map.values());
+}
+
+/** Extract all canonical strings referenced by an EV (direct + inside definitionByCombination) */
+function extractCanonicals(ev: EvidenceVariable): string[] {
+  const out: string[] = [];
+  ev.characteristic?.forEach((ch) => {
+    if (ch.definitionCanonical) out.push(ch.definitionCanonical);
+    const combo = ch.definitionByCombination?.characteristic ?? [];
+    combo.forEach((sub) => {
+      if (sub.definitionCanonical) out.push(sub.definitionCanonical);
+    });
+  });
+  return Array.from(new Set(out));
+}
+
+/** Read EV by canonical URL (supports url|version) using fhirKnowledgeClient.search */
+async function fetchEVByCanonical(
+  canonical: string
+): Promise<EvidenceVariable | null> {
+  try {
+    const [url, version] = canonical.split("|");
+    const bundle = (await fhirKnowledgeClient.search({
+      resourceType: "EvidenceVariable",
+      searchParams: version ? { url, version } : { url },
+    })) as Bundle;
+
+    const entry = bundle.entry?.find(
+      (e) => e.resource?.resourceType === "EvidenceVariable"
+    );
+    return (entry?.resource as EvidenceVariable) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveCanonicalsRecursive(
+  seed: EvidenceVariable[],
+  depth = 0,
+  seen = new Set<string>()
+): Promise<EvidenceVariable[]> {
+  if (depth > MAX_CANONICAL_DEPTH || seed.length === 0) return dedupeEVs(seed);
+
+  const nextCanonicals: string[] = [];
+  const acc: EvidenceVariable[] = [];
+
+  for (const ev of seed) {
+    const key = ev.url || ev.id || JSON.stringify(ev);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    acc.push(ev);
+    nextCanonicals.push(...extractCanonicals(ev));
+  }
+
+  const uniqueCanonicals = Array.from(new Set(nextCanonicals));
+  const fetched = (
+    await Promise.all(uniqueCanonicals.map((c) => fetchEVByCanonical(c)))
+  ).filter(Boolean) as EvidenceVariable[];
+
+  if (fetched.length === 0) return dedupeEVs(acc);
+
+  const rec = await resolveCanonicalsRecursive(fetched, depth + 1, seen);
+  return dedupeEVs([...acc, ...rec]);
 }
 
 /**
@@ -390,7 +475,7 @@ function mapFormDataToCombination(
   if (combinationData.isXor && combinationData.code === "any-of") {
     combination.definitionByCombination.extension = [
       {
-        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR",
+        url: "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR",
         valueBoolean: true,
       },
     ];
@@ -400,7 +485,7 @@ function mapFormDataToCombination(
       combination.definitionByCombination.extension?.filter(
         (ext: { url: string }) =>
           ext.url !==
-          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR"
+          "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR"
       );
   }
   return combination;
@@ -594,7 +679,7 @@ function mapFormDataToDefinitionExpression(
   if (expressionData.criteriaValue && expressionData.selectedParameter) {
     definitionExpression.extension = [];
     const paramExtension: any = {
-      url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation",
+      url: "https://www.isis.com/StructureDefinition/EXT-EVParametrisation",
       extension: [
         { url: "name", valueString: expressionData.selectedParameter },
       ],
