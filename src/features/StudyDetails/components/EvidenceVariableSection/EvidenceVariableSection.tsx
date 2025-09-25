@@ -133,7 +133,7 @@ const EvidenceVariableSection: FunctionComponent<
                   <FontAwesomeIcon
                     className="actionIcon"
                     icon={faPen}
-                    size="xl"
+                    size="lg"
                     title={i18n.t("button.edittheevidencevariable")}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -219,7 +219,7 @@ const EvidenceVariableSection: FunctionComponent<
                             <FontAwesomeIcon
                               className="actionIcon"
                               icon={faPen}
-                              size="xl"
+                              size="lg"
                               title={i18n.t("button.edittheevidencevariable")}
                               onClick={(e) => {
                                 e.stopPropagation();

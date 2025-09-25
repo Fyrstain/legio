@@ -18,7 +18,8 @@ import i18n from "i18next";
 const BooleanParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
-}> = ({ value, onChange }) => {
+  readonly?: boolean;
+}> = ({ value, onChange, readonly = false }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -48,6 +49,7 @@ const BooleanParameter: FunctionComponent<{
           label={value?.value ? i18n.t("label.true") : i18n.t("label.false")}
           checked={!!value?.value}
           onChange={(e) => handleToggle(e.target.checked)}
+          disabled={readonly}
         />
       </Form.Group>
     </>

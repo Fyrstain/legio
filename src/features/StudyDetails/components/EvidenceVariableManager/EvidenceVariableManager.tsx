@@ -482,21 +482,15 @@ const EvidenceVariableManager: FunctionComponent<
           }
         }
         // Ensure a selection was made
-        if (!data.selectedEvidenceVariable?.url) {
-          alert(i18n.t("errormessage.nourlontheevidencevariable"));
+        if (!data.selectedEvidenceVariable?.id) {
+          alert(i18n.t("errormessage.noselectionmade"));
           return;
         }
-        // Data to create the canonical evidence variable
-        const canonicalData: ExistingCanonicalFormData = {
-          exclude: data.exclude,
-          canonicalUrl: data.selectedEvidenceVariable!.url,
-          canonicalId: data.selectedEvidenceVariable!.identifier,
-          canonicalDescription: data.selectedEvidenceVariable!.title,
-        };
-        // Call the service to add the existing canonical evidence variable
-        await EvidenceVariableService.addExistingCanonical(
+        // Call the service to add the existing canonical evidence variable with copy
+        await EvidenceVariableService.addExistingCanonicalWithCopy(
           parentEVId!,
-          canonicalData,
+          data.selectedEvidenceVariable.id,
+          data.exclude,
           currentActionPath
         );
         // Refresh the inclusion criteria list
@@ -516,6 +510,7 @@ const EvidenceVariableManager: FunctionComponent<
       studyVariables,
       currentActionPath,
       loadEvidenceVariablesHandler,
+      onLoading,
     ]
   );
 

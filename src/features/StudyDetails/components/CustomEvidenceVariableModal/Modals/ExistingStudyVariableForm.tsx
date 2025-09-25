@@ -85,7 +85,7 @@ const ExistingStudyVariableForm: FunctionComponent<
       const loadStudyVariables = async () => {
         try {
           const models =
-            await EvidenceVariableService.loadAllEvidenceVariables();
+            await EvidenceVariableService.loadAllEvidenceVariables(true);
           const displayObjects = models.map((model) => model.toDisplayObject());
           setStudyVariables(displayObjects);
         } catch (error) {
