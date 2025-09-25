@@ -131,7 +131,7 @@
         "nofilterresults": "No results for the selected filter.",
         "noobsoletevariables": "No obsolete variables found for this study.",
         "nonotobsoletevariables": "No non-obsolete variables found for this study.",
-        "nocodesavailable": "No codes available for this ValueSet.",
+        "nocodesavailable": "No codes available for this ValueSet. Please select another one.",
         "fillrequiredfields": "Please fill all required fields.",
         "invalidurl": "Invalid URL !",
         "loadingcomparators": "Error loading comparators:",
@@ -141,7 +141,8 @@
         "errorwhileupdating": "Error while updating ! Please try again.",
         "noselectionmade": "No selection made ! Please select an Evidence Variable.",
         "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters).",
-        "savingparameterization": "Error while saving parameterization. Please try again."
+        "savingparameterization": "Error while saving parameterization. Please try again.",
+        "updatingobsolescence": "Error while updating obsolescence:"
     },
     "message": {
         "studyupdated": "Study updated successfully.",

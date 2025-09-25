@@ -132,11 +132,6 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
     const expressionName = e.target.value;
     setCurrentExpression(expressionName);
     validateField("selectedExpression", expressionName, true);
-    // Reset parameter and criteria value when expression changes
-    if (expressionName !== selectedExpression) {
-      setCurrentParameter("");
-      setCurrentCriteriaValue(undefined);
-    }
   };
 
   /**
@@ -146,6 +141,7 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   const handleParameterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const parameterName = e.target.value;
     setCurrentParameter(parameterName);
+    validateField("selectedParameter", parameterName, true);
     if (parameterName && selectedLibrary) {
       const parameter = availableParameters.find(
         (p) => p.name === parameterName
@@ -275,7 +271,8 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
         </div>
       </div>
 
-      {(!currentExpression || !currentParameter) && (
+      {((type === "inclusion" && (!currentExpression || !currentParameter)) ||
+        (type === "study" && !currentExpression)) && (
         <div className="mb-2">
           <Alert variant="warning" className="mb-3">
             <FontAwesomeIcon icon={faWarning} className="me-2" />
@@ -362,7 +359,7 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
         />
       )}
 
-      {/* Action buttons - cachés en mode readonly */}
+      {/* Action buttons */}
       {!readonly && (
         <div className="d-flex gap-2">
           <Button variant="primary" onClick={handleSave}>

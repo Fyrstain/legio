@@ -1086,6 +1086,35 @@ async function updateEvidenceVariableWithParameterization(
   }
 }
 
+/**
+ * Update the status of an EvidenceVariable
+ * @param evidenceVariableId The ID of the EV to update
+ * @param newStatus The new status to set
+ * @returns The updated EvidenceVariable
+ */
+async function updateEvidenceVariableStatus(
+  evidenceVariableId: string,
+  newStatus: "active" | "retired" | "draft" | "unknown"
+): Promise<EvidenceVariable> {
+  try {
+    // Load the existing EV
+    const existingEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Update only the status
+    existingEV.status = newStatus;
+    // Save the updated EV
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: existingEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EV status: ${error}`);
+  }
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -1109,6 +1138,7 @@ const EvidenceVariableService = {
   copyEvidenceVariableWithActualTrue,
   addExistingCanonicalWithCopy,
   updateEvidenceVariableWithParameterization,
+  updateEvidenceVariableStatus,
 };
 
 export default EvidenceVariableService;

@@ -1,7 +1,7 @@
 // React
 import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Accordion, Alert, Badge } from "react-bootstrap";
+import { Accordion, Alert, Badge, Form } from "react-bootstrap";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarning, faPen } from "@fortawesome/free-solid-svg-icons";
@@ -250,6 +250,41 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   };
 
   /**
+   * Handle obsolescence toggle for canonical EV
+   */
+  const handleObsolescenceToggle = async (index: number) => {
+    try {
+      const evData = canonicalEVData[index];
+      if (!evData || !evData.id) {
+        throw new Error(
+          "Impossible de changer le statut : données EV manquantes"
+        );
+      }
+      // Determine new status based on current status
+      const currentStatus = evData.status;
+      const newStatus = currentStatus === "retired" ? "active" : "retired";
+      // Call service to update the EV status
+      await EvidenceVariableService.updateEvidenceVariableStatus(
+        evData.id,
+        newStatus
+      );
+      // Update local state to reflect new status
+      setCanonicalEVData((prev) => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          status: newStatus,
+        },
+      }));
+      console.log(`Status updated from ${currentStatus} to ${newStatus}`);
+      alert(i18n.t("message.updatesuccessful"));
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert(`${i18n.t("error.updatingobsolescence")} ${error}`);
+    }
+  };
+
+  /**
    * Handles an action for a characteristic.
    * Used to pass to EvidenceVariableButtons component and know the index of the characteristic
    * to build the path in the characteristics tree.
@@ -464,6 +499,27 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                   {/* Excluded Badge - Moved to header */}
                   {characteristic.exclude && (
                     <Badge bg="warning">{i18n.t("label.excluded")}</Badge>
+                  )}
+                  {/* Obsolecence toggle/switch - only in edit mode */}
+                  {canonicalEVData[index] && (
+                    <Form>
+                      <Form.Check
+                        type="switch"
+                        id={`obsolescence-switch-${index}`}
+                        label={
+                          canonicalEVData[index].status === "retired"
+                            ? i18n.t("label.obsolete")
+                            : i18n.t("label.notobsolete")
+                        }
+                        checked={canonicalEVData[index].status !== "retired"}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleObsolescenceToggle(index);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={!editMode}
+                      />
+                    </Form>
                   )}
                 </div>
               )}

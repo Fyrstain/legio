@@ -130,7 +130,7 @@
     "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer.",
     "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
     "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
-    "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
+    "nocodesavailable": "Aucun code disponible pour ce ValueSet. Veuillez en sélectionner un autre.",
     "fillrequiredfields": "Veuillez remplir tous les champs requis.",
     "invalidurl": "URL invalide !",
     "loadingcomparators": "Erreur lors du chargement des comparateurs :",
@@ -140,7 +140,8 @@
     "errorwhileupdating": "Erreur lors de la mise à jour ! Veuillez réessayer.",
     "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence.",
     "invalidid": "ID invalide ! Un ID doit être alphanumérique, peut contenir des tirets et des points, et doit comporter entre 1 et 64 caractères.",
-    "savingparameterization": "Erreur lors de l'enregistrement de la paramétrisation. Veuillez réessayer."
+    "savingparameterization": "Erreur lors de l'enregistrement de la paramétrisation. Veuillez réessayer.",
+    "updatingobsolescence": "Erreur lors de la mise à jour de l'obsolescence : "
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
