@@ -421,7 +421,7 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: "http://cql-engine-r4:8080/fhir",
+          address: process.env.REACT_APP_CQL_URL || "",
           header: ["Content-Type: application/json"],
         },
       },
