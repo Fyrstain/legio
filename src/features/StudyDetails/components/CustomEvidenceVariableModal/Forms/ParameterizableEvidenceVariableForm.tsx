@@ -141,7 +141,7 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   const handleParameterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const parameterName = e.target.value;
     setCurrentParameter(parameterName);
-    validateField("selectedParameter", parameterName, true);
+    validateField("selectedParameter", parameterName);
     if (parameterName && selectedLibrary) {
       const parameter = availableParameters.find(
         (p) => p.name === parameterName
@@ -177,10 +177,6 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
       currentExpression,
       true
     );
-    if (!currentParameter) {
-      validateField("selectedParameter", currentParameter, true);
-      return false;
-    }
     // Validate parameter-related fields if a parameter is selected
     let parameterErrors = false;
     if (currentParameter && currentCriteriaValue) {
@@ -209,11 +205,6 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   const handleSave = () => {
     clearErrors();
     if (!isFormValid()) {
-      alert(i18n.t("errormessage.fillrequiredfields"));
-      return;
-    }
-    // Ensure criteria value is defined
-    if (currentParameter && !currentCriteriaValue) {
       alert(i18n.t("errormessage.fillrequiredfields"));
       return;
     }
@@ -271,12 +262,11 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
         </div>
       </div>
 
-      {((type === "inclusion" && (!currentExpression || !currentParameter)) ||
-        (type === "study" && !currentExpression)) && (
+      {!currentExpression && (
         <div className="mb-2">
           <Alert variant="warning" className="mb-3">
             <FontAwesomeIcon icon={faWarning} className="me-2" />
-            {i18n.t("message.selectexpressionandparameter")}
+            {i18n.t("message.selectexpression")}
           </Alert>
         </div>
       )}
@@ -313,12 +303,10 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
           </Form.Group>
         </div>
         {/* Parameter (only for inclusion type) */}
-        {type === "inclusion" && (
+        {type === "inclusion" && (!readonly || currentParameter) && (
           <div className="col-md-6">
             <Form.Group>
-              <Form.Label>
-                {i18n.t("label.parameter")} {!readonly && "*"}
-              </Form.Label>
+              <Form.Label>{i18n.t("label.parameter")}</Form.Label>
               <Form.Select
                 value={currentParameter}
                 onChange={handleParameterChange}

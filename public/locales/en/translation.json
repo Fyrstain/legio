@@ -150,7 +150,7 @@
         "emptycombination": "Empty Combination - add characteristics",
         "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics.",
         "updatesuccessful": "Update successful.",
-        "selectexpressionandparameter": "Please select an expression and a parameter to enable parameterization. Switch to edit mode for that."
+        "selectexpression": "Please select an expression. Switch to edit mode for that."
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",
