@@ -133,8 +133,8 @@ async function loadEvidenceVariables(
     if (!datamartExtension?.extension?.length) return [];
 
     const baseRefs = datamartExtension.extension
-      .filter((sx) => sx.url === "variable" && sx.valueReference?.reference)
-      .map((sx) => sx.valueReference!.reference as string); // e.g., "EvidenceVariable/123"
+      .filter((subExtension) => subExtension.url === "variable" && subExtension.valueReference?.reference)
+      .map((subExtension) => subExtension.valueReference!.reference as string); // e.g., "EvidenceVariable/123"
 
     if (baseRefs.length === 0) return [];
 
@@ -169,6 +169,12 @@ async function loadEvidenceVariables(
   }
 }
 
+/**
+ * Removes duplicate EvidenceVariable resources.
+ *
+ * @param {EvidenceVariable[]} list - Input array that may contain duplicates.
+ * @returns {EvidenceVariable[]} A new array with duplicates removed.
+ */
 function dedupeEVs(list: EvidenceVariable[]): EvidenceVariable[] {
   const map = new Map<string, EvidenceVariable>();
   for (const ev of list) {
@@ -178,7 +184,12 @@ function dedupeEVs(list: EvidenceVariable[]): EvidenceVariable[] {
   return Array.from(map.values());
 }
 
-/** Extract all canonical strings referenced by an EV (direct + inside definitionByCombination) */
+/**
+ * Collects all canonical references from an EvidenceVariable.
+ *
+ * @param {EvidenceVariable} ev - The source EvidenceVariable.
+ * @returns {string[]} Unique canonical URLs.
+ */
 function extractCanonicals(ev: EvidenceVariable): string[] {
   const out: string[] = [];
   ev.characteristic?.forEach((ch) => {
@@ -191,7 +202,12 @@ function extractCanonicals(ev: EvidenceVariable): string[] {
   return Array.from(new Set(out));
 }
 
-/** Read EV by canonical URL (supports url|version) using fhirKnowledgeClient.search */
+/**
+ * Fetches an EvidenceVariable by canonical URL using the knowledge client.
+ *
+ * @param {string} canonical - Canonical URL.
+ * @returns {Promise<EvidenceVariable|null>} The resolved EV.
+ */
 async function fetchEVByCanonical(
   canonical: string
 ): Promise<EvidenceVariable | null> {
@@ -211,6 +227,14 @@ async function fetchEVByCanonical(
   }
 }
 
+/**
+ * Resolves all EvidenceVariables reachable via canonical references, recursively.F
+ *
+ * @param {EvidenceVariable[]} seed - Starting EVs.
+ * @param {number} [depth=0] - Current recursion depth.
+ * @param {Set<string>} [seen=new Set()] - Keys of already visited EVs.
+ * @returns {Promise<EvidenceVariable[]>} Deduplicated list of EVs.
+ */
 async function resolveCanonicalsRecursive(
   seed: EvidenceVariable[],
   depth = 0,

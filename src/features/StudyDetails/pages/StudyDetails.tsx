@@ -284,6 +284,11 @@ const StudyDetails: FunctionComponent = () => {
     }
   }
 
+  /**
+ * Extracts the pure List ID from a FHIR Reference.
+ * Works with both relative ("List/123") and absolute ("http://.../List/123") refs.
+ * Used to query Parameters via: /Parameters?_has:List:item:_id={LIST_ID}
+ */
   function extractListIdFromRef(ref?: string): string {
     if (!ref) return "";
     const m = ref.match(/(?:^|\/)List\/([^/?#]+)/);
@@ -350,11 +355,11 @@ const StudyDetails: FunctionComponent = () => {
     }
   };
 
-  /////////////////////////////////////////////
-  //                Content                  //
-  /////////////////////////////////////////////
-  useEffect(() => {
-    // Quand le résultat du datamart change, on recharge la ResearchStudy pour récupérer la List d'évaluation
+  /**
+  * After $generate-datamart, reload the ResearchStudy to get the evaluation List,
+  * then extract its List ID for the table query.
+  */
+   useEffect(() => {
     if (!studyId || !datamartResult?.id) return;
 
     (async () => {
@@ -378,6 +383,10 @@ const StudyDetails: FunctionComponent = () => {
       }
     })();
   }, [studyId, datamartResult?.id]);
+
+  /////////////////////////////////////////////
+  //                Content                  //
+  /////////////////////////////////////////////
 
   return (
     <LegioPage

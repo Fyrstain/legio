@@ -5,7 +5,7 @@ import Client from "fhir-kit-client";
 // Model
 
 /////////////////////////////////////
-//             Client              //F
+//             Client              //
 /////////////////////////////////////
 
 const fhirClient = new Client({
@@ -480,7 +480,7 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_Mapping_URL || "",
+          address: process.env.REACT_APP_MAPPING_URL || "",
           header: ["Content-Type: application/json"],
         },
       }
