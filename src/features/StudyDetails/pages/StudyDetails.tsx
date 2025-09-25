@@ -1,5 +1,11 @@
 // React
-import { FunctionComponent, useCallback, useEffect, useState } from "react";
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // Components
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
@@ -285,10 +291,10 @@ const StudyDetails: FunctionComponent = () => {
   }
 
   /**
- * Extracts the pure List ID from a FHIR Reference.
- * Works with both relative ("List/123") and absolute ("http://.../List/123") refs.
- * Used to query Parameters via: /Parameters?_has:List:item:_id={LIST_ID}
- */
+   * Extracts the pure List ID from a FHIR Reference.
+   * Works with both relative ("List/123") and absolute ("http://.../List/123") refs.
+   * Used to query Parameters via: /Parameters?_has:List:item:_id={LIST_ID}
+   */
   function extractListIdFromRef(ref?: string): string {
     if (!ref) return "";
     const m = ref.match(/(?:^|\/)List\/([^/?#]+)/);
@@ -299,8 +305,10 @@ const StudyDetails: FunctionComponent = () => {
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
-  const studyVariablesExpressions =
-    EvidenceVariableUtils.extractExpressions(studyVariables);
+  const studyVariablesWithExpressions = useMemo(
+    () => studyVariables.filter((v) => !!v.getExpression()),
+    [studyVariables]
+  );
 
   /**
    * Handle the cohorting and datamart generation.
@@ -356,10 +364,10 @@ const StudyDetails: FunctionComponent = () => {
   };
 
   /**
-  * After $generate-datamart, reload the ResearchStudy to get the evaluation List,
-  * then extract its List ID for the table query.
-  */
-   useEffect(() => {
+   * After $generate-datamart, reload the ResearchStudy to get the evaluation List,
+   * then extract its List ID for the table query.
+   */
+  useEffect(() => {
     if (!studyId || !datamartResult?.id) return;
 
     (async () => {
@@ -554,7 +562,7 @@ const StudyDetails: FunctionComponent = () => {
         {/* Section to show the table with the generated datamart  */}
         {datamartResult && (
           <div className="mt-4">
-            {studyVariables.length > 0 && (
+            {studyVariablesWithExpressions.length > 0 && (
               <>
                 <Title
                   level={3}
@@ -562,33 +570,27 @@ const StudyDetails: FunctionComponent = () => {
                 ></Title>
                 <PaginatedTable
                   columns={[
-                    {
-                      header: "Patient",
-                      dataField: "subjectId",
-                      width: "30%",
-                    },
-                    ...studyVariables.map((studyVariable) => ({
-                      header: studyVariable.getExpression() ?? "N/A",
-                      dataField: studyVariable.getExpression() ?? "N/A",
+                    { header: "Patient", dataField: "subjectId", width: "30%" },
+                    ...studyVariablesWithExpressions.map((v) => ({
+                      header: v.getExpression()!, 
+                      dataField: v.getExpression()!,
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {
                     const data: any = {};
-                    // Extract Patient reference
-                    const subjectParam = resource.parameter.find(
-                      (parameter: {
-                        name: string;
-                        valueReference?: { reference: string };
-                      }) => parameter.name === "Patient"
+                    const subjectParam = (resource.parameter ?? []).find(
+                      (p: any) => p.name === "Patient"
                     );
                     data.subjectId =
                       subjectParam?.valueIdentifier?.value ?? "N/A";
-                    // Extract all other parameters and set them to "N/A" if not found
-                    studyVariables.forEach((studyVariable) => {
-                      const paramName = studyVariable.getExpression() ?? "N/A";
-                      data[paramName] = "N/A";
+
+                    // init only for variables that have expressions
+                    studyVariablesWithExpressions.forEach((v) => {
+                      const name = v.getExpression()!;
+                      data[name] = "N/A";
                     });
-                    resource.parameter.forEach((param: any) => {
+
+                    (resource.parameter ?? []).forEach((param: any) => {
                       if (param.name !== "Patient") {
                         data[param.name] =
                           StudyService.getParameterValue(param);

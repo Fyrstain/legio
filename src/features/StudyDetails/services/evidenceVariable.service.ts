@@ -162,8 +162,7 @@ async function loadEvidenceVariables(
 
     // 5) Dedup + map to models
     return dedupeEVs(all)
-      .map((ev) => new EvidenceVariableModel(ev))
-      .filter((m) => !!m.getExpression());
+      .map((ev) => new EvidenceVariableModel(ev));
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
