@@ -256,9 +256,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     try {
       const evData = canonicalEVData[index];
       if (!evData || !evData.id) {
-        throw new Error(
-          "Impossible de changer le statut : données EV manquantes"
-        );
+        throw new Error("Invalid EV data or ID for obsolescence toggle");
       }
       // Determine new status based on current status
       const currentStatus = evData.status;
@@ -276,7 +274,6 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
           status: newStatus,
         },
       }));
-      console.log(`Status updated from ${currentStatus} to ${newStatus}`);
       alert(i18n.t("message.updatesuccessful"));
     } catch (error) {
       console.error("Error updating status:", error);
