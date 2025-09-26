@@ -1,5 +1,11 @@
 // React
-import { FunctionComponent, useState, useEffect, useCallback } from "react";
+import {
+  FunctionComponent,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 // Components
 import EvidenceVariableSection from "../EvidenceVariableSection/EvidenceVariableSection";
 import EvidenceVariableModal from "../CustomEvidenceVariableModal/Modals/EvidenceVariableModal";
@@ -401,14 +407,14 @@ const EvidenceVariableManager: FunctionComponent<
             alert(i18n.t("errormessage.nostudyvariablefound"));
             return;
           }
-          parentEVId = studyVariables[0].getId();
+          parentEVId = studyVariablesForDisplay[0]?.getId();
         } else {
           // The inclusion criteria should only have one parent EvidenceVariable
           if (inclusionCriteria.length === 0) {
             alert(i18n.t("errormessage.noevidencevariablefound"));
             return;
           }
-          parentEVId = inclusionCriteria[0].getId();
+          parentEVId = inclusionCriteriaForDisplay[0]?.getId();
         }
         if (combinationMode === "update" && currentActionPath) {
           // Edit mode
@@ -805,14 +811,23 @@ const EvidenceVariableManager: FunctionComponent<
   /**
    * To display the Inclusion Criteria
    */
+  const inclusionCriteriaForDisplay = useMemo(
+    () => inclusionCriteria.filter((ev) => ev.hasDefinitionByCombination()),
+    [inclusionCriteria]
+  );
   const inclusionCriteriaDisplayObjects =
-    EvidenceVariableUtils.toDisplayObjects(inclusionCriteria);
+    EvidenceVariableUtils.toDisplayObjects(inclusionCriteriaForDisplay);
 
   /**
    * To display the Study Variable
    */
-  const studyVariablesDisplayObjects =
-    EvidenceVariableUtils.toDisplayObjects(studyVariables);
+  const studyVariablesForDisplay = useMemo(
+    () => studyVariables.filter((ev) => ev.hasDefinitionByCombination()),
+    [studyVariables]
+  );
+  const studyVariablesDisplayObjects = EvidenceVariableUtils.toDisplayObjects(
+    studyVariablesForDisplay
+  );
 
   ////////////////////////////////
   //        LifeCycle           //
@@ -837,7 +852,7 @@ const EvidenceVariableManager: FunctionComponent<
         type="inclusion"
         editMode={editMode}
         onAction={handleInclusionCriteriaAction}
-        evidenceVariableModels={inclusionCriteria}
+        evidenceVariableModels={inclusionCriteriaForDisplay}
         onEditEV={(evId) => handleOpenEditEVModal(evId, "inclusion")}
       />
 
@@ -846,7 +861,7 @@ const EvidenceVariableManager: FunctionComponent<
         type="study"
         editMode={editMode}
         onAction={handleStudyVariableAction}
-        evidenceVariableModels={studyVariables}
+        evidenceVariableModels={studyVariablesForDisplay}
         onEditEV={(evId) => handleOpenEditEVModal(evId, "study")}
       />
 
