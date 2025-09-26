@@ -537,9 +537,19 @@ async function executeGenerateDatamart(studyId: string): Promise<List> {
  */
 async function generateCohortAndDatamart(
   studyId: string
-): Promise<{ cohortingResult: Group; datamartResult: List }> {
+): Promise<{ cohortingResult: Group; datamartResult: List | null }> {
   try {
     const cohortingResult = await executeCohorting(studyId);
+    // Check if there are patients in the cohort
+    const hasPatients =
+      cohortingResult.member && cohortingResult.member.length > 0;
+    // If no patients, skip datamart generation
+    if (!hasPatients) {
+      return {
+        cohortingResult,
+        datamartResult: null, 
+      };
+    }
     const datamartResult = await executeGenerateDatamart(studyId);
     return { cohortingResult, datamartResult };
   } catch (error) {

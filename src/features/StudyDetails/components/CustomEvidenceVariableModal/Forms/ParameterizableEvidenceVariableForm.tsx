@@ -182,6 +182,10 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
       currentExpression,
       true
     );
+    // If type is study, only validate expression
+    if (type === "study") {
+      return !expressionError;
+    }
     // Validate parameter-related fields if a parameter is selected
     let parameterErrors = false;
     if (currentParameter && currentCriteriaValue) {

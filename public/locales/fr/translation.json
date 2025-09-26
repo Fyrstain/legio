@@ -149,7 +149,8 @@
     "emptycombination": "Combinaison vide - ajoutez des caractéristiques",
     "warningcombinationconstraint": "Veuillez noter que vous n'avez pas de “combinaison”. Si vous ajoutez une référence canonique avant, vous ne pourrez plus ajouter d'autres caractéristiques.",
     "updatesuccessful": "Mise à jour réussie.",
-    "selectexpression": "Veuillez sélectionner une expression. Passez en mode édition pour cela."
+    "selectexpression": "Veuillez sélectionner une expression. Passez en mode édition pour cela.",
+    "noeligiblepatients": "Aucun patient éligible n'a été trouvé pour l'étude de recherche."
   },
   "placeholder": {
     "selectstudydesign": "-- Sélectionnez une conception de l'étude --",

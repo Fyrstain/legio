@@ -150,7 +150,8 @@
         "emptycombination": "Empty Combination - add characteristics",
         "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics.",
         "updatesuccessful": "Update successful.",
-        "selectexpression": "Please select an expression. Switch to edit mode for that."
+        "selectexpression": "Please select an expression. Switch to edit mode for that.",
+        "noeligiblepatients": "No eligible patients were found for the research study."
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",

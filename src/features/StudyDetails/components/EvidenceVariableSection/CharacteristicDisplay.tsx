@@ -243,8 +243,6 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
       }));
       // Notify user of success
       alert(i18n.t("message.updatesuccessful"));
-      // Optionally, refresh the page or data to reflect changes
-      window.location.reload();
     } catch (error) {
       console.error("Error saving parameterization:", error);
       alert(`${i18n.t("error.savingparameterization")} ${error}`);
