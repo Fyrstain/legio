@@ -122,8 +122,8 @@
     "phase": "-- Merci de choisir une phase --"
   },
   "errormessage": {
-    "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
-    "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
+    "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude. Activez le mode édition pour en ajouter.",
+    "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude. Activez le mode édition pour en ajouter.",
     "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée.",
     "requiredfield": "Ce champ est requis !",
     "versionalreadyexists": "Cette version existe déjà. Veuillez en choisir une autre.",

@@ -109,7 +109,12 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
           );
           if (library) {
             setSelectedLibrary(library);
-            setAvailableExpressions(library.getBooleanExpressions());
+            // Set available expressions and parameters based on type of EV (inclusion = "out" and type boolean, study = "in" and any type)
+            if (type === "inclusion") {
+              setAvailableExpressions(library.getBooleanExpressions());
+            } else {
+              setAvailableExpressions(library.getExpressions());
+            }
             setAvailableParameters(library.getInputParameters());
           }
         } catch (error) {
@@ -233,33 +238,30 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   return (
     <Form>
       {/* Section READ-ONLY - Name and Description */}
-      <div className="mb-4">
+      <div className="mb-3">
         {/* Name */}
         <div className="row mb-3">
-          <div className="col-md-6">
-            <Form.Group>
-              <Form.Label>{i18n.t("label.name")}</Form.Label>
-              <Form.Control
-                type="text"
-                value={evidenceVariableData.title || "N/A"}
-                disabled
-                readOnly
-              />
-            </Form.Group>
-          </div>
-          {/* Description */}
-          <div className="col-md-6">
-            <Form.Group>
-              <Form.Label>{i18n.t("label.generaldescription")}</Form.Label>
-              <Form.Control
-                type="textarea"
-                value={evidenceVariableData.description || "N/A"}
-                disabled
-                readOnly
-              />
-            </Form.Group>
-          </div>
+          <Form.Group>
+            <Form.Label>{i18n.t("label.name")}</Form.Label>
+            <Form.Control
+              type="text"
+              value={evidenceVariableData.title || "N/A"}
+              disabled
+              readOnly
+            />
+          </Form.Group>
         </div>
+        {/* Description */}
+        <Form.Group>
+          <Form.Label>{i18n.t("label.generaldescription")}</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            value={evidenceVariableData.description || "N/A"}
+            disabled
+            readOnly
+          />
+        </Form.Group>
       </div>
 
       {!currentExpression && (

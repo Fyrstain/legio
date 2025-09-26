@@ -136,22 +136,24 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         if (characteristic?.definitionExpression) {
           selectedExpression =
             characteristic.definitionExpression.expression || "";
-          // Extract parameterization if it exists
-          const paramExtension =
-            characteristic.definitionExpression.extension?.find(
+          // Extract ALL parameterization extensions
+          const paramExtensions =
+            characteristic.definitionExpression.extension?.filter(
               (ext: any) =>
                 ext.url ===
-                "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation"
-            );
-          // If parameterization extension exists, extract name and value
-          if (paramExtension) {
-            const nameExt = paramExtension.extension?.find(
+                "https://www.isis.com/StructureDefinition/EXT-EVParametrisation"
+            ) || [];
+          // Simply take the first parameter found
+          // TODO : Handle multiple parameters if needed
+          if (paramExtensions.length > 0) {
+            const firstParamExtension = paramExtensions[0];
+            const nameExt = firstParamExtension.extension?.find(
               (ext: any) => ext.url === "name"
             );
             selectedParameter =
               nameExt?.valueString || nameExt?.valueCode || "";
             // Extract the value and determine the type
-            const valueExtension = paramExtension.extension?.find(
+            const valueExtension = firstParamExtension.extension?.find(
               (ext: any) => ext.url === "value"
             );
             if (valueExtension) {
@@ -489,11 +491,12 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     level={3}
                     content={`${i18n.t("title.canonical")} - ${
                       characteristic.linkId ||
-                      characteristic.definitionCanonical.name ||
+                      (canonicalEVData[index] &&
+                        canonicalEVData[index].title) ||
                       "N/A"
                     }`}
                   />
-                  {/* Excluded Badge - Moved to header */}
+                  {/* Excluded Badge */}
                   {characteristic.exclude && (
                     <Badge bg="warning">{i18n.t("label.excluded")}</Badge>
                   )}
