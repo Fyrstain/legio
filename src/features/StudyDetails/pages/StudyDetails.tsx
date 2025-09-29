@@ -1,5 +1,11 @@
 // React
-import { FunctionComponent, useCallback, useEffect, useState } from "react";
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // Components
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
@@ -58,6 +64,7 @@ const StudyDetails: FunctionComponent = () => {
     process.env.REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL ??
     "http://hl7.org/fhir/ValueSet/study-design";
 
+  const [datamartListId, setDatamartListId] = useState<string>("");
   // State to manage the ResearchStudy study design value set
   const [researchStudyStudyDesign, setResearchStudyStudyDesign] = useState(
     [] as SimpleCode[]
@@ -98,6 +105,9 @@ const StudyDetails: FunctionComponent = () => {
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
+
+  // A flag to indicate if no patients were found during cohorting, to show a warning
+  const [noPatientsFound, setNoPatientsFound] = useState(false);
 
   //////////////////////////////
   //           Error          //
@@ -284,11 +294,24 @@ const StudyDetails: FunctionComponent = () => {
   }
 
   /**
+   * Extracts the pure List ID from a FHIR Reference.
+   * Works with both relative ("List/123") and absolute ("http://.../List/123") refs.
+   * Used to query Parameters via: /Parameters?_has:List:item:_id={LIST_ID}
+   */
+  function extractListIdFromRef(ref?: string): string {
+    if (!ref) return "";
+    const m = ref.match(/(?:^|\/)List\/([^/?#]+)/);
+    return m ? m[1] : ref.replace(/^List\//, "");
+  }
+
+  /**
    * Get the expression of the study variables.
    * This is used to display the datamart table headers.
    */
-  const studyVariablesExpressions =
-    EvidenceVariableUtils.extractExpressions(studyVariables);
+  const studyVariablesWithExpressions = useMemo(
+    () => studyVariables.filter((v) => !!v.getExpression()),
+    [studyVariables]
+  );
 
   /**
    * Handle the cohorting and datamart generation.
@@ -300,8 +323,16 @@ const StudyDetails: FunctionComponent = () => {
       const response = await StudyService.generateCohortAndDatamart(
         studyId ?? ""
       );
-      setDatamartResult(response.datamartResult);
-      setIsExistingDatamartListId(true);
+      if (response.datamartResult === null) {
+        // No patients found
+        setNoPatientsFound(true);
+        setIsExistingDatamartListId(false);
+        alert(i18n.t("message.noeligiblepatients"));
+      } else {
+        setDatamartResult(response.datamartResult);
+        setIsExistingDatamartListId(true);
+        setNoPatientsFound(false);
+      }
     } catch (error) {
       onError();
     } finally {
@@ -342,6 +373,35 @@ const StudyDetails: FunctionComponent = () => {
       setLoading(false);
     }
   };
+
+  /**
+   * After $generate-datamart, reload the ResearchStudy to get the evaluation List,
+   * then extract its List ID for the table query.
+   */
+  useEffect(() => {
+    if (!studyId || !datamartResult?.id) return;
+
+    (async () => {
+      try {
+        const rs = await StudyService.loadStudy(studyId);
+        const evalRef = rs.extension
+          ?.find(
+            (e: any) =>
+              e.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
+          )
+          ?.extension?.find((se: any) => se.url === "evaluation")
+          ?.valueReference?.reference;
+
+        setDatamartListId(extractListIdFromRef(evalRef));
+      } catch (e) {
+        console.error(
+          "[Datamart] Unable to reload ResearchStudy for evaluation List:",
+          e
+        );
+        setDatamartListId("");
+      }
+    })();
+  }, [studyId, datamartResult?.id]);
 
   /////////////////////////////////////////////
   //                Content                  //
@@ -502,10 +562,7 @@ const StudyDetails: FunctionComponent = () => {
           <Button
             variant="primary"
             onClick={handleExportDatamart}
-            disabled={
-              !isExistingDatamartListId ||
-              studyVariablesExpressions.length === 0
-            }
+            disabled={!isExistingDatamartListId || studyVariables.length === 0}
             className="ms-2"
           >
             <FontAwesomeIcon icon={faDownload} className="me-2" />
@@ -513,10 +570,18 @@ const StudyDetails: FunctionComponent = () => {
           </Button>
         </div>
 
+        {/* Warning message if no patients were found during cohorting */}
+        {noPatientsFound && (
+          <Alert variant="warning" className="mt-4">
+            <FontAwesomeIcon icon={faWarning} className="me-2" />
+            {i18n.t("message.noeligiblepatients")}
+          </Alert>
+        )}
+
         {/* Section to show the table with the generated datamart  */}
-        {datamartResult && (
+        {datamartResult && !noPatientsFound && (
           <div className="mt-4">
-            {studyVariablesExpressions.length > 0 && (
+            {studyVariablesWithExpressions.length > 0 && (
               <>
                 <Title
                   level={3}
@@ -524,33 +589,27 @@ const StudyDetails: FunctionComponent = () => {
                 ></Title>
                 <PaginatedTable
                   columns={[
-                    {
-                      header: "Patient",
-                      dataField: "subjectId",
-                      width: "30%",
-                    },
-                    ...studyVariables.map((studyVariable) => ({
-                      header: studyVariable.getExpression() ?? "N/A",
-                      dataField: studyVariable.getExpression() ?? "N/A",
+                    { header: "Patient", dataField: "subjectId", width: "30%" },
+                    ...studyVariablesWithExpressions.map((v) => ({
+                      header: v.getExpression()!, 
+                      dataField: v.getExpression()!,
                     })),
                   ]}
                   mapResourceToData={(resource: any) => {
                     const data: any = {};
-                    // Extract Patient reference
-                    const subjectParam = resource.parameter.find(
-                      (parameter: {
-                        name: string;
-                        valueReference?: { reference: string };
-                      }) => parameter.name === "Patient"
+                    const subjectParam = (resource.parameter ?? []).find(
+                      (p: any) => p.name === "Patient"
                     );
                     data.subjectId =
                       subjectParam?.valueIdentifier?.value ?? "N/A";
-                    // Extract all other parameters and set them to "N/A" if not found
-                    studyVariables.forEach((studyVariable) => {
-                      const paramName = studyVariable.getExpression() ?? "N/A";
-                      data[paramName] = "N/A";
+
+                    // init only for variables that have expressions
+                    studyVariablesWithExpressions.forEach((v) => {
+                      const name = v.getExpression()!;
+                      data[name] = "N/A";
                     });
-                    resource.parameter.forEach((param: any) => {
+
+                    (resource.parameter ?? []).forEach((param: any) => {
                       if (param.name !== "Patient") {
                         data[param.name] =
                           StudyService.getParameterValue(param);
@@ -562,7 +621,7 @@ const StudyDetails: FunctionComponent = () => {
                     serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
                     resourceType: "Parameters",
                     searchParameters: {
-                      "_has:List:item:_id": datamartResult.id ?? "",
+                      "_has:List:item:_id": datamartListId || "",
                     },
                   }}
                   onError={onError}

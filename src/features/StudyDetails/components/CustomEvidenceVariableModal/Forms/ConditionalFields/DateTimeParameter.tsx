@@ -23,7 +23,8 @@ const DateTimeParameter: FunctionComponent<{
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
   validateField: (field: string, value: any, isRequired?: boolean) => void;
-}> = ({ value, onChange, errors, validateField }) => {
+  readonly?: boolean;
+}> = ({ value, onChange, errors, validateField, readonly = false }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -80,6 +81,7 @@ const DateTimeParameter: FunctionComponent<{
         value={formatDateTimeForInput(value?.value)}
         onChange={(e) => handleValueChange(e.target.value)}
         isInvalid={!!errors?.criteriaValue}
+        disabled={readonly}
       />
       <Form.Control.Feedback type="invalid">
         {errors?.criteriaValue}

@@ -122,8 +122,8 @@
         "phase": "-- Please choose a phase --"
     },
     "errormessage": {
-        "noinclusioncriteria": "No inclusion criteria found for this study.",
-        "nostudyvariables": "No study variables found for this study.",
+        "noinclusioncriteria": "No inclusion criteria found for this study. Activate the Edit mode to add some.",
+        "nostudyvariables": "No study variables found for this study. Activate the Edit mode to add some.",
         "nogenerateddatamart": "No datamart generation possible, no study variable has been found.",
         "requiredfield": "This field is required !",
         "versionalreadyexists": "This version already exists. Please choose another one.",
@@ -131,7 +131,7 @@
         "nofilterresults": "No results for the selected filter.",
         "noobsoletevariables": "No obsolete variables found for this study.",
         "nonotobsoletevariables": "No non-obsolete variables found for this study.",
-        "nocodesavailable": "No codes available for this ValueSet.",
+        "nocodesavailable": "No codes available for this ValueSet. Please select another one.",
         "fillrequiredfields": "Please fill all required fields.",
         "invalidurl": "Invalid URL !",
         "loadingcomparators": "Error loading comparators:",
@@ -140,14 +140,18 @@
         "nourlontheevidencevariable": "No URL on the selected Evidence Variable ! Please select another one.",
         "errorwhileupdating": "Error while updating ! Please try again.",
         "noselectionmade": "No selection made ! Please select an Evidence Variable.",
-        "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters)."
+        "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters).",
+        "savingparameterization": "Error while saving parameterization. Please try again.",
+        "updatingobsolescence": "Error while updating obsolescence:"
     },
     "message": {
         "studyupdated": "Study updated successfully.",
         "unsavedchanges": "You have unsaved changes. Are you sure you want to leave without saving ?",
         "emptycombination": "Empty Combination - add characteristics",
         "warningcombinationconstraint": "Please note that you do not have a “combination”. If you add a canonical reference before, you will no longer be able to add other characteristics.",
-        "updatesuccessful": "Update successful."
+        "updatesuccessful": "Update successful.",
+        "selectexpression": "Please select an expression. Switch to edit mode for that.",
+        "noeligiblepatients": "No eligible patients were found for the research study."
     },
     "placeholder": {
         "selectstudydesign": "-- Select a study design --",

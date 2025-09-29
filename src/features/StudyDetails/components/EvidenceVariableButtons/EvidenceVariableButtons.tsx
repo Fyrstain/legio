@@ -14,7 +14,14 @@ import styles from "./EvidenceVariableButtons.css";
 
 const EvidenceVariableButtons: FunctionComponent<
   EvidenceVariableButtonsProps
-> = ({ buttonType, editMode, onAction, disabled = false, type, hasExistingCombination }) => {
+> = ({
+  buttonType,
+  editMode,
+  onAction,
+  disabled = false,
+  type,
+  hasExistingCombination,
+}) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -73,22 +80,29 @@ const EvidenceVariableButtons: FunctionComponent<
           key: EvidenceVariableActionType;
           label: string;
         }> = [
-          {
-            key: "newCanonical" as const,
-            label: i18n.t("option.addnewcanonicalreference"),
-          },
-          {
-            key: "existingCanonical" as const,
-            label: i18n.t("option.addexistingcanonicalreference"),
-          },
+          //   {
+          //     key: "newCanonical" as const,
+          //     label: i18n.t("option.addnewcanonicalreference"),
+          //   },
         ];
-        // Add expression only for inclusion criteria
         if (type === "inclusion") {
           options.push({
-            key: "expression" as const,
-            label: i18n.t("option.addexpression"),
+            key: "existingCanonical" as const,
+            label: i18n.t("option.addexistingcriteria"),
+          });
+        } else if (type === "study") {
+          options.push({
+            key: "existingCanonical" as const,
+            label: i18n.t("option.addexistingstudyvariable"),
           });
         }
+        // Add expression only for inclusion criteria
+        // if (type === "inclusion") {
+        //   options.push({
+        //     key: "expression" as const,
+        //     label: i18n.t("option.addexpression"),
+        //   });
+        // }
         // Add combination for inclusion criteria or study variables if no existing combination is present
         if (
           type === "inclusion" ||

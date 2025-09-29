@@ -68,7 +68,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
         // Reset for create mode
         setFormData({
           exclude: false,
-          code: undefined,
+          code: props.type === "study" ? "dataset" : undefined,
           isXor: false,
           combinationId: "",
           combinationDescription: "",
@@ -295,26 +295,28 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
             </Form.Group>
 
             {/* Logic type selection */}
-            <Form.Group className="mb-3">
-              <Form.Label>{i18n.t("label.combinationtype")} *</Form.Label>
-              <Form.Select
-                value={getCurrentLogicType()}
-                onChange={handleLogicTypeChange}
-                isInvalid={!!errors?.code}
-              >
-                <option value="">
-                  {i18n.t("placeholder.selectcombinationtype")}
-                </option>
-                {getLogicTypeOptions().map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+            {props.type === "inclusion" && (
+              <Form.Group className="mb-3">
+                <Form.Label>{i18n.t("label.combinationtype")} *</Form.Label>
+                <Form.Select
+                  value={getCurrentLogicType()}
+                  onChange={handleLogicTypeChange}
+                  isInvalid={!!errors?.code}
+                >
+                  <option value="">
+                    {i18n.t("placeholder.selectcombinationtype")}
                   </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">
-                {errors?.code}
-              </Form.Control.Feedback>
-            </Form.Group>
+                  {getLogicTypeOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.code}
+                </Form.Control.Feedback>
+              </Form.Group>
+            )}
           </Form>
         </Card.Body>
       </Card>

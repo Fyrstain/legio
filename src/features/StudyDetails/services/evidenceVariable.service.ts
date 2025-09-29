@@ -15,6 +15,8 @@ import {
 // Service
 import StudyService from "./study.service";
 
+const MAX_CANONICAL_DEPTH = 5;
+
 /////////////////////////////////////
 //             Client              //
 /////////////////////////////////////
@@ -24,25 +26,34 @@ const fhirKnowledgeClient = new Client({
 });
 
 /**
- * Load all available EvidenceVariables from the server
+ * Load all EvidenceVariables from the FHIR server.
+ * @param filterByActual Optional filter to load only actual=true or actual=false EvidenceVariables
+ * @returns A promise of an array of EvidenceVariableModel instances
  */
-async function loadAllEvidenceVariables(): Promise<EvidenceVariableModel[]> {
+async function loadAllEvidenceVariables(
+  filterByActual?: boolean
+): Promise<EvidenceVariableModel[]> {
   try {
     const bundle = (await fhirKnowledgeClient.search({
       resourceType: "EvidenceVariable",
       searchParams: { _count: 10000 },
     })) as Bundle;
-
-    return (
+    // Map the Bundle entries to EvidenceVariableModel instances
+    let models =
       bundle.entry?.map(
         (entry) => new EvidenceVariableModel(entry.resource as EvidenceVariable)
-      ) || []
-    );
+      ) || [];
+    // Filter by actual if specified
+    if (filterByActual === false) {
+      models = models.filter((model) => model.getActual() === false);
+    } else if (filterByActual === true) {
+      models = models.filter((model) => model.getActual() === true);
+    }
+    return models;
   } catch (error) {
     throw new Error(`Error loading all evidence variables: ${error}`);
   }
 }
-
 /**
  *  Load the inclusion criteria for a study.
  *
@@ -103,56 +114,162 @@ async function loadEvidenceVariables(
 ): Promise<EvidenceVariableModel[]> {
   try {
     if (type === "inclusion") {
-      // 1. Load the ResearchStudy
+      // Existing inclusion logic stays as-is
       const study = await StudyService.loadStudy(studyId);
       const eligibilityRef = study.recruitment?.eligibility?.reference;
-      if (eligibilityRef) {
-        // 2. Extract the ID of the parent EV (ex: "EvidenceVariable/1323" -> "1323")
-        const evidenceVariableId = eligibilityRef.replace(
-          "EvidenceVariable/",
-          ""
-        );
-        // 3. Load the parent EV directly
-        const parentEV = (await fhirKnowledgeClient.read({
-          resourceType: "EvidenceVariable",
-          id: evidenceVariableId,
-        })) as EvidenceVariable;
-        // 4. Return the parent EV (not the children for now)
-        return [new EvidenceVariableModel(parentEV)];
-      }
-      return [];
-    } else {
-      // Extract the study variables from the Study resource
-      const study = await StudyService.loadStudy(studyId);
-      const datamartExtension = study.extension?.find(
-        (ext) =>
-          ext.url ===
-          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Datamart"
-      );
-      // Extract the study variables from the datamart extension
-      if (datamartExtension?.extension) {
-        const models: EvidenceVariableModel[] = [];
-        // For each variable extension, load the referenced EvidenceVariable
-        for (const varExt of datamartExtension.extension) {
-          if (varExt.url === "variable" && varExt.valueReference?.reference) {
-            const evidenceVariableId = varExt.valueReference.reference.replace(
-              "EvidenceVariable/",
-              ""
-            );
-            const ev = (await fhirKnowledgeClient.read({
-              resourceType: "EvidenceVariable",
-              id: evidenceVariableId,
-            })) as EvidenceVariable;
-            models.push(new EvidenceVariableModel(ev));
-          }
-        }
-        return models;
-      }
-      return [];
+      if (!eligibilityRef) return [];
+
+      const evId = eligibilityRef.replace("EvidenceVariable/", "");
+      const root = (await fhirKnowledgeClient.read({
+        resourceType: "EvidenceVariable",
+        id: evId,
+      })) as EvidenceVariable;
+
+      const all = await resolveCanonicalsRecursive([root]);
+      return dedupeEVs(all).map((ev) => new EvidenceVariableModel(ev));
     }
+
+    // type === "study"
+    // 1) Load Study
+    const study = await StudyService.loadStudy(studyId);
+
+    // 2) Find EXT-Datamart and collect variable references
+    const datamartExtension = study.extension?.find(
+      (ext) =>
+        ext.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
+    );
+
+    if (!datamartExtension?.extension?.length) return [];
+
+    const baseRefs = datamartExtension.extension
+      .filter((subExtension) => subExtension.url === "variable" && subExtension.valueReference?.reference)
+      .map((subExtension) => subExtension.valueReference!.reference as string); // e.g., "EvidenceVariable/123"
+
+    if (baseRefs.length === 0) return [];
+
+    // 3) Read the root EVs from references
+    const roots = (
+      await Promise.all(
+        baseRefs.map(async (ref) => {
+          const id = ref.includes("/") ? ref.split("/")[1] : ref;
+          try {
+            return (await fhirKnowledgeClient.read({
+              resourceType: "EvidenceVariable",
+              id,
+            })) as EvidenceVariable;
+          } catch {
+            return null;
+          }
+        })
+      )
+    ).filter(Boolean) as EvidenceVariable[];
+
+    if (roots.length === 0) return [];
+
+    // 4) Resolve canonical chains (definitionCanonical) recursively
+    const all = await resolveCanonicalsRecursive(roots);
+
+    // 5) Dedup + map to models
+    return dedupeEVs(all)
+      .map((ev) => new EvidenceVariableModel(ev));
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
+}
+
+/**
+ * Removes duplicate EvidenceVariable resources.
+ *
+ * @param {EvidenceVariable[]} list - Input array that may contain duplicates.
+ * @returns {EvidenceVariable[]} A new array with duplicates removed.
+ */
+function dedupeEVs(list: EvidenceVariable[]): EvidenceVariable[] {
+  const map = new Map<string, EvidenceVariable>();
+  for (const ev of list) {
+    const key = ev.url || ev.id || JSON.stringify(ev);
+    if (!map.has(key)) map.set(key, ev);
+  }
+  return Array.from(map.values());
+}
+
+/**
+ * Collects all canonical references from an EvidenceVariable.
+ *
+ * @param {EvidenceVariable} ev - The source EvidenceVariable.
+ * @returns {string[]} Unique canonical URLs.
+ */
+function extractCanonicals(ev: EvidenceVariable): string[] {
+  const out: string[] = [];
+  ev.characteristic?.forEach((ch) => {
+    if (ch.definitionCanonical) out.push(ch.definitionCanonical);
+    const combo = ch.definitionByCombination?.characteristic ?? [];
+    combo.forEach((sub) => {
+      if (sub.definitionCanonical) out.push(sub.definitionCanonical);
+    });
+  });
+  return Array.from(new Set(out));
+}
+
+/**
+ * Fetches an EvidenceVariable by canonical URL using the knowledge client.
+ *
+ * @param {string} canonical - Canonical URL.
+ * @returns {Promise<EvidenceVariable|null>} The resolved EV.
+ */
+async function fetchEVByCanonical(
+  canonical: string
+): Promise<EvidenceVariable | null> {
+  try {
+    const [url, version] = canonical.split("|");
+    const bundle = (await fhirKnowledgeClient.search({
+      resourceType: "EvidenceVariable",
+      searchParams: version ? { url, version } : { url },
+    })) as Bundle;
+
+    const entry = bundle.entry?.find(
+      (e) => e.resource?.resourceType === "EvidenceVariable"
+    );
+    return (entry?.resource as EvidenceVariable) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolves all EvidenceVariables reachable via canonical references, recursively.F
+ *
+ * @param {EvidenceVariable[]} seed - Starting EVs.
+ * @param {number} [depth=0] - Current recursion depth.
+ * @param {Set<string>} [seen=new Set()] - Keys of already visited EVs.
+ * @returns {Promise<EvidenceVariable[]>} Deduplicated list of EVs.
+ */
+async function resolveCanonicalsRecursive(
+  seed: EvidenceVariable[],
+  depth = 0,
+  seen = new Set<string>()
+): Promise<EvidenceVariable[]> {
+  if (depth > MAX_CANONICAL_DEPTH || seed.length === 0) return dedupeEVs(seed);
+
+  const nextCanonicals: string[] = [];
+  const acc: EvidenceVariable[] = [];
+
+  for (const ev of seed) {
+    const key = ev.url || ev.id || JSON.stringify(ev);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    acc.push(ev);
+    nextCanonicals.push(...extractCanonicals(ev));
+  }
+
+  const uniqueCanonicals = Array.from(new Set(nextCanonicals));
+  const fetched = (
+    await Promise.all(uniqueCanonicals.map((c) => fetchEVByCanonical(c)))
+  ).filter(Boolean) as EvidenceVariable[];
+
+  if (fetched.length === 0) return dedupeEVs(acc);
+
+  const rec = await resolveCanonicalsRecursive(fetched, depth + 1, seen);
+  return dedupeEVs([...acc, ...rec]);
 }
 
 /**
@@ -228,6 +345,8 @@ async function createSimpleEvidenceVariable(
   selectedExpression?: string
 ): Promise<EvidenceVariable> {
   const evidenceVariable = mapFormDataToEvidenceVariable(data);
+  // New EVs are always actual=true
+  evidenceVariable.actual = true;
   // Add expression characteristic if provided (for study variables only when we need to add a new definitionCanonical)
   if (selectedExpression && data.selectedLibrary) {
     evidenceVariable.characteristic = [
@@ -390,7 +509,7 @@ function mapFormDataToCombination(
   if (combinationData.isXor && combinationData.code === "any-of") {
     combination.definitionByCombination.extension = [
       {
-        url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR",
+        url: "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR",
         valueBoolean: true,
       },
     ];
@@ -400,7 +519,7 @@ function mapFormDataToCombination(
       combination.definitionByCombination.extension?.filter(
         (ext: { url: string }) =>
           ext.url !==
-          "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-Exclusive-OR"
+          "https://www.isis.com/StructureDefinition/EXT-Exclusive-OR"
       );
   }
   return combination;
@@ -594,7 +713,7 @@ function mapFormDataToDefinitionExpression(
   if (expressionData.criteriaValue && expressionData.selectedParameter) {
     definitionExpression.extension = [];
     const paramExtension: any = {
-      url: "https://www.centreantoinelacassagne.org/StructureDefinition/EXT-EVParametrisation",
+      url: "https://www.isis.com/StructureDefinition/EXT-EVParametrisation",
       extension: [
         { url: "name", valueString: expressionData.selectedParameter },
       ],
@@ -825,6 +944,177 @@ async function updateCanonicalCharacteristic(
   }
 }
 
+/**
+ * Generate a simple unique identifier using timestamp + random string
+ * @returns A unique identifier string
+ */
+function generateSimpleId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Create a copy of an existing EvidenceVariable with actual=true
+ * This is used when adding a definitionCanonical - we copy the referenced EV and set actual=true
+ * @param originalEvidenceVariableId The ID of the original EV to copy
+ * @returns The created copy with actual=true
+ */
+async function copyEvidenceVariableWithActualTrue(
+  originalEvidenceVariableId: string
+): Promise<EvidenceVariable> {
+  try {
+    // Load the original EvidenceVariable
+    const originalEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: originalEvidenceVariableId,
+    })) as EvidenceVariable;
+    // Generate a simple unique ID
+    const uniqueId = generateSimpleId();
+    // Create new URL by appending the unique ID to the original URL
+    const newUrl = `${originalEV.url}/${uniqueId}`;
+    // Create a copy with the new URL and actual=true
+    const copiedEV: EvidenceVariable = {
+      ...originalEV,
+      // Remove ID to let the server assign a new one
+      id: undefined,
+      // Set actual=true for the copy
+      actual: true,
+      // Assign the new unique URL
+      url: newUrl,
+    };
+    // Create the new EvidenceVariable
+    const createdEV = (await fhirKnowledgeClient.create({
+      resourceType: "EvidenceVariable",
+      body: copiedEV,
+    })) as EvidenceVariable;
+    return createdEV;
+  } catch (error) {
+    throw new Error(`Failed to copy EvidenceVariable: ${error}`);
+  }
+}
+
+/**
+ * To add an existing canonical criteria to an EvidenceVariable with copying.
+ * This creates a copy of the referenced EV with actual=true for parameterization.
+ *
+ * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
+ * @param referencedEVId The ID of the EV to be copied and referenced.
+ * @param exclude Whether this canonical should be excluded.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
+ * @returns The updated parent EvidenceVariable.
+ */
+async function addExistingCanonicalWithCopy(
+  parentEvidenceVariableId: string,
+  referencedEVId: string,
+  exclude: boolean = false,
+  targetPath?: number[]
+): Promise<EvidenceVariable> {
+  try {
+    // 1. Create a copy of the referenced EV with actual=true
+    const copiedEV = await copyEvidenceVariableWithActualTrue(referencedEVId);
+    // 2. Create canonical data using the copied EV
+    const canonicalData: ExistingCanonicalFormData = {
+      exclude: exclude,
+      canonicalUrl: copiedEV.url!,
+      canonicalId: copiedEV.identifier?.[0]?.value,
+      canonicalDescription: copiedEV.description,
+    };
+    // 3. Add this copied EV as definitionCanonical to the parent EV
+    const updatedParentEV = await addExistingCanonical(
+      parentEvidenceVariableId,
+      canonicalData,
+      targetPath
+    );
+    return updatedParentEV;
+  } catch (error) {
+    throw new Error(`Failed to add existing canonical with copy: ${error}`);
+  }
+}
+
+/**
+ * Update an EvidenceVariable with parameterization
+ * This adds or updates a characteristic.definitionExpression with parameterization
+ */
+async function updateEvidenceVariableWithParameterization(
+  evidenceVariableId: string,
+  parameterization: {
+    selectedExpression: string;
+    selectedParameter: string;
+    criteriaValue: any;
+    libraryUrl?: string;
+  }
+): Promise<EvidenceVariable> {
+  try {
+    // 1. Load the existing EV (the copied one with actual: true)
+    const existingEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // 2. Create the new definitionExpression characteristic
+    const newCharacteristic = {
+      description: `Expression: ${parameterization.selectedExpression}`,
+      definitionExpression: mapFormDataToDefinitionExpression({
+        selectedExpression: parameterization.selectedExpression,
+        selectedParameter: parameterization.selectedParameter,
+        criteriaValue: parameterization.criteriaValue,
+        selectedLibrary: parameterization.libraryUrl
+          ? { url: parameterization.libraryUrl }
+          : undefined,
+      } as ExpressionFormData),
+    };
+    // 3. Add or replace the characteristic
+    if (!existingEV.characteristic) {
+      existingEV.characteristic = [newCharacteristic];
+    } else {
+      // Replace existing definitionExpression or add new one
+      const exprIndex = existingEV.characteristic.findIndex(
+        (char) => char.definitionExpression
+      );
+      if (exprIndex >= 0) {
+        existingEV.characteristic[exprIndex] = newCharacteristic;
+      } else {
+        existingEV.characteristic.push(newCharacteristic);
+      }
+    }
+    // 4. Update the EV
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: existingEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EV with parameterization: ${error}`);
+  }
+}
+
+/**
+ * Update the status of an EvidenceVariable
+ * @param evidenceVariableId The ID of the EV to update
+ * @param newStatus The new status to set
+ * @returns The updated EvidenceVariable
+ */
+async function updateEvidenceVariableStatus(
+  evidenceVariableId: string,
+  newStatus: "active" | "retired" | "draft" | "unknown"
+): Promise<EvidenceVariable> {
+  try {
+    // Load the existing EV
+    const existingEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Update only the status
+    existingEV.status = newStatus;
+    // Save the updated EV
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: existingEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EV status: ${error}`);
+  }
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -845,6 +1135,10 @@ const EvidenceVariableService = {
   updateDefinitionExpression,
   getEvidenceVariableById,
   updateCanonicalCharacteristic,
+  copyEvidenceVariableWithActualTrue,
+  addExistingCanonicalWithCopy,
+  updateEvidenceVariableWithParameterization,
+  updateEvidenceVariableStatus,
 };
 
 export default EvidenceVariableService;

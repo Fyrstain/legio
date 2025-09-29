@@ -18,6 +18,7 @@ interface EvidenceVariableProps {
   hasCharacteristic?: boolean;
   libraryUrl?: string;
   selectedExpression?: string;
+  actual?: boolean;
 }
 
 /**

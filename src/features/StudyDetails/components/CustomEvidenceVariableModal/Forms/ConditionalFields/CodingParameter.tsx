@@ -34,7 +34,8 @@ const CodingParameter: FunctionComponent<{
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
   validateField: (field: string, value: any, isRequired?: boolean) => void;
-}> = ({ value, onChange, errors, validateField }) => {
+  readonly?: boolean;
+}> = ({ value, onChange, errors, validateField, readonly = false }) => {
   /////////////////////////////////////
   //             Client              //
   /////////////////////////////////////
@@ -94,6 +95,35 @@ const CodingParameter: FunctionComponent<{
     loadValueSetsData();
   }, []);
 
+  useEffect(() => {
+    // Complete reset: clear everything
+    setSelectedValueSet("");
+    setAvailableCodes([]);
+    setSelectedCode("");
+    // Then load the real values if they exist
+    if (value?.valueSetUrl) {
+      setSelectedValueSet(value.valueSetUrl);
+      // Load the codes if not in readonly mode
+      if (!readonly) {
+        valueSetLoader.searchValueSet(value.valueSetUrl).then((codes) => {
+          setAvailableCodes(codes || []);
+        });
+      }
+    }
+    // Set the selected code if exists
+    if (value?.value) {
+      let codeToDisplay = "";
+      // Determine the code to display based on the value type
+      if (typeof value.value === "string") {
+        codeToDisplay = value.value;
+      } else if (value.value && typeof value.value === "object") {
+        codeToDisplay = (value.value as any)?.code || "";
+      }
+
+      setSelectedCode(codeToDisplay);
+    }
+  }, [value, readonly]);
+  
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -127,9 +157,13 @@ const CodingParameter: FunctionComponent<{
         const codes = await valueSetLoader.searchValueSet(valueSetUrl);
         setAvailableCodes(codes);
         // Extract the CodeSystem URL from a ValueSet (first include only)
-        const selectedValueSetResource = valueSets.find((vs) => vs.url === valueSetUrl);
+        const selectedValueSetResource = valueSets.find(
+          (vs) => vs.url === valueSetUrl
+        );
         setSelectedCodeSystem(
-          selectedValueSetResource ? getCodeSystemFromValueSet(selectedValueSetResource) : null
+          selectedValueSetResource
+            ? getCodeSystemFromValueSet(selectedValueSetResource)
+            : null
         );
       } catch (error) {
         console.error("Error loading codes:", error);
@@ -177,59 +211,73 @@ const CodingParameter: FunctionComponent<{
   return (
     <>
       {/* ValueSet Selection */}
-      <Form.Group className="mb-2">
-        <Form.Label>{i18n.t("label.valueset")} *</Form.Label>
-        <Form.Select
-          value={selectedValueSet}
-          onChange={(e) => handleValueSetChange(e.target.value)}
-          isInvalid={!!errors?.criteriaValueSet}
-        >
-          <option value="">{i18n.t("placeholder.valueset")}</option>
-          {valueSets.map((vs) => (
-            <option key={vs.url} value={vs.url} title={vs.description}>
-              {vs.name || vs.url}
-            </option>
-          ))}
-        </Form.Select>
-        <Form.Control.Feedback type="invalid">
-          {errors?.criteriaValueSet}
-        </Form.Control.Feedback>
-      </Form.Group>
+      {!readonly && (
+        <Form.Group className="mb-3">
+          <Form.Label>{i18n.t("label.valueset")} *</Form.Label>
+          <Form.Select
+            value={selectedValueSet}
+            onChange={(e) => handleValueSetChange(e.target.value)}
+            isInvalid={!!errors?.criteriaValueSet}
+            disabled={readonly}
+          >
+            <option value="">{i18n.t("placeholder.valueset")}</option>
+            {valueSets.map((vs) => (
+              <option key={vs.url} value={vs.url} title={vs.description}>
+                {vs.name || vs.url}
+              </option>
+            ))}
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors?.criteriaValueSet}
+          </Form.Control.Feedback>
+        </Form.Group>
+      )}
 
       {/* Code Selection */}
-      {selectedValueSet && (
-        <Form.Group className="mb-2">
-          {availableCodes.length === 0 ? (
-            <Alert
-              variant="warning"
-              className="d-flex align-items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faExclamationTriangle} />
-              {i18n.t("errormessage.nocodesavailable")}
-            </Alert>
+      {(readonly || availableCodes.length > 0 || selectedCode) && (
+        <Form.Group className="mb-3">
+          <Form.Label>Code {!readonly && "*"}</Form.Label>
+          {readonly ? (
+            <Form.Control type="text" value={selectedCode} disabled readOnly />
           ) : (
             <>
-              <Form.Label>Code *</Form.Label>
-              <Form.Select
-                value={selectedCode}
-                onChange={(e) => handleCodeSelection(e.target.value)}
-                isInvalid={!!errors?.criteriaCode}
-              >
-                <option value="">{i18n.t("placeholder.selectcode")}</option>
-                {availableCodes.map((code) => (
-                  <option key={code.code} value={code.code}>
-                    {code.display || code.code}
-                  </option>
-                ))}
-              </Form.Select>
+              {availableCodes.length > 0 ? (
+                <Form.Select
+                  value={selectedCode}
+                  onChange={(e) => handleCodeSelection(e.target.value)}
+                  isInvalid={!!errors?.criteriaCode}
+                >
+                  <option value="">{i18n.t("placeholder.selectcode")}</option>
+                  {availableCodes.map((code) => (
+                    <option key={code.code} value={code.code}>
+                      {code.display || code.code}
+                    </option>
+                  ))}
+                </Form.Select>
+              ) : (
+                <Form.Select
+                  value={selectedCode}
+                  onChange={(e) => handleCodeSelection(e.target.value)}
+                  isInvalid={!!errors?.criteriaCode}
+                >
+                  {selectedCode && (
+                    <option value={selectedCode}>{selectedCode}</option>
+                  )}
+                </Form.Select>
+              )}
               <Form.Control.Feedback type="invalid">
                 {errors?.criteriaCode}
               </Form.Control.Feedback>
             </>
-            // TODO : Do the multiple codes selection
-            // TODO : Allow user to add codes (free value)
           )}
         </Form.Group>
+      )}
+      {/* Informative message if ValueSet has no codes */}
+      {!readonly && selectedValueSet && availableCodes.length === 0 && (
+        <Alert variant="info" className="d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faExclamationTriangle} />
+          {i18n.t("errormessage.nocodesavailable")}
+        </Alert>
       )}
     </>
   );
