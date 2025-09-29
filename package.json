@@ -1,9 +1,9 @@
 {
   "name": "legio",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@fyrstain/hl7-front-library": "0.0.19-SNAPSHOT",
+    "@fyrstain/hl7-front-library": "0.0.20-SNAPSHOT",
     "@fyrstain/fhir-front-library": "1.2.0-FINAL", 
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
