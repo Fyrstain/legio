@@ -26,25 +26,34 @@ const fhirKnowledgeClient = new Client({
 });
 
 /**
- * Load all available EvidenceVariables from the server
+ * Load all EvidenceVariables from the FHIR server.
+ * @param filterByActual Optional filter to load only actual=true or actual=false EvidenceVariables
+ * @returns A promise of an array of EvidenceVariableModel instances
  */
-async function loadAllEvidenceVariables(): Promise<EvidenceVariableModel[]> {
+async function loadAllEvidenceVariables(
+  filterByActual?: boolean
+): Promise<EvidenceVariableModel[]> {
   try {
     const bundle = (await fhirKnowledgeClient.search({
       resourceType: "EvidenceVariable",
       searchParams: { _count: 10000 },
     })) as Bundle;
-
-    return (
+    // Map the Bundle entries to EvidenceVariableModel instances
+    let models =
       bundle.entry?.map(
         (entry) => new EvidenceVariableModel(entry.resource as EvidenceVariable)
-      ) || []
-    );
+      ) || [];
+    // Filter by actual if specified
+    if (filterByActual === false) {
+      models = models.filter((model) => model.getActual() === false);
+    } else if (filterByActual === true) {
+      models = models.filter((model) => model.getActual() === true);
+    }
+    return models;
   } catch (error) {
     throw new Error(`Error loading all evidence variables: ${error}`);
   }
 }
-
 /**
  *  Load the inclusion criteria for a study.
  *
@@ -336,6 +345,8 @@ async function createSimpleEvidenceVariable(
   selectedExpression?: string
 ): Promise<EvidenceVariable> {
   const evidenceVariable = mapFormDataToEvidenceVariable(data);
+  // New EVs are always actual=true
+  evidenceVariable.actual = true;
   // Add expression characteristic if provided (for study variables only when we need to add a new definitionCanonical)
   if (selectedExpression && data.selectedLibrary) {
     evidenceVariable.characteristic = [
@@ -933,6 +944,177 @@ async function updateCanonicalCharacteristic(
   }
 }
 
+/**
+ * Generate a simple unique identifier using timestamp + random string
+ * @returns A unique identifier string
+ */
+function generateSimpleId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Create a copy of an existing EvidenceVariable with actual=true
+ * This is used when adding a definitionCanonical - we copy the referenced EV and set actual=true
+ * @param originalEvidenceVariableId The ID of the original EV to copy
+ * @returns The created copy with actual=true
+ */
+async function copyEvidenceVariableWithActualTrue(
+  originalEvidenceVariableId: string
+): Promise<EvidenceVariable> {
+  try {
+    // Load the original EvidenceVariable
+    const originalEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: originalEvidenceVariableId,
+    })) as EvidenceVariable;
+    // Generate a simple unique ID
+    const uniqueId = generateSimpleId();
+    // Create new URL by appending the unique ID to the original URL
+    const newUrl = `${originalEV.url}/${uniqueId}`;
+    // Create a copy with the new URL and actual=true
+    const copiedEV: EvidenceVariable = {
+      ...originalEV,
+      // Remove ID to let the server assign a new one
+      id: undefined,
+      // Set actual=true for the copy
+      actual: true,
+      // Assign the new unique URL
+      url: newUrl,
+    };
+    // Create the new EvidenceVariable
+    const createdEV = (await fhirKnowledgeClient.create({
+      resourceType: "EvidenceVariable",
+      body: copiedEV,
+    })) as EvidenceVariable;
+    return createdEV;
+  } catch (error) {
+    throw new Error(`Failed to copy EvidenceVariable: ${error}`);
+  }
+}
+
+/**
+ * To add an existing canonical criteria to an EvidenceVariable with copying.
+ * This creates a copy of the referenced EV with actual=true for parameterization.
+ *
+ * @param parentEvidenceVariableId The ID of the parent EvidenceVariable to update.
+ * @param referencedEVId The ID of the EV to be copied and referenced.
+ * @param exclude Whether this canonical should be excluded.
+ * @param targetPath Optional path to the target combination within the parent EvidenceVariable.
+ * @returns The updated parent EvidenceVariable.
+ */
+async function addExistingCanonicalWithCopy(
+  parentEvidenceVariableId: string,
+  referencedEVId: string,
+  exclude: boolean = false,
+  targetPath?: number[]
+): Promise<EvidenceVariable> {
+  try {
+    // 1. Create a copy of the referenced EV with actual=true
+    const copiedEV = await copyEvidenceVariableWithActualTrue(referencedEVId);
+    // 2. Create canonical data using the copied EV
+    const canonicalData: ExistingCanonicalFormData = {
+      exclude: exclude,
+      canonicalUrl: copiedEV.url!,
+      canonicalId: copiedEV.identifier?.[0]?.value,
+      canonicalDescription: copiedEV.description,
+    };
+    // 3. Add this copied EV as definitionCanonical to the parent EV
+    const updatedParentEV = await addExistingCanonical(
+      parentEvidenceVariableId,
+      canonicalData,
+      targetPath
+    );
+    return updatedParentEV;
+  } catch (error) {
+    throw new Error(`Failed to add existing canonical with copy: ${error}`);
+  }
+}
+
+/**
+ * Update an EvidenceVariable with parameterization
+ * This adds or updates a characteristic.definitionExpression with parameterization
+ */
+async function updateEvidenceVariableWithParameterization(
+  evidenceVariableId: string,
+  parameterization: {
+    selectedExpression: string;
+    selectedParameter: string;
+    criteriaValue: any;
+    libraryUrl?: string;
+  }
+): Promise<EvidenceVariable> {
+  try {
+    // 1. Load the existing EV (the copied one with actual: true)
+    const existingEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // 2. Create the new definitionExpression characteristic
+    const newCharacteristic = {
+      description: `Expression: ${parameterization.selectedExpression}`,
+      definitionExpression: mapFormDataToDefinitionExpression({
+        selectedExpression: parameterization.selectedExpression,
+        selectedParameter: parameterization.selectedParameter,
+        criteriaValue: parameterization.criteriaValue,
+        selectedLibrary: parameterization.libraryUrl
+          ? { url: parameterization.libraryUrl }
+          : undefined,
+      } as ExpressionFormData),
+    };
+    // 3. Add or replace the characteristic
+    if (!existingEV.characteristic) {
+      existingEV.characteristic = [newCharacteristic];
+    } else {
+      // Replace existing definitionExpression or add new one
+      const exprIndex = existingEV.characteristic.findIndex(
+        (char) => char.definitionExpression
+      );
+      if (exprIndex >= 0) {
+        existingEV.characteristic[exprIndex] = newCharacteristic;
+      } else {
+        existingEV.characteristic.push(newCharacteristic);
+      }
+    }
+    // 4. Update the EV
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: existingEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EV with parameterization: ${error}`);
+  }
+}
+
+/**
+ * Update the status of an EvidenceVariable
+ * @param evidenceVariableId The ID of the EV to update
+ * @param newStatus The new status to set
+ * @returns The updated EvidenceVariable
+ */
+async function updateEvidenceVariableStatus(
+  evidenceVariableId: string,
+  newStatus: "active" | "retired" | "draft" | "unknown"
+): Promise<EvidenceVariable> {
+  try {
+    // Load the existing EV
+    const existingEV = (await fhirKnowledgeClient.read({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+    })) as EvidenceVariable;
+    // Update only the status
+    existingEV.status = newStatus;
+    // Save the updated EV
+    return (await fhirKnowledgeClient.update({
+      resourceType: "EvidenceVariable",
+      id: evidenceVariableId,
+      body: existingEV,
+    })) as EvidenceVariable;
+  } catch (error) {
+    throw new Error(`Failed to update EV status: ${error}`);
+  }
+}
+
 ////////////////////////////
 //        Exports         //
 ////////////////////////////
@@ -953,6 +1135,10 @@ const EvidenceVariableService = {
   updateDefinitionExpression,
   getEvidenceVariableById,
   updateCanonicalCharacteristic,
+  copyEvidenceVariableWithActualTrue,
+  addExistingCanonicalWithCopy,
+  updateEvidenceVariableWithParameterization,
+  updateEvidenceVariableStatus,
 };
 
 export default EvidenceVariableService;

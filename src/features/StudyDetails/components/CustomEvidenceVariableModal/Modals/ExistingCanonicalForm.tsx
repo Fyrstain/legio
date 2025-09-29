@@ -93,8 +93,9 @@ const ExistingCanonicalForm: FunctionComponent<ExistingCanonicalFormProps> = (
     if (props.show) {
       const loadEvidenceVariables = async () => {
         try {
-          const models =
-            await EvidenceVariableService.loadAllEvidenceVariables();
+          const models = await EvidenceVariableService.loadAllEvidenceVariables(
+            false
+          );
           const displayObjects = models.map((model) => model.toDisplayObject());
           setEvidenceVariables(displayObjects);
         } catch (error) {

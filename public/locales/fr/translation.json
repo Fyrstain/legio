@@ -122,15 +122,15 @@
     "phase": "-- Merci de choisir une phase --"
   },
   "errormessage": {
-    "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude.",
-    "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude.",
+    "noinclusioncriteria": "Aucun critère d'inclusion trouvé pour cette étude. Activez le mode édition pour en ajouter.",
+    "nostudyvariables": "Aucune variable d'étude trouvée pour cette étude. Activez le mode édition pour en ajouter.",
     "nogenerateddatamart": "Pas de génération de tableau possible, aucune variable d'étude n'a été trouvée.",
     "requiredfield": "Ce champ est requis !",
     "versionalreadyexists": "Cette version existe déjà. Veuillez en choisir une autre.",
     "errorwhilesavingstudy": "Erreur lors de la sauvegarde de l'étude. Veuillez réessayer.",
     "noobsoletevariables": "Aucune variable obsolète trouvée pour cette étude.",
     "nonotobsoletevariables": "Aucune variable non-obsolète trouvée pour cette étude.",
-    "nocodesavailable": "Aucun code disponible pour ce ValueSet.",
+    "nocodesavailable": "Aucun code disponible pour ce ValueSet. Veuillez en sélectionner un autre.",
     "fillrequiredfields": "Veuillez remplir tous les champs requis.",
     "invalidurl": "URL invalide !",
     "loadingcomparators": "Erreur lors du chargement des comparateurs :",
@@ -139,14 +139,18 @@
     "nourlontheevidencevariable": "Aucune URL sur la Variable d'Évidence sélectionnée ! Veuillez en sélectionner une autre.",
     "errorwhileupdating": "Erreur lors de la mise à jour ! Veuillez réessayer.",
     "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence.",
-    "invalidid": "ID invalide ! Un ID doit être alphanumérique, peut contenir des tirets et des points, et doit comporter entre 1 et 64 caractères."
+    "invalidid": "ID invalide ! Un ID doit être alphanumérique, peut contenir des tirets et des points, et doit comporter entre 1 et 64 caractères.",
+    "savingparameterization": "Erreur lors de l'enregistrement de la paramétrisation. Veuillez réessayer.",
+    "updatingobsolescence": "Erreur lors de la mise à jour de l'obsolescence : "
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
     "unsavedchanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter sans enregistrer ?",
     "emptycombination": "Combinaison vide - ajoutez des caractéristiques",
     "warningcombinationconstraint": "Veuillez noter que vous n'avez pas de “combinaison”. Si vous ajoutez une référence canonique avant, vous ne pourrez plus ajouter d'autres caractéristiques.",
-    "updatesuccessful": "Mise à jour réussie."
+    "updatesuccessful": "Mise à jour réussie.",
+    "selectexpression": "Veuillez sélectionner une expression. Passez en mode édition pour cela.",
+    "noeligiblepatients": "Aucun patient éligible n'a été trouvé pour l'étude de recherche."
   },
   "placeholder": {
     "selectstudydesign": "-- Sélectionnez une conception de l'étude --",

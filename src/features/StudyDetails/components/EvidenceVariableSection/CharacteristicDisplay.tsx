@@ -1,7 +1,7 @@
 // React
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState, useEffect } from "react";
 // React Bootstrap
-import { Accordion, Alert, Badge } from "react-bootstrap";
+import { Accordion, Alert, Badge, Form } from "react-bootstrap";
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarning, faPen } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +9,7 @@ import { faWarning, faPen } from "@fortawesome/free-solid-svg-icons";
 import { EvidenceVariableActionType } from "../../types/evidenceVariable.types";
 // Components
 import EvidenceVariableButtons from "../EvidenceVariableButtons/EvidenceVariableButtons";
+import ParameterizableEvidenceVariableForm from "../CustomEvidenceVariableModal/Forms/ParameterizableEvidenceVariableForm";
 // Front Library
 import { Title } from "@fyrstain/hl7-front-library";
 // Translation
@@ -49,6 +50,28 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   hasExistingCombination = false,
 }) => {
   ////////////////////////////////
+  //           State            //
+  ////////////////////////////////
+
+  // State to manage the canonical EV data for parameterization forms
+  const [canonicalEVData, setCanonicalEVData] = useState<{
+    [key: string]: any;
+  }>({});
+
+  ////////////////////////////////
+  //        LifeCycle           //
+  ////////////////////////////////
+
+  // Load canonical EV data when characteristics change
+  useEffect(() => {
+    characteristics.forEach((characteristic, index) => {
+      if (characteristic.definitionCanonical) {
+        loadCanonicalEVData(characteristic.definitionCanonical, index);
+      }
+    });
+  }, [characteristics]);
+
+  ////////////////////////////////
   //           Actions          //
   ////////////////////////////////
 
@@ -87,6 +110,176 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         return "";
     }
   }
+
+  /**
+   * Load canonical EV data for parameterization
+   * @param canonicalUrl The URL of the canonical evidence variable
+   * @param index The index of the characteristic
+   * @returns A promise that resolves when the data is loaded
+   */
+  const loadCanonicalEVData = async (canonicalUrl: string, index: number) => {
+    if (canonicalEVData[index]) {
+      return;
+    }
+    try {
+      const canonicalEV =
+        await EvidenceVariableService.readEvidenceVariableByUrl(canonicalUrl);
+      if (canonicalEV.entry && canonicalEV.entry.length > 0) {
+        const referencedEV = canonicalEV.entry[0].resource as any;
+        const evModel = new EvidenceVariableModel(referencedEV);
+        // Extract current parameter information if it exists
+        const characteristic = referencedEV.characteristic?.[0];
+        let selectedExpression = "";
+        let selectedParameter = "";
+        let criteriaValue = undefined;
+        // Check if definitionExpression exists
+        if (characteristic?.definitionExpression) {
+          selectedExpression =
+            characteristic.definitionExpression.expression || "";
+          // Extract ALL parameterization extensions
+          const paramExtensions =
+            characteristic.definitionExpression.extension?.filter(
+              (ext: any) =>
+                ext.url ===
+                "https://www.isis.com/StructureDefinition/EXT-EVParametrisation"
+            ) || [];
+          // Simply take the first parameter found
+          // TODO : Handle multiple parameters if needed
+          if (paramExtensions.length > 0) {
+            const firstParamExtension = paramExtensions[0];
+            const nameExt = firstParamExtension.extension?.find(
+              (ext: any) => ext.url === "name"
+            );
+            selectedParameter =
+              nameExt?.valueString || nameExt?.valueCode || "";
+            // Extract the value and determine the type
+            const valueExtension = firstParamExtension.extension?.find(
+              (ext: any) => ext.url === "value"
+            );
+            if (valueExtension) {
+              if (valueExtension.valueInteger !== undefined) {
+                criteriaValue = {
+                  type: "integer",
+                  value: valueExtension.valueInteger,
+                };
+              } else if (valueExtension.valueBoolean !== undefined) {
+                criteriaValue = {
+                  type: "boolean",
+                  value: valueExtension.valueBoolean,
+                };
+              } else if (valueExtension.valueDateTime !== undefined) {
+                criteriaValue = {
+                  type: "datetime",
+                  value: new Date(valueExtension.valueDateTime),
+                };
+              } else if (valueExtension.valueCoding !== undefined) {
+                criteriaValue = {
+                  type: "coding",
+                  value: valueExtension.valueCoding,
+                };
+              }
+            }
+          }
+        }
+        // Prepare the form data
+        const formData = {
+          title: referencedEV.title || "",
+          description: referencedEV.description || "",
+          identifier: referencedEV.identifier?.[0]?.value || "",
+          status: referencedEV.status || "",
+          url: referencedEV.url || "",
+          libraryUrl: evModel.getLibraryUrl(),
+          selectedExpression,
+          selectedParameter,
+          criteriaValue,
+          id: referencedEV.id,
+        };
+        // Update state with the loaded data
+        setCanonicalEVData((prev) => ({ ...prev, [index]: formData }));
+      }
+    } catch (error) {
+      console.error("Error loading canonical EV data:", error);
+    }
+  };
+
+  /**
+   * Handle saving parameterized data
+   * @param index The index of the characteristic
+   * @param data The parameterized data to save
+   */
+  const handleSaveParameterization = async (
+    index: number,
+    data: {
+      selectedExpression: string;
+      selectedParameter: string;
+      criteriaValue: any;
+    }
+  ) => {
+    try {
+      console.log("Saving parameterization:", data);
+      const evData = canonicalEVData[index];
+      if (!evData || !evData.id) {
+        throw new Error("Invalid EV data or ID");
+      }
+      // Call service to update the EV with parameterization
+      await EvidenceVariableService.updateEvidenceVariableWithParameterization(
+        evData.id,
+        {
+          selectedExpression: data.selectedExpression,
+          selectedParameter: data.selectedParameter,
+          criteriaValue: data.criteriaValue,
+          libraryUrl: evData.libraryUrl,
+        }
+      );
+      // Update local state to reflect changes
+      setCanonicalEVData((prev) => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          selectedExpression: data.selectedExpression,
+          selectedParameter: data.selectedParameter,
+          criteriaValue: data.criteriaValue,
+        },
+      }));
+      // Notify user of success
+      alert(i18n.t("message.updatesuccessful"));
+    } catch (error) {
+      console.error("Error saving parameterization:", error);
+      alert(`${i18n.t("error.savingparameterization")} ${error}`);
+    }
+  };
+
+  /**
+   * Handle obsolescence toggle for canonical EV
+   */
+  const handleObsolescenceToggle = async (index: number) => {
+    try {
+      const evData = canonicalEVData[index];
+      if (!evData || !evData.id) {
+        throw new Error("Invalid EV data or ID for obsolescence toggle");
+      }
+      // Determine new status based on current status
+      const currentStatus = evData.status;
+      const newStatus = currentStatus === "retired" ? "active" : "retired";
+      // Call service to update the EV status
+      await EvidenceVariableService.updateEvidenceVariableStatus(
+        evData.id,
+        newStatus
+      );
+      // Update local state to reflect new status
+      setCanonicalEVData((prev) => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          status: newStatus,
+        },
+      }));
+      alert(i18n.t("message.updatesuccessful"));
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert(`${i18n.t("error.updatingobsolescence")} ${error}`);
+    }
+  };
 
   /**
    * Handles an action for a characteristic.
@@ -261,11 +454,15 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                       "N/A"
                     }`}
                   />
+                  {/* Excluded Badge */}
+                  {characteristic.exclude && (
+                    <Badge bg="warning">{i18n.t("label.excluded")}</Badge>
+                  )}
                   {editMode && (
                     <FontAwesomeIcon
                       className="actionIcon"
                       icon={faPen}
-                      size="xl"
+                      size="lg"
                       title={i18n.t("button.editthecharacteristic")}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -284,6 +481,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                   )}
                 </div>
               )}
+
               {/* DefinitionCanonical Header */}
               {characteristic.definitionCanonical && (
                 <div className="d-flex align-items-center gap-4">
@@ -291,24 +489,39 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     level={3}
                     content={`${i18n.t("title.canonical")} - ${
                       characteristic.linkId ||
-                      characteristic.definitionCanonical.name ||
+                      (canonicalEVData[index] &&
+                        canonicalEVData[index].title) ||
                       "N/A"
                     }`}
                   />
-                  {editMode && (
-                    <FontAwesomeIcon
-                      className="actionIcon"
-                      icon={faPen}
-                      size="xl"
-                      title={i18n.t("button.editthecharacteristic")}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditCanonical(characteristic, index);
-                      }}
-                    />
+                  {/* Excluded Badge */}
+                  {characteristic.exclude && (
+                    <Badge bg="warning">{i18n.t("label.excluded")}</Badge>
+                  )}
+                  {/* Obsolecence toggle/switch - only in edit mode */}
+                  {canonicalEVData[index] && (
+                    <Form>
+                      <Form.Check
+                        type="switch"
+                        id={`obsolescence-switch-${index}`}
+                        label={
+                          canonicalEVData[index].status === "retired"
+                            ? i18n.t("label.obsolete")
+                            : i18n.t("label.notobsolete")
+                        }
+                        checked={canonicalEVData[index].status !== "retired"}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleObsolescenceToggle(index);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={!editMode}
+                      />
+                    </Form>
                   )}
                 </div>
               )}
+
               {/* DefinitionExpression Header */}
               {characteristic.definitionExpression && (
                 <div className="d-flex align-items-center gap-4">
@@ -320,11 +533,15 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                       "N/A"
                     }`}
                   />
+                  {/* Excluded Badge */}
+                  {characteristic.exclude && (
+                    <Badge bg="warning">{i18n.t("label.excluded")}</Badge>
+                  )}
                   {editMode && (
                     <FontAwesomeIcon
                       className="actionIcon"
                       icon={faPen}
-                      size="xl"
+                      size="lg"
                       title={i18n.t("button.editthecharacteristic")}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -337,39 +554,55 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
             </Accordion.Header>
 
             <Accordion.Body>
-              {/* Description */}
-              <div className="d-flex gap-1">
-                <div className="fw-bold">Description : </div>
-                {characteristic.description || "N/A"}
-              </div>
-              {/* Excluded Badge */}
-              {characteristic.exclude && (
-                <Badge bg="warning" className="mb-2">
-                  {i18n.t("label.excluded")}
-                </Badge>
-              )}
-              {/* Recursion for combinations */}
-              {characteristic.definitionByCombination?.characteristic?.length >
-                0 && (
-                <CharacteristicDisplay
-                  characteristics={
-                    characteristic.definitionByCombination.characteristic
-                  }
-                  editMode={editMode}
-                  currentPath={[...currentPath, index]}
-                  onAction={onAction}
+              {/* For DefinitionCanonical - Show the parameterization form */}
+              {characteristic.definitionCanonical && canonicalEVData[index] && (
+                <ParameterizableEvidenceVariableForm
+                  evidenceVariableData={canonicalEVData[index]}
+                  selectedExpression={canonicalEVData[index].selectedExpression}
+                  selectedParameter={canonicalEVData[index].selectedParameter}
+                  criteriaValue={canonicalEVData[index].criteriaValue}
+                  onSave={(data) => handleSaveParameterization(index, data)}
+                  readonly={!editMode}
+                  type={type}
                 />
               )}
-              {/* Message if combination is empty */}
-              {characteristic.definitionByCombination &&
-                (!characteristic.definitionByCombination.characteristic ||
-                  characteristic.definitionByCombination.characteristic
-                    .length === 0) && (
-                  <Alert variant="warning" className="mt-3">
-                    <FontAwesomeIcon icon={faWarning} className="me-2" />
-                    {i18n.t("message.emptycombination")}
-                  </Alert>
-                )}
+
+              {/* For other types - show description as before */}
+              {(characteristic.definitionByCombination ||
+                characteristic.definitionExpression) && (
+                <>
+                  <div className="d-flex gap-1">
+                    <div className="fw-bold">Description : </div>
+                    {characteristic.description || "N/A"}
+                  </div>
+
+                  {/* Recursion for combinations */}
+                  {characteristic.definitionByCombination?.characteristic
+                    ?.length > 0 && (
+                    <CharacteristicDisplay
+                      characteristics={
+                        characteristic.definitionByCombination.characteristic
+                      }
+                      editMode={editMode}
+                      currentPath={[...currentPath, index]}
+                      onAction={onAction}
+                      type={type}
+                      hasExistingCombination={hasExistingCombination}
+                    />
+                  )}
+
+                  {/* Message if combination is empty */}
+                  {characteristic.definitionByCombination &&
+                    (!characteristic.definitionByCombination.characteristic ||
+                      characteristic.definitionByCombination.characteristic
+                        .length === 0) && (
+                      <Alert variant="warning" className="mt-3">
+                        <FontAwesomeIcon icon={faWarning} className="me-2" />
+                        {i18n.t("message.emptycombination")}
+                      </Alert>
+                    )}
+                </>
+              )}
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>

@@ -106,6 +106,9 @@ const StudyDetails: FunctionComponent = () => {
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
     useState<boolean>(false);
 
+  // A flag to indicate if no patients were found during cohorting, to show a warning
+  const [noPatientsFound, setNoPatientsFound] = useState(false);
+
   //////////////////////////////
   //           Error          //
   //////////////////////////////
@@ -320,8 +323,16 @@ const StudyDetails: FunctionComponent = () => {
       const response = await StudyService.generateCohortAndDatamart(
         studyId ?? ""
       );
-      setDatamartResult(response.datamartResult);
-      setIsExistingDatamartListId(true);
+      if (response.datamartResult === null) {
+        // No patients found
+        setNoPatientsFound(true);
+        setIsExistingDatamartListId(false);
+        alert(i18n.t("message.noeligiblepatients"));
+      } else {
+        setDatamartResult(response.datamartResult);
+        setIsExistingDatamartListId(true);
+        setNoPatientsFound(false);
+      }
     } catch (error) {
       onError();
     } finally {
@@ -559,8 +570,16 @@ const StudyDetails: FunctionComponent = () => {
           </Button>
         </div>
 
+        {/* Warning message if no patients were found during cohorting */}
+        {noPatientsFound && (
+          <Alert variant="warning" className="mt-4">
+            <FontAwesomeIcon icon={faWarning} className="me-2" />
+            {i18n.t("message.noeligiblepatients")}
+          </Alert>
+        )}
+
         {/* Section to show the table with the generated datamart  */}
-        {datamartResult && (
+        {datamartResult && !noPatientsFound && (
           <div className="mt-4">
             {studyVariablesWithExpressions.length > 0 && (
               <>

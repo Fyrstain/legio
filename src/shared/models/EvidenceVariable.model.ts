@@ -76,6 +76,16 @@ export class EvidenceVariableModel {
   }
 
   /**
+   * To get the actual property of the EvidenceVariable
+   * This property indicates whether the EV is a "header" (actual=true) or a referenced one (actual=false)
+   *
+   * @returns The actual boolean value, or undefined if not set
+   */
+  getActual(): boolean | undefined {
+    return this.fhirResource.actual;
+  }
+
+  /**
    * To get the exclude flag of the EvidenceVariable
    *
    * @returns The exclude flag of the EvidenceVariable, or undefined if not set
@@ -177,7 +187,7 @@ export class EvidenceVariableModel {
       ) ?? false
     );
   }
-  
+
   /**
    * Get the underlying FHIR resource
    * @returns The FHIR EvidenceVariable resource
@@ -271,6 +281,7 @@ export class EvidenceVariableModel {
       hasCharacteristic: this.hasCharacteristic(),
       libraryUrl: this.getLibraryUrl(),
       selectedExpression: this.getExpression(),
+      actual: this.getActual(),
     };
   }
 }

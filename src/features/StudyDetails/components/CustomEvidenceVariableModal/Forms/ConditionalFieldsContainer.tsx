@@ -5,10 +5,6 @@ import BooleanParameter from "./ConditionalFields/BooleanParameter";
 import IntegerParameter from "./ConditionalFields/IntegerParameter";
 import DateTimeParameter from "./ConditionalFields/DateTimeParameter";
 import CodingParameter from "./ConditionalFields/CodingParameter";
-// React Bootstrap
-import { Form } from "react-bootstrap";
-// Translation
-import i18n from "i18next";
 // Types
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // Hooks
@@ -19,7 +15,8 @@ const ConditionalFieldsContainer: FunctionComponent<{
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
   validateField: (field: string, value: any, isRequired?: boolean) => void;
-}> = ({ value, onChange, errors, validateField }) => {
+  readonly?: boolean;
+}> = ({ value, onChange, errors, validateField, readonly = false }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -31,13 +28,43 @@ const ConditionalFieldsContainer: FunctionComponent<{
   const renderConditionalField = () => {
     switch (value.type) {
       case "boolean":
-        return <BooleanParameter value={value} onChange={onChange} />;
+        return (
+          <BooleanParameter
+            value={value}
+            onChange={readonly ? () => {} : onChange}
+            readonly={readonly}
+          />
+        );
       case "integer":
-        return <IntegerParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+        return (
+          <IntegerParameter
+            value={value}
+            onChange={readonly ? () => {} : onChange}
+            readonly={readonly}
+            errors={errors}
+            validateField={validateField}
+          />
+        );
       case "datetime":
-        return <DateTimeParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+        return (
+          <DateTimeParameter
+            value={value}
+            onChange={readonly ? () => {} : onChange}
+            readonly={readonly}
+            errors={errors}
+            validateField={validateField}
+          />
+        );
       case "coding":
-        return <CodingParameter value={value} onChange={onChange} errors={errors} validateField={validateField} />;
+        return (
+          <CodingParameter
+            value={value}
+            onChange={readonly ? () => {} : onChange}
+            readonly={readonly}
+            errors={errors}
+            validateField={validateField}
+          />
+        );
       default:
         return null;
     }
@@ -47,22 +74,7 @@ const ConditionalFieldsContainer: FunctionComponent<{
   //                Content                  //
   /////////////////////////////////////////////
 
-  return (
-    <>
-      <Form.Group className="mb-3">
-        <Form.Label>{i18n.t("label.parametertype")}</Form.Label>
-        <Form.Control
-          type="text"
-          value={
-            value.type ?? i18n.t(`label.filltheotherfields`)
-          }
-          disabled
-          readOnly
-        />
-      </Form.Group>
-      {renderConditionalField()}
-    </>
-  );
+  return <>{renderConditionalField()}</>;
 };
 
 export default ConditionalFieldsContainer;

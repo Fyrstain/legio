@@ -85,7 +85,7 @@ const ExistingInclusionCriteriaForm: FunctionComponent<
       const loadEvidenceVariables = async () => {
         try {
           const models =
-            await EvidenceVariableService.loadAllEvidenceVariables();
+            await EvidenceVariableService.loadAllEvidenceVariables(true);
           const displayObjects = models.map((model) => model.toDisplayObject());
           setEvidenceVariables(displayObjects);
         } catch (error) {

@@ -23,7 +23,8 @@ const IntegerParameter: FunctionComponent<{
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
   validateField: (field: string, value: any, isRequired?: boolean) => void;
-}> = ({ value, onChange, errors, validateField }) => {
+  readonly?: boolean;
+}> = ({ value, onChange, errors, validateField, readonly = false }) => {
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -54,6 +55,7 @@ const IntegerParameter: FunctionComponent<{
         value={value?.value?.toString() || ""}
         onChange={(e) => handleValueChange(e.target.value)}
         isInvalid={!!errors?.criteriaValue}
+        disabled={readonly}
       />
       <Form.Control.Feedback type="invalid">
         {errors?.criteriaValue}
