@@ -1,0 +1,13 @@
+#dropdown-buttons.dropdown-toggle::after {
+    display: inline-block !important;
+}
+
+.actionIcon {
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  color: var(--secondary-color);
+}
+
+.actionIcon:hover {
+  color: var(--primary-color);
+}
