@@ -622,6 +622,7 @@ const StudyDetails: FunctionComponent = () => {
                     resourceType: "Parameters",
                     searchParameters: {
                       "_has:List:item:_id": datamartListId || "",
+                      "_sort": "-_lastUpdated",
                     },
                   }}
                   onError={onError}
