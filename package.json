@@ -1,6 +1,6 @@
 {
   "name": "legio",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "dependencies": {
     "@fyrstain/hl7-front-library": "0.0.20-SNAPSHOT",
