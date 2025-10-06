@@ -26,6 +26,9 @@ i18n
   .init({
     fallbackLng: 'en',
     supportedLngs: ['fr', 'en'],
+     backend: {
+      loadPath: `${process.env.PUBLIC_URL}/locales/{{lng}}/{{ns}}.json`,
+    }
   })
 
 dayjs.extend(relativeTime);
