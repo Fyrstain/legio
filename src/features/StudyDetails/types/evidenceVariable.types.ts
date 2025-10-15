@@ -65,7 +65,7 @@ interface EvidenceVariableSectionProps {
 /**
  * Type for the inclusion criteria types
  */
-type InclusionCriteriaTypes = "boolean" | "integer" | "datetime" | "coding";
+type InclusionCriteriaTypes = "boolean" | "integer" | "datetime" | "coding" | "string";
 
 /**
  * Interface for the value of the Inclusion Criteria

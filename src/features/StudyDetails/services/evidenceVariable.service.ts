@@ -1038,8 +1038,7 @@ async function updateEvidenceVariableWithParameterization(
   evidenceVariableId: string,
   parameterization: {
     selectedExpression: string;
-    selectedParameter: string;
-    criteriaValue: any;
+    parameterValues: { [parameterName: string]: any };
     libraryUrl?: string;
   }
 ): Promise<EvidenceVariable> {
@@ -1049,19 +1048,128 @@ async function updateEvidenceVariableWithParameterization(
       resourceType: "EvidenceVariable",
       id: evidenceVariableId,
     })) as EvidenceVariable;
+
     // 2. Create the new definitionExpression characteristic
+    const definitionExpression: any = {
+      name: parameterization.selectedExpression,
+      description: `Expression: ${parameterization.selectedExpression}`,
+      language: "text/cql-identifier",
+      expression: parameterization.selectedExpression,
+      reference: parameterization.libraryUrl,
+    };
+
+    // 3. Add parameterization extensions for all parameters
+    if (parameterization.parameterValues && Object.keys(parameterization.parameterValues).length > 0) {
+      definitionExpression.extension = [];
+
+    // Grab the existing expression so we can preserve 'type' and 'valueSet'
+     const existingDefExpr =
+       existingEV.characteristic
+         ?.find(c => c.definitionExpression?.name === parameterization.selectedExpression)
+         ?.definitionExpression;
+
+
+      Object.entries(parameterization.parameterValues).forEach(([paramName, criteriaValue]) => {
+        if (criteriaValue) {
+          const paramExtension: any = {
+            url: "https://www.isis.com/StructureDefinition/EXT-EVParametrisation",
+            extension: [
+              { url: "name", valueString: paramName },
+            ],
+          };
+
+           // Preserve existing 'type' and 'valueSet' if present on the EV
+           const existingParamExt = existingDefExpr?.extension?.find(
+             (ext: any) =>
+               ext.url === "https://www.isis.com/StructureDefinition/EXT-EVParametrisation" &&
+               ext.extension?.some((e: any) => e.url === "name" && e.valueString === paramName)
+           );
+           if (existingParamExt?.extension) {
+             const keep = existingParamExt.extension.filter(
+               (e: any) => e.url === "type" || e.url === "valueSet"
+             );
+             if (keep.length) paramExtension.extension.push(...keep);
+           }
+
+           // If the UI provided type/valueSet, ensure they exist too
+           if (criteriaValue.type && !paramExtension.extension.some((e: any) => e.url === "type")) {
+             // Keep the existing capitalisation used in your EV (e.g. "Coding")
+             const valueCode = criteriaValue.type === "coding" ? "Coding" : String(criteriaValue.type);
+             paramExtension.extension.push({ url: "type", valueCode });
+           }
+           if (criteriaValue.valueSetUrl && !paramExtension.extension.some((e: any) => e.url === "valueSet")) {
+             paramExtension.extension.push({ url: "valueSet", valueCanonical: criteriaValue.valueSetUrl });
+           }
+
+
+          // Add the value based on the type
+          switch (criteriaValue.type) {
+            case "integer":
+              if (criteriaValue.value !== undefined) {
+                paramExtension.extension.push({
+                  url: "value",
+                  valueInteger: criteriaValue.value,
+                });
+              }
+              break;
+            case "boolean":
+              if (criteriaValue.value !== undefined) {
+                paramExtension.extension.push({
+                  url: "value",
+                  valueBoolean: criteriaValue.value,
+                });
+              }
+              break;
+            case "datetime":
+              if (criteriaValue.value !== undefined) {
+                paramExtension.extension.push({
+                  url: "value",
+                  valueDateTime: criteriaValue.value,
+                });
+              }
+              break;
+            case "coding":
+              if (
+                criteriaValue.value !== undefined &&
+                typeof criteriaValue.value === "object" &&
+                "system" in criteriaValue.value &&
+                "code" in criteriaValue.value
+              ) {
+                paramExtension.extension.push({
+                  url: "value",
+                  valueCoding: {
+                    system: criteriaValue.value.system,
+                    code: criteriaValue.value.code,
+                  },
+                });
+              }
+              break;
+            case "string":
+              if (criteriaValue.value !== undefined) {
+                paramExtension.extension.push({
+                  url: "value",
+                  valueString: criteriaValue.value,
+                });
+              }
+              break;
+            default:
+              console.error(
+                "Type of criteriaValue not handled:",
+                criteriaValue.type
+              );
+          }
+
+          definitionExpression.extension.push(paramExtension);
+        }
+      });
+    }
+
     const newCharacteristic = {
       description: `Expression: ${parameterization.selectedExpression}`,
-      definitionExpression: mapFormDataToDefinitionExpression({
-        selectedExpression: parameterization.selectedExpression,
-        selectedParameter: parameterization.selectedParameter,
-        criteriaValue: parameterization.criteriaValue,
-        selectedLibrary: parameterization.libraryUrl
-          ? { url: parameterization.libraryUrl }
-          : undefined,
-      } as ExpressionFormData),
+      definitionExpression,
     };
-    // 3. Add or replace the characteristic
+
+    // 4. Add or replace the characteristic
     if (!existingEV.characteristic) {
       existingEV.characteristic = [newCharacteristic];
     } else {
@@ -1075,7 +1183,7 @@ async function updateEvidenceVariableWithParameterization(
         existingEV.characteristic.push(newCharacteristic);
       }
     }
-    // 4. Update the EV
+    // 5. Update the EV
     return (await fhirKnowledgeClient.update({
       resourceType: "EvidenceVariable",
       id: evidenceVariableId,

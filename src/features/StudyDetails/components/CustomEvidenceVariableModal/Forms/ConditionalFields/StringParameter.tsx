@@ -10,15 +10,15 @@ import i18n from "i18next";
 import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
 /**
- * Component for handling integer parameters in inclusion criteria.
+ * Component for handling string parameters in inclusion criteria.
  *
  * @param value - The current InclusionCriteriaValue object
  * @param onChange - Callback function to handle changes to the value
  * @param errors - Optional errors object for validation messages
  * @param validateField - Function to validate the updated field
- * @returns JSX.Element representing the integer parameter form
+ * @returns JSX.Element representing the string parameter form
  */
-const IntegerParameter: FunctionComponent<{
+const StringParameter: FunctionComponent<{
   value: InclusionCriteriaValue;
   onChange: (value: InclusionCriteriaValue) => void;
   errors?: ValidationErrors;
@@ -30,16 +30,15 @@ const IntegerParameter: FunctionComponent<{
   ////////////////////////////////
 
   /**
-   * Change handler for the integer value input field
-   * @param newValue - The new numeric value (as string) entered by the user
+   * Change handler for the string value input field
+   * @param newValue - The new string value entered by the user
    */
   const handleValueChange = (newValue: string) => {
-    const numericValue = newValue ? parseInt(newValue) : undefined;
     onChange({
       ...value,
-      value: numericValue,
+      value: newValue,
     });
-    validateField("criteriaValue", numericValue, true);
+    validateField("criteriaValue", newValue, true);
   };
 
   /////////////////////////////////////////////
@@ -49,7 +48,7 @@ const IntegerParameter: FunctionComponent<{
   return (
     <Form.Group>
       <Form.Control
-        type="number"
+        type="text"
         placeholder={i18n.t("placeholder.value")}
         value={value?.value?.toString() || ""}
         onChange={(e) => handleValueChange(e.target.value)}
@@ -63,4 +62,4 @@ const IntegerParameter: FunctionComponent<{
   );
 };
 
-export default IntegerParameter;
+export default StringParameter;
