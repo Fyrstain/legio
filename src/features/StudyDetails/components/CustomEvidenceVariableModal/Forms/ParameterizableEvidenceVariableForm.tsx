@@ -18,6 +18,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 
 ////////////////////////////////
+//           Utils            //
+////////////////////////////////
+
+const capitalize = (str: string) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+
+////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
@@ -225,11 +232,11 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
                 };
 
               return (
-                <div key={parameter.name} className="col-12 mb-2">
-                  <div className="row align-items-start g-2">
+                <div key={parameter.name} className="col-12">
+                  <div className="">
                     <div className="col-auto" style={{ minWidth: "150px", maxWidth: "250px" }}>
-                      <Form.Label className="mt-2 fw-semibold text-break">
-                        {parameter.name}
+                      <Form.Label className="text-break">
+                        {capitalize(parameter.name)}
                       </Form.Label>
                     </div>
                     <div className="col">
