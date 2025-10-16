@@ -65,7 +65,6 @@ const CodingParameter: FunctionComponent<{
     setAvailableCodes([]);
     setSelectedCode("");
     setSelectedCodeSystem(null);
-
     // Then load the real values if they exist
     if (value?.valueSetUrl) {
       setSelectedValueSet(value.valueSetUrl);
@@ -102,7 +101,6 @@ const CodingParameter: FunctionComponent<{
    */
   const handleCodeSelection = (codeValue: string) => {
     setSelectedCode(codeValue);
-
     // If we have a CodeSystem from the ValueSet, create a proper Coding object
     if (selectedCodeSystem) {
       const codingValue = {
@@ -122,7 +120,6 @@ const CodingParameter: FunctionComponent<{
         valueSetUrl: selectedValueSet,
       });
     }
-
     validateField("criteriaCode", codeValue, true);
   };
 

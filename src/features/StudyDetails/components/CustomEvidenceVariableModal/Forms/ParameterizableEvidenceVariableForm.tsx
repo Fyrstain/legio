@@ -32,9 +32,9 @@ interface ParameterizableEvidenceVariableFormProps {
   // Data of the EvidenceVariable to display (read-only fields)
   evidenceVariableData: FormEvidenceVariableData & {
     availableParameters?: Array<{
-      name: string,
-      type: string,
-      valueSetUrl?: string
+      name: string;
+      type: string;
+      valueSetUrl?: string;
     }>;
   };
   // Expression currently selected (can be empty)
@@ -60,7 +60,6 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   parameterValues = {},
   onSave,
   readonly = false,
-  type = "inclusion",
 }) => {
   ////////////////////////////////
   //           State            //
@@ -90,7 +89,6 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
-
 
   /**
    * Handle criteria value change for a specific parameter
@@ -123,10 +121,14 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
       if (cv) {
         // Different validation based on type
         if (cv.type === "coding") {
-          const codeError = validateField(`${paramName}_code`, cv.value, true);
+          const codeError = validateField(`${paramName}_criteriaCode`, cv.value, true);
           if (codeError) parameterErrors = true;
-        } else if (cv.type === "datetime" || cv.type === "integer") {
-          const valueError = validateField(`${paramName}_value`, cv.value, true);
+        } else if (cv.type === "datetime" || cv.type === "integer" || cv.type === "string") {
+          const valueError = validateField(
+            `${paramName}_criteriaValue`,
+            cv.value,
+            true
+          );
           if (valueError) parameterErrors = true;
         }
       }
@@ -221,38 +223,50 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
           <div className="row g-3">
             {availableParameters.map((parameter) => {
               // Get or create the value for this parameter
-              const paramValue =
-                currentParameterValues[parameter.name] || {
-                  type: parameter.type.toLowerCase() as any,
-                  value: parameter.type.toLowerCase() === "boolean" ? false : undefined,
-                  ...(parameter.valueSetUrl &&
-                    parameter.type.toLowerCase() === "coding" && {
-                      valueSetUrl: parameter.valueSetUrl,
-                    }),
-                };
-
+              const paramValue = currentParameterValues[parameter.name] || {
+                type: parameter.type.toLowerCase() as any,
+                value:
+                  parameter.type.toLowerCase() === "boolean"
+                    ? false
+                    : undefined,
+                ...(parameter.valueSetUrl &&
+                  parameter.type.toLowerCase() === "coding" && {
+                    valueSetUrl: parameter.valueSetUrl,
+                  }),
+              };
+              // Create parameter-specific errors object
+              const paramErrors: { [key: string]: string } = {};
+              if (paramValue.type === "coding") {
+                if (errors?.[`${parameter.name}_criteriaCode`]) {
+                  paramErrors.criteriaCode = errors[`${parameter.name}_criteriaCode`];
+                }
+              } else {
+                if (errors?.[`${parameter.name}_criteriaValue`]) {
+                  paramErrors.criteriaValue = errors[`${parameter.name}_criteriaValue`];
+                }
+              }
               return (
                 <div key={parameter.name} className="col-12">
-                  <div className="">
-                    <div className="col-auto" style={{ minWidth: "150px", maxWidth: "250px" }}>
-                      <Form.Label className="text-break">
-                        {capitalize(parameter.name)}
-                      </Form.Label>
-                    </div>
-                    <div className="col">
-                      <ConditionalFieldsContainer
-                        value={paramValue}
-                        onChange={
-                          readonly
-                            ? () => {}
-                            : (value) => handleCriteriaValueChange(parameter.name, value)
-                        }
-                        errors={readonly ? {} : errors}
-                        validateField={validateField}
-                        readonly={readonly}
-                      />
-                    </div>
-                  </div>
+                  <Form.Group>
+                    <Form.Label className="text-break">
+                      {capitalize(parameter.name)}
+                    </Form.Label>
+                    <ConditionalFieldsContainer
+                      value={paramValue}
+                      onChange={
+                        readonly
+                          ? () => {}
+                          : (value) =>
+                              handleCriteriaValueChange(parameter.name, value)
+                      }
+                      errors={readonly ? {} : paramErrors}
+                      validateField={(field, value, isRequired) => {
+                        // Prefix the field name with parameter name for unique validation
+                        validateField(`${parameter.name}_${field}`, value, isRequired);
+                      }}
+                      readonly={readonly}
+                    />
+                  </Form.Group>
                 </div>
               );
             })}

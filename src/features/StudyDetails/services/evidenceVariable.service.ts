@@ -1067,8 +1067,6 @@ async function updateEvidenceVariableWithParameterization(
        existingEV.characteristic
          ?.find(c => c.definitionExpression?.name === parameterization.selectedExpression)
          ?.definitionExpression;
-
-
       Object.entries(parameterization.parameterValues).forEach(([paramName, criteriaValue]) => {
         if (criteriaValue) {
           const paramExtension: any = {
