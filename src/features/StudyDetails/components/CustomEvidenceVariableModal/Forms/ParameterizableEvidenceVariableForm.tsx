@@ -162,6 +162,29 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
     setCurrentParameterValues(initialData.parameterValues || {});
   };
 
+  /**
+   * Get parameter-specific errors for a given parameter
+   * @param parameterName Name of the parameter
+   * @param parameterType Type of the parameter value (coding, integer, datetime, etc.)
+   * @returns Object containing the relevant errors for this parameter
+   */
+  const getParameterErrors = (
+    parameterName: string,
+    parameterType: string
+  ): { [key: string]: string } => {
+    const paramErrors: { [key: string]: string } = {};
+    if (parameterType === "coding") {
+      if (errors?.[`${parameterName}_criteriaCode`]) {
+        paramErrors.criteriaCode = errors[`${parameterName}_criteriaCode`];
+      }
+    } else {
+      if (errors?.[`${parameterName}_criteriaValue`]) {
+        paramErrors.criteriaValue = errors[`${parameterName}_criteriaValue`];
+      }
+    }
+    return paramErrors;
+  };
+
   /////////////////////////////////////////////
   //                Content                  //
   /////////////////////////////////////////////
@@ -234,17 +257,7 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
                     valueSetUrl: parameter.valueSetUrl,
                   }),
               };
-              // Create parameter-specific errors object
-              const paramErrors: { [key: string]: string } = {};
-              if (paramValue.type === "coding") {
-                if (errors?.[`${parameter.name}_criteriaCode`]) {
-                  paramErrors.criteriaCode = errors[`${parameter.name}_criteriaCode`];
-                }
-              } else {
-                if (errors?.[`${parameter.name}_criteriaValue`]) {
-                  paramErrors.criteriaValue = errors[`${parameter.name}_criteriaValue`];
-                }
-              }
+              
               return (
                 <div key={parameter.name} className="col-12">
                   <Form.Group>
@@ -259,10 +272,18 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
                           : (value) =>
                               handleCriteriaValueChange(parameter.name, value)
                       }
-                      errors={readonly ? {} : paramErrors}
+                      errors={
+                        readonly
+                          ? {}
+                          : getParameterErrors(parameter.name, paramValue.type)
+                      }
                       validateField={(field, value, isRequired) => {
                         // Prefix the field name with parameter name for unique validation
-                        validateField(`${parameter.name}_${field}`, value, isRequired);
+                        validateField(
+                          `${parameter.name}_${field}`,
+                          value,
+                          isRequired
+                        );
                       }}
                       readonly={readonly}
                     />
