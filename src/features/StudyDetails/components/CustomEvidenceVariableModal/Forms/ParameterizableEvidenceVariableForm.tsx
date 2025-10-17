@@ -121,9 +121,26 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
       if (cv) {
         // Different validation based on type
         if (cv.type === "coding") {
-          const codeError = validateField(`${paramName}_criteriaCode`, cv.value, true);
+          // For coding type, check if code exists within the coding object
+          let codeValue = cv.value;
+          if (
+            typeof cv.value === "object" &&
+            cv.value !== null &&
+            "code" in cv.value
+          ) {
+            codeValue = cv.value.code;
+          }
+          const codeError = validateField(
+            `${paramName}_criteriaCode`,
+            codeValue,
+            true
+          );
           if (codeError) parameterErrors = true;
-        } else if (cv.type === "datetime" || cv.type === "integer" || cv.type === "string") {
+        } else if (
+          cv.type === "datetime" ||
+          cv.type === "integer" ||
+          cv.type === "string"
+        ) {
           const valueError = validateField(
             `${paramName}_criteriaValue`,
             cv.value,

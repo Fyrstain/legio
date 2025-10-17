@@ -173,7 +173,8 @@
         "url": "Please fill in the URL",
         "id": "Please fill in the ID",
         "selectcriteria": "-- Select a criteria --",
-        "selectstudyvariable": "-- Select a study variable --"
+        "selectstudyvariable": "-- Select a study variable --",
+        "entercode": "Enter code"
     },
     "option": {
         "addnewcriteria": "Add new Criteria",
