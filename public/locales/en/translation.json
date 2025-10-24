@@ -13,6 +13,7 @@
         "cohortingdatamart": "Cohorting & Datamart",
         "searchcriteria": "Search criteria",
         "studies": "Studies",
+        "studyinstances": "Study Instances",
         "error": {
             "oops": "Oops !",
             "problem": "An error has occured !"
@@ -116,7 +117,8 @@
         "xor": "XOR",
         "criteria": "Criteria",
         "studyvariable": "Study Variable",
-        "excluded": "Excluded"
+        "excluded": "Excluded",
+        "phase": "Phase"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"

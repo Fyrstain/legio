@@ -50,7 +50,8 @@ const Studies: FunctionComponent = () => {
 
   const onDetails = useCallback(
     (id: string) => {
-      navigate("/Study/" + id);
+      // Navigate to the intermediate page showing definition metadata and instances
+      navigate(`/Studies/${id}`);
     },
     [navigate]
   );
@@ -109,17 +110,26 @@ const Studies: FunctionComponent = () => {
   //          Content         //
   //////////////////////////////
 
-  return (
-    <LegioPage loading={loading} titleKey={i18n.t("title.studies")}>
+    return (
+    <LegioPage loading={loading} titleKey={i18n.t("title.studies")}> 
+        {/*
+          * Display only ResearchStudy definitions (phase code '#template').
+          * We remove the phase filter from the search criteria and force the search
+          * to always include phase=template via fixedParameters.  Clicking on an
+          * item navigates to the intermediate page where the definition's
+          * instances are shown.
+          */}
         <SearchableTable
             searchCriteriaProperties={{
             title: i18n.t("title.searchcriteria"),
             submitButtonLabel: i18n.t("button.search"),
             resetButtonLabel: i18n.t("button.reset"),
             language: i18n.t,
+            // Always filter on phase code 'template' to show only study definitions
             fixedParameters: {
                 _elements: "id,title,phase",
                 _sort: "-_lastUpdated",
+                phase: "template",
             },
             inputs: [
                 {
@@ -132,13 +142,8 @@ const Studies: FunctionComponent = () => {
                 type: "text",
                 searchParamsName: "title:contains",
                 },
-                {
-                label: "Phase",
-                type: "select",
-                placeholder: i18n.t("defaultvalue.phase"),
-                options: researchStudyPhases.map(getOption),
-                searchParamsName: "phase",
-                },
+                // Intentionally omit the phase select input because study definitions
+                // are filtered via the fixedParameters above.
             ],
             }}
             paginatedTableProperties={{
@@ -151,7 +156,7 @@ const Studies: FunctionComponent = () => {
                 {
                 header: i18n.t("label.name"),
                 dataField: "name",
-                width: "40%",
+                width: "50%",
                 },
                 {
                 header: "Phase",

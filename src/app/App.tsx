@@ -13,6 +13,7 @@ import { Route, Routes, useLocation, useNavigationType } from "react-router-dom"
 // Pages
 import Home from "../shared/pages/Home/Home";
 import Studies from "../features/Studies/pages/Studies";
+import StudyDefinitionInstances from "../features/Studies/pages/StudyDefinitionInstances";
 import Error from "../shared/pages/Error/Error";
 import InProgress from "../shared/pages/InProgress/InProgress";
 import StudyDetails from "../features/StudyDetails/pages/StudyDetails";
@@ -72,6 +73,15 @@ function App() {
         title = "Study Details";
         metaDescription = "";
         break;
+      default:
+        break;
+    }
+
+    // If no exact match was found above, check dynamic routes.  For example,
+    // '/Studies/<definitionId>' should set a custom title.  This logic is
+    // placed outside the switch to avoid interfering with case fallthrough.
+    if (!title && pathname.startsWith("/Studies/") && pathname.split("/").length === 3) {
+      title = "Study Instances";
     }
 
     if (title) {
@@ -111,6 +121,11 @@ function App() {
         path="/Studies"
         element={<Studies />}
       /> 
+      {/* Intermediate page showing definition metadata and instances */}
+      <Route
+        path="/Studies/:definitionId"
+        element={<StudyDefinitionInstances />}
+      />
       <Route
         path="/Study/:studyId"
         element={<StudyDetails />}
