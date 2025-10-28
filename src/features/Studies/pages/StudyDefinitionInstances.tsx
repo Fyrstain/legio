@@ -216,16 +216,6 @@ const StudyDefinitionInstances: React.FC = () => {
         <div className="instances-header">
           <div className="instances-header-top">
             <div className="instances-header-left">
-              <div className="instances-header-title-row">
-                <h2 className="instances-page-title instances-page-title-no-margin">
-                  {defTitle}
-                </h2>
-
-                {defPhase && (
-                  <span className={defPhaseClass}>{defPhase}</span>
-                )}
-              </div>
-
               {defDescription && (
                 <p className="instances-definition-desc-text">
                   {defDescription}

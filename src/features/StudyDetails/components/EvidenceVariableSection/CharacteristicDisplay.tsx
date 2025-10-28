@@ -525,7 +525,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
-                    content={`${i18n.t("title.canonical")} - ${
+                    content={`${
                       characteristic.linkId ||
                       (canonicalEVData[index] &&
                         canonicalEVData[index].title) ||
