@@ -1,10 +1,3 @@
-// Service functions for working with study definitions and their instances.
-//
-// This file centralises access to FHIR to load a ResearchStudy definition and
-// its derived instances. A definition is a ResearchStudy resource whose
-// phase code is `template`. Instances are ResearchStudy resources that
-// reference the definition via a RelatedArtifact of type `derived-from`.
-
 import { ResearchStudy, Bundle } from "fhir/r5";
 import { createFhirClient } from "../../../shared/services/FhirClientFactory";
 import Client from "fhir-kit-client";
@@ -19,18 +12,76 @@ const fhirCohortingEngineClient = new Client({
   baseUrl: process.env.REACT_APP_COHORTING_URL ?? "fhir",
 });
 
-
 /////////////////////////////////////
-//           Loaders              //
+//           Helper utils          //
 /////////////////////////////////////
 
 /**
- * Load a study definition by id.
- *
- * @param definitionId The logical id of the ResearchStudy definition.
- * @returns A promise resolving to the ResearchStudy definition.
+ * Return the canonical identifier to use for a study definition.
+ * We prefer `ResearchStudy.url`. Fallback is the logical id.
  */
-export async function loadStudyDefinition(definitionId: string): Promise<ResearchStudy> {
+function getDefinitionCanonical(
+  definition: ResearchStudy | null
+): string | null {
+  if (!definition) return null;
+  if (definition.url && definition.url.trim() !== "") {
+    return definition.url.trim();
+  }
+  if (definition.id && definition.id.trim() !== "") {
+    return `ResearchStudy/${definition.id.trim()}`;
+  }
+  return null;
+}
+
+/**
+ * Check whether a RelatedArtifact actually links an instance to a given
+ * definition. We accept:
+ *  - type "derived-from"
+ *  - or an enum-like value exposing `.DERIVEDFROM`
+ *
+ * Then we compare the canonical reference of the artifact with the definition
+ * canonical, ignoring any "|version" suffix.
+ */
+function isDerivedFromCanonical(
+  ra: any,
+  canonical: string
+): boolean {
+  if (!ra) return false;
+
+  // type match
+  const isDerivedType =
+    ra.type === "derived-from" ||
+    ra.type === ra.type?.DERIVEDFROM;
+
+  if (!isDerivedType) return false;
+
+  // Compare canonical ignoring version after '|'
+  const referenced = (ra.resource ?? "").split("|")[0];
+  return referenced === canonical;
+}
+
+/**
+ * Extract ResearchStudy resources from a FHIR Bundle.
+ */
+function studiesFromBundle(bundle: Bundle): ResearchStudy[] {
+  return (
+    bundle.entry?.map((e) => e.resource as ResearchStudy).filter(Boolean) ?? []
+  );
+}
+
+/////////////////////////////////////
+//             Loaders            //
+/////////////////////////////////////
+
+/**
+ * Load a study definition (a ResearchStudy "template") by logical id.
+ *
+ * @param definitionId Logical id of the ResearchStudy definition.
+ * @returns Promise resolving to the ResearchStudy definition.
+ */
+export async function loadStudyDefinition(
+  definitionId: string
+): Promise<ResearchStudy> {
   return (await fhirClient.read({
     resourceType: "ResearchStudy",
     id: definitionId,
@@ -38,86 +89,90 @@ export async function loadStudyDefinition(definitionId: string): Promise<Researc
 }
 
 /**
- * Load instances derived from a given study definition.
+ * Load all instances derived from a given study definition.
  *
- * The server is queried for ResearchStudy resources whose relatedArtifact
- * references the canonical URL of the definition (either by URL or id).
- * If the server does not support search on relatedArtifact, the method
- * filters the results client-side.
+ * Strategy:
+ *  1. Try a targeted server search using "related-artifact=<canonical>"
+ *  2. If the server doesn't support that search parameter:
+ *     - do a broader search
+ *     - filter client-side.
  *
- * @param definition The ResearchStudy definition resource. The canonical URL is
- *  extracted from the `url` element; if absent, a relative reference based on
- *  the resource id is used.
- * @returns A promise resolving to an array of ResearchStudy instances.
+ * @param definition The ResearchStudy "template" resource.
+ * @returns Promise resolving to an array of ResearchStudy instances.
  */
 export async function loadStudyInstances(
   definition: ResearchStudy
 ): Promise<ResearchStudy[]> {
-  if (!definition) {
-    return [];
-  }
-  // Determine the canonical of the definition. Prefer the explicit URL; fallback to logical id.
-  const canonical = definition.url ?? `ResearchStudy/${definition.id}`;
+  if (!definition) return [];
+
+  const canonical = getDefinitionCanonical(definition);
+  if (!canonical) return [];
+
+  // 1. First attempt: targeted search with related-artifact=<canonical>
   try {
-    // Attempt to perform a search on relatedArtifact. This search parameter may not
-    // be supported on all FHIR servers. If the query fails, fall back to a
-    // broader search and filter client-side.
     const bundle = (await fhirClient.search({
       resourceType: "ResearchStudy",
       searchParams: {
         "related-artifact": canonical,
-        // Only return a reasonable number of resources
         _count: 100,
       },
     })) as Bundle;
-    const resources = bundle.entry?.map((e) => e.resource as ResearchStudy) ?? [];
-    // Filter to those with a derived-from relatedArtifact referencing the canonical
+
+    const resources = studiesFromBundle(bundle);
+
+    // Keep only ResearchStudy whose relatedArtifact points back with derived-from
     return resources.filter((rs) =>
-      rs.relatedArtifact?.some(
-        (ra) =>
-          ra.type === "derived-from" || ra.type === (ra.type as any)?.DERIVEDFROM
-            ? // Compare canonical ignoring version after '|'
-              (ra.resource ?? "").split("|")[0] === canonical
-            : false
-      )
+      rs.relatedArtifact?.some((ra) => isDerivedFromCanonical(ra, canonical))
     );
-  } catch (err) {
-    // Fall back: load all ResearchStudy resources referencing the canonical client-side
-    try {
-      const bundle = (await fhirClient.search({
-        resourceType: "ResearchStudy",
-        searchParams: { _count: 100 },
-      })) as Bundle;
-      const resources = bundle.entry?.map((e) => e.resource as ResearchStudy) ?? [];
-      return resources.filter((rs) =>
-        rs.relatedArtifact?.some(
-          (ra) =>
-            (ra.type === "derived-from" || (ra.type as any)?.DERIVEDFROM) &&
-            (ra.resource ?? "").split("|")[0] === canonical
-        )
-      );
-    } catch (inner) {
-      throw new Error(`Unable to load study instances: ${inner}`);
-    }
+  } catch (error_) {
+    console.warn(
+      "[loadStudyInstances] related-artifact search unsupported, falling back to broad search:",
+      error_
+    );
+  }
+
+  // 2. Fallback: broad search + client-side filtering
+  try {
+    const bundle = (await fhirClient.search({
+      resourceType: "ResearchStudy",
+      searchParams: { _count: 100, _sort: "-_lastUpdated" },
+    })) as Bundle;
+
+    const resources = studiesFromBundle(bundle);
+
+    return resources.filter((rs) =>
+      rs.relatedArtifact?.some((ra) => isDerivedFromCanonical(ra, canonical))
+    );
+  } catch (error_) {
+    console.error("[loadStudyInstances] broad search fallback failed:", error_);
+    throw new Error("Unable to load study instances");
   }
 }
 
 /**
- * Placeholder for instantiation of a new study instance.  When the back-end
- * exposes the $instantiate-study operation, implement this method to call
- * that operation and return the created instance.  For now it simply
- * returns null.
+ * Create a new study instance from a definition by calling the server-side
+ * $instantiate-study operation on the cohorting engine.
  *
- * @param definition The definition from which to create an instance.
+ * The operation is expected to return a Parameters resource that includes
+ * a `studyInstanceUrl`. We then resolve that canonical back to a full
+ * ResearchStudy instance on the primary FHIR server.
+ *
+ * If the operation succeeds but no instance can be resolved, returns null.
+ *
+ * @param definition The ResearchStudy definition used as a template.
+ * @returns The newly created ResearchStudy instance, or null if not found.
  */
 export async function instantiateStudy(
   definition: ResearchStudy
 ): Promise<ResearchStudy | null> {
-  if (!definition || !definition.url) {
-    console.warn("Cannot instantiate study without a canonical URL");
+  if (!definition?.url) {
+    console.warn(
+      "Cannot instantiate study without a canonical URL on the definition"
+    );
     return null;
   }
-  // Prepare the Parameters resource for the operation.
+
+  // Build Parameters resource for the $instantiate-study operation
   const params: any = {
     resourceType: "Parameters",
     parameter: [
@@ -134,28 +189,37 @@ export async function instantiateStudy(
       },
     ],
   };
+
   try {
+    // Execute server-side operation
     const result: any = await fhirCohortingEngineClient.operation({
       name: "instantiate-study",
       resourceType: "ResearchStudy",
       input: params,
     });
-    // The operation returns a Parameters resource.  Extract the studyInstanceUrl.
+
+    // Extract canonical URL of the created instance
     const instanceParam = result.parameter?.find(
       (p: any) => p.name === "studyInstanceUrl"
     );
     const instanceCanonical = instanceParam?.valueCanonical;
-    if (instanceCanonical) {
-      
-      const instance = (await fhirClient.search({
-        resourceType: "ResearchStudy",
-        searchParams: { url: instanceCanonical },
-      })) as Bundle;
-      return instance.entry && instance.entry.length > 0
-        ? (instance.entry[0].resource as ResearchStudy)
-        : null;
+
+    if (!instanceCanonical) {
+      return null;
     }
-    return null;
+
+    // Resolve that canonical URL back to the concrete ResearchStudy instance
+    const instanceBundle = (await fhirClient.search({
+      resourceType: "ResearchStudy",
+      searchParams: { url: instanceCanonical },
+    })) as Bundle;
+
+    const entries = instanceBundle.entry ?? [];
+    if (entries.length === 0) {
+      return null;
+    }
+
+    return entries[0].resource as ResearchStudy;
   } catch (err) {
     console.error("Error instantiating study:", err);
     throw err;

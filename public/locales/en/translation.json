@@ -68,7 +68,10 @@
       "addcharacteristic": "Add Characteristic",
       "edittheevidencevariable": "Edit the Evidence Variable",
       "editthecharacteristic": "Edit the Characteristic",
-      "addstudyvariable": "Add a Study Variable"
+      "addstudyvariable": "Add a Study Variable",
+      "createInstance": "Create Instance",
+      "seeInstance": "See Instance",
+      "showMore": "Show More"
     },
     "label": {
         "name": "Name",
@@ -144,7 +147,10 @@
         "noselectionmade": "No selection made ! Please select an Evidence Variable.",
         "invalidid": "Invalid ID ! Only alphanumeric characters, dashes, and dots are allowed (1-64 characters).",
         "savingparameterization": "Error while saving parameterization. Please try again.",
-        "updatingobsolescence": "Error while updating obsolescence:"
+        "updatingobsolescence": "Error while updating obsolescence:",
+        "loadingresearchstudyinstances": "Error while loading ResearchStudy instances:",
+        "noResearchInstanceReturned": "[instantiate-study] No instance returned or missing id",
+        "errorDuringInstantiation": "Error during instantiation:"
     },
     "message": {
         "studyupdated": "Study updated successfully.",
@@ -176,7 +182,8 @@
         "id": "Please fill in the ID",
         "selectcriteria": "-- Select a criteria --",
         "selectstudyvariable": "-- Select a study variable --",
-        "entercode": "Enter code"
+        "entercode": "Enter code",
+        "allPhases": "All Phases"
     },
     "option": {
         "addnewcriteria": "Add new Criteria",

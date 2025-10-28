@@ -68,7 +68,10 @@
     "addcharacteristic": "Ajouter une caractéristique",
     "edittheevidencevariable": "Modifier la Variable d'Évidence",
     "editthecharacteristic": "Modifier la Caractéristique",
-    "addstudyvariable": "Ajouter une Variable d'Étude"
+    "addstudyvariable": "Ajouter une Variable d'Étude",
+    "createInstance": "Créer une Instance",
+    "seeInstance": "Voir l'Instance",
+    "showMore": "Voir Plus"
   },
   "label": {
     "name": "Nom",
@@ -143,7 +146,10 @@
     "noselectionmade": "Aucune sélection effectuée ! Veuillez sélectionner une Variable d'Évidence.",
     "invalidid": "ID invalide ! Un ID doit être alphanumérique, peut contenir des tirets et des points, et doit comporter entre 1 et 64 caractères.",
     "savingparameterization": "Erreur lors de l'enregistrement de la paramétrisation. Veuillez réessayer.",
-    "updatingobsolescence": "Erreur lors de la mise à jour de l'obsolescence : "
+    "updatingobsolescence": "Erreur lors de la mise à jour de l'obsolescence : ",
+    "loadingresearchstudyinstances": "Erreur lors du chargement des instances de ResearchStudy:",
+    "noResearchInstanceReturned": "[instantiate-study] Aucune instance retournée ou identifiant manquant",
+    "errorDuringInstantiation": "Erreur lors de l'instanciation:"
   },
   "message": {
     "studyupdated": "Étude modifiée avec succès!",
@@ -175,7 +181,8 @@
     "id": "Veuillez remplir l'ID",
     "selectcriteria": "-- Sélectionnez un critère --",
     "selectstudyvariable": "-- Sélectionnez une variable d'étude --",
-    "entercode": "Veuillez remplir avec un code"
+    "entercode": "Veuillez remplir avec un code",
+    "allPhases": "Toutes les phases"
   },
   "option": {
     "addnewcriteria": "Ajouter un nouveau critère",
