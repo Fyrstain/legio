@@ -5,6 +5,7 @@ import BooleanParameter from "./ConditionalFields/BooleanParameter";
 import IntegerParameter from "./ConditionalFields/IntegerParameter";
 import DateTimeParameter from "./ConditionalFields/DateTimeParameter";
 import CodingParameter from "./ConditionalFields/CodingParameter";
+import StringParameter from "./ConditionalFields/StringParameter";
 // Types
 import { InclusionCriteriaValue } from "../../../types/evidenceVariable.types";
 // Hooks
@@ -58,6 +59,16 @@ const ConditionalFieldsContainer: FunctionComponent<{
       case "coding":
         return (
           <CodingParameter
+            value={value}
+            onChange={readonly ? () => {} : onChange}
+            readonly={readonly}
+            errors={errors}
+            validateField={validateField}
+          />
+        );
+      case "string":
+        return (
+          <StringParameter
             value={value}
             onChange={readonly ? () => {} : onChange}
             readonly={readonly}

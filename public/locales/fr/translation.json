@@ -172,7 +172,8 @@
     "url": "Veuillez remplir l'URL",
     "id": "Veuillez remplir l'ID",
     "selectcriteria": "-- Sélectionnez un critère --",
-    "selectstudyvariable": "-- Sélectionnez une variable d'étude --"
+    "selectstudyvariable": "-- Sélectionnez une variable d'étude --",
+    "entercode": "Veuillez remplir avec un code"
   },
   "option": {
     "addnewcriteria": "Ajouter un nouveau critère",
