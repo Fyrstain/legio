@@ -565,20 +565,30 @@ async function generateCohortAndDatamart(
  */
 function getParameterValue(param: any): string {
   if (!param) return "";
-  if (param.valueAge !== undefined) return param.valueAge.value;
-  if (param.valueBoolean !== undefined)
-    return param.valueBoolean.toString();
+  if (param.valueAge !== undefined) return param.valueAge.value?.toString() ?? "";
+  if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
   if (param.valueString) return param.valueString;
-  if (param.valueInteger !== undefined)
-    return param.valueInteger.toString();
-  if (param.valueDecimal !== undefined)
-    return param.valueDecimal.toString();
+  if (param.valueInteger !== undefined) return param.valueInteger.toString();
+  if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
   if (param.valueDateTime !== undefined) return param.valueDateTime.toString();
   if (param.valueDate !== undefined) return param.valueDate.toString();
-  if (param.valueIdentifier && param.valueIdentifier.value)
-    return param.valueIdentifier.value.toString();
-  if (param.valueQuantity !== undefined)
-    return param.valueQuantity.value + " " + param.valueQuantity.unit;
+  if (param.valueIdentifier && param.valueIdentifier.value) return param.valueIdentifier.value.toString();
+
+  if (param.valueQuantity !== undefined) {
+    const q = param.valueQuantity as any;
+    const val = q.value !== undefined ? q.value.toString() : "";
+    // Prefer code, fallback to unit
+    const codeOrUnit = q.code ?? q.unit ?? "";
+    return (val || codeOrUnit) ? `${val} ${codeOrUnit}`.trim() : "";
+  }
+
+  if (param.valueCodeableConcept !== undefined) {
+    const cc = param.valueCodeableConcept as any;
+    const coding = cc.coding && cc.coding.length > 0 ? cc.coding[0] : undefined;
+    // Prefer code, fallback to display, fallback to text
+    return coding?.code ?? coding?.display ?? cc.text ?? "";
+  }
+
   return "";
 }
 
