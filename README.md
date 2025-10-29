@@ -33,11 +33,37 @@ When a component has just been added to the library to be able to use it :
   
 ## Configuration via environment variables
 
-The following environment variables are available to configure the application :
+The following environment variables are available to configure the application:
 
 - **PORT**: Used to configure the internal port that the application will listen on.
 - **REACT_APP_FHIR_URL**: Address of the FHIR Backend for the application.
+- **REACT_APP_COHORTING_URL**: Address of the Cohorting service.
+- **REACT_APP_DATAMART_URL**: Address of the Datamart service.
+- **REACT_APP_KNOWLEDGE_URL**: Address of the Knowledge service.
+- **REACT_APP_TERMINOLOGY_URL**: Address of the Terminology service.
+- **REACT_APP_MAPPING_URL**: Address of the Mapping service.
+- **REACT_APP_CQL_URL**: Address of the CQL service.
+- **REACT_APP_FHIR_URL_MOCK**: Address of the FHIR mock backend.
+- **REACT_APP_VALUESET_RESEARCHSTUDYPHASES_URL**: ValueSet for Research Study Phases.
+- **REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL**: ValueSet for Study Design.
+- **REACT_APP_VALUESET_INTEGER_COMPARATOR_URL**: ValueSet for Integer Comparator.
+- **REACT_APP_VALUESET_DATE_COMPARATOR_URL**: ValueSet for Date Comparator.
+- **REACT_APP_VALUESET_BOOLEAN_COMPARATOR_URL**: ValueSet for Boolean Comparator.
+- **REACT_APP_VALUESET_CODE_COMPARATOR_URL**: ValueSet for Code Comparator.
+
+- **PUBLIC_URL**: Public URL for the application.
+
+- **REACT_APP_CLIENT_LOGO**: URL for the client logo.
+- **REACT_APP_CLIENT_LOGO_LINK**: Link for the client logo.
+- **REACT_APP_POLUS_LOGO**: URL for the Polus logo.
+- **REACT_APP_POLUS_LOGO_LINK**: Link for the Polus logo.
+- **REACT_APP_SPHINX_LOGO**: URL for the Sphinx logo.
+- **REACT_APP_SPHINX_LOGO_LINK**: Link for the Sphinx logo.
+
 - **REACT_APP_DISPLAY_CLIENT_LOGO**: If true, display the client logo in the footer. Uses public/assets/client_logo.jpg.
+
+- **REACT_APP_KEYCLOAK_ENABLED**: Set to false to disable Keycloak (remove when Keycloak is fully used).
+
 - **REACT_APP_KEYCLOAK_URL**: Address of the Keycloak.
 - **REACT_APP_REDIRECTURI**: Redirection URI after connection.
 - **REACT_APP_KEYCLOAK_REALM**: Keycloak realm to be used.
@@ -47,6 +73,10 @@ The following environment variables are available to configure the application :
 - **REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME**: Set to enable/disable monitoring login state.
 - **REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK**: Specifies whether the silent check-sso should fallback to "non-silent" check-sso when 3rd party cookies are blocked by the browser.
 - **REACT_APP_KEYCLOAK_PKCE_METHOD**: Configures the Proof Key for Code Exchange (PKCE) method to use.
+
+- **KEYCLOAK_PORT**: Internal port for the Keycloak container.
+
+- **GENERATE_SOURCEMAP**: Set to false to disable source map generation.
 
 ## Docker configuration files
 
