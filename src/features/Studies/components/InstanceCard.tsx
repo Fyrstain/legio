@@ -76,8 +76,6 @@ const InstanceCard: FunctionComponent<Props> = ({ study }) => {
         variant="primary"
         onClick={openDetails}
         className="instance-card-button"
-        //aria-label={i18n.t("button.seeInstance")}
-        //title={i18n.t("button.seeInstance")}
       >
         <FontAwesomeIcon icon={faEye} />
         <span className="ms-2"></span>
