@@ -1,7 +1,8 @@
 {
     "navbar": {
         "items": {
-            "studies": "STUDIES"
+            "studies": "STUDIES",
+            "studyinstances": "INSTANCES"
         },
         "dropdown": {
             "login": "Login",
