@@ -40,7 +40,7 @@ const createCoding = (system: string, code: string, display?: string) => ({
 
 /**
  * Update the name of an associated party in a research study.
- * 
+ *
  * @param existingStudy The existing research study to update.
  * @param roleCode The role code of the associated party to update.
  * @param newName The new name to assign to the associated party.
@@ -77,7 +77,7 @@ const updateAssociatedParty = (
 
 /**
  * Update the NCT identifier of a research study.
- * 
+ *
  * @param existingStudy The existing research study to update.
  * @param newNctId The new NCT ID to assign to the study.
  */
@@ -104,7 +104,7 @@ const updateIdentifier = (existingStudy: ResearchStudy, newNctId: string) => {
 
 /**
  * Update the study design of a research study.
- * 
+ *
  * @param existingStudy The existing research study to update.
  * @param newStudyDesign The new study design to assign to the research study.
  */
@@ -139,22 +139,22 @@ async function loadStudy(studyId: string): Promise<ResearchStudy> {
   }) as Promise<ResearchStudy>;
 }
 
- /**
-   * Is used to extract the study design codes from the ResearchStudy resource.
-   * 
-   * @param study The ResearchStudy resource to extract the study design codes from.
-   * @returns a list of study design codes.
-   */
- const extractStudyDesignCodes = (study: ResearchStudy) => {
-    if (!study.studyDesign || study.studyDesign.length === 0) {
-      return [""];
-    }
-    const codes = study.studyDesign.map((design) => {
-      const code = design.coding?.[0]?.code || "";
-      return code;
-    });
-    return codes.filter((code) => code !== "");
-  };
+/**
+ * Is used to extract the study design codes from the ResearchStudy resource.
+ *
+ * @param study The ResearchStudy resource to extract the study design codes from.
+ * @returns a list of study design codes.
+ */
+const extractStudyDesignCodes = (study: ResearchStudy) => {
+  if (!study.studyDesign || study.studyDesign.length === 0) {
+    return [""];
+  }
+  const codes = study.studyDesign.map((design) => {
+    const code = design.coding?.[0]?.code || "";
+    return code;
+  });
+  return codes.filter((code) => code !== "");
+};
 
 /**
  * Update a ResearchStudy resource with the provided data.
@@ -227,8 +227,7 @@ async function loadDatamartForStudy(
   // Find the datamart extension
   const datamartExtension = study.extension?.find(
     (extension) =>
-      extension.url ===
-      "https://www.isis.com/StructureDefinition/EXT-Datamart"
+      extension.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
   );
   // Check if the datamart extension exists and has a valueReference
   if (datamartExtension) {
@@ -431,7 +430,7 @@ function createParameters(studyURL: string): Parameters {
 
 /**
  * This function creates the parameters for the datamart export operation using the createParameters function.
- * 
+ *
  * @param studyURL The study id to create the parameters for.
  * @returns a Parameters object containing the parameters for the datamart export operation.
  */
@@ -449,41 +448,41 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
         "https://www.centreantoinelacassagne.org/StructureMap/SM-ListParams-2-CSV",
     },
     {
-        name: "remoteEndpoint",
-        resource: {
-          resourceType: "Endpoint",
-          status: "active",
-          connectionType: [
-            {
-              coding: [
-                {
-                  system:
-                    "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
-                  code: "hl7-fhir-rest",
-                },
-              ],
-            },
-          ],
-          payload: [
-            {
-              type: [
-                {
-                  coding: [
-                    {
-                      system:
-                        "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
-                      code: "hl7-fhir-rest",
-                      display: "HL7 FHIR",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-          address: process.env.REACT_APP_MAPPING_URL || "",
-          header: ["Content-Type: application/json"],
-        },
-      }
+      name: "remoteEndpoint",
+      resource: {
+        resourceType: "Endpoint",
+        status: "active",
+        connectionType: [
+          {
+            coding: [
+              {
+                system:
+                  "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                code: "hl7-fhir-rest",
+              },
+            ],
+          },
+        ],
+        payload: [
+          {
+            type: [
+              {
+                coding: [
+                  {
+                    system:
+                      "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+                    code: "hl7-fhir-rest",
+                    display: "HL7 FHIR",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        address: process.env.REACT_APP_MAPPING_URL || "",
+        header: ["Content-Type: application/json"],
+      },
+    }
   );
   return baseParameters;
 }
@@ -518,7 +517,11 @@ async function executeFhirOperation<T>(
  * @returns The promise of the operation result. A list of people that are eligible for the study.
  */
 async function executeCohorting(studyId: string): Promise<Group> {
-  return executeFhirOperation<Group>(studyId, "$cohorting", fhirCohortingEngineClient);
+  return executeFhirOperation<Group>(
+    studyId,
+    "$cohorting",
+    fhirCohortingEngineClient
+  );
 }
 
 /**
@@ -527,7 +530,11 @@ async function executeCohorting(studyId: string): Promise<Group> {
  * @returns The promise of the operation result. A datamart containing the data for the study.
  */
 async function executeGenerateDatamart(studyId: string): Promise<List> {
-  return executeFhirOperation<List>(studyId, "$generate-datamart", fhirDatamartEngineClient);
+  return executeFhirOperation<List>(
+    studyId,
+    "$generate-datamart",
+    fhirDatamartEngineClient
+  );
 }
 
 /**
@@ -547,7 +554,7 @@ async function generateCohortAndDatamart(
     if (!hasPatients) {
       return {
         cohortingResult,
-        datamartResult: null, 
+        datamartResult: null,
       };
     }
     const datamartResult = await executeGenerateDatamart(studyId);
@@ -557,7 +564,7 @@ async function generateCohortAndDatamart(
   }
 }
 
-  /**
+/**
  * A function to get the value of a parameter.
  *
  * @param param The parameter to get the value from
@@ -566,13 +573,10 @@ async function generateCohortAndDatamart(
 function getParameterValue(param: any): string {
   if (!param) return "";
   if (param.valueAge !== undefined) return param.valueAge.value;
-  if (param.valueBoolean !== undefined)
-    return param.valueBoolean.toString();
+  if (param.valueBoolean !== undefined) return param.valueBoolean.toString();
   if (param.valueString) return param.valueString;
-  if (param.valueInteger !== undefined)
-    return param.valueInteger.toString();
-  if (param.valueDecimal !== undefined)
-    return param.valueDecimal.toString();
+  if (param.valueInteger !== undefined) return param.valueInteger.toString();
+  if (param.valueDecimal !== undefined) return param.valueDecimal.toString();
   if (param.valueDateTime !== undefined) return param.valueDateTime.toString();
   if (param.valueDate !== undefined) return param.valueDate.toString();
   if (param.valueIdentifier && param.valueIdentifier.value)
@@ -584,7 +588,7 @@ function getParameterValue(param: any): string {
 
 /**
  * A function to execute the datamart export operation.
- * 
+ *
  * @param studyId The ID of the study to export the datamart for.
  * @returns a promise of the operation result. A datamart containing the data for the study.
  */
@@ -605,7 +609,7 @@ async function executeExportDatamart(studyId: string): Promise<any> {
 
 /**
  * To add an evidence variable to a study.
- * 
+ *
  * @param studyId is the id of the study to add the evidence variable to.
  * @param evidenceVariableId is the id of the evidence variable to add.
  * @param type is the type of the evidence variable (inclusion or study).
@@ -629,8 +633,7 @@ async function addEvidenceVariableToStudy(
     if (!study.extension) study.extension = [];
     let datamartExtension = study.extension.find(
       (ext) =>
-        ext.url ===
-        "https://www.isis.com/StructureDefinition/EXT-Datamart"
+        ext.url === "https://www.isis.com/StructureDefinition/EXT-Datamart"
     );
     if (!datamartExtension) {
       datamartExtension = {
@@ -642,12 +645,26 @@ async function addEvidenceVariableToStudy(
     if (!datamartExtension.extension) {
       datamartExtension.extension = [];
     }
-    datamartExtension.extension.push({
+    const existingVariableIndex = datamartExtension.extension.findIndex(
+      (ext) => ext.url === "variable" && ext.valueReference?.reference
+    );
+
+    const newVariableExtension = {
       url: "variable",
       valueReference: {
         reference: `EvidenceVariable/${evidenceVariableId}`,
       },
-    });
+    };
+
+    if (existingVariableIndex !== -1) {
+      datamartExtension.extension[existingVariableIndex] = newVariableExtension;
+    } else {
+      datamartExtension.extension.push(newVariableExtension);
+    }
+
+    datamartExtension.extension = datamartExtension.extension.filter(
+      (ext) => ext.url !== "variable" || ext.valueReference?.reference
+    );
   }
   // Update the study with the new evidence variable
   await fhirClient.update({
