@@ -73,10 +73,10 @@ function App() {
         title = "Studies";
         metaDescription = "";
         break;
-      case "/StudiesInstances":                          // ★ AJOUT
-        title = "Studies Instances";                    // ★ AJOUT
-        metaDescription = "";                           // ★ AJOUT
-        break;                                           // ★ AJOUT
+      case "/StudiesInstances":
+        title = "Studies Instances";             
+        metaDescription = "";       
+        break;                                           
       case "/Study/:studyId":
         title = "Study Details";
         metaDescription = "";
