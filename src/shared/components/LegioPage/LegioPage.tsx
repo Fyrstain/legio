@@ -93,6 +93,10 @@ const LegioPage: FunctionComponent<{
             //     }
             // ]
             },
+            {
+            title: i18n.t("navbar.items.studyinstances"),           
+            link: (process.env.PUBLIC_URL ?? "") + "/StudiesInstances", 
+            },                                                         
         ],
         // the user items
         // Admin, Login, Logout are the default items

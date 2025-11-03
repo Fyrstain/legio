@@ -12,8 +12,8 @@ import {
   ExpressionFormData,
   FormEvidenceVariableData,
 } from "../types/evidenceVariable.types";
-// Service
-import StudyService from "./study.service";
+// Services
+import { ResearchStudy } from "fhir/r5";
 
 const MAX_CANONICAL_DEPTH = 5;
 
@@ -109,13 +109,12 @@ async function readEvidenceVariableByUrl(
  * @returns A promise of an array of evidence variables.
  */
 async function loadEvidenceVariables(
-  studyId: string,
+  study: ResearchStudy,
   type: "inclusion" | "study"
 ): Promise<EvidenceVariableModel[]> {
   try {
     if (type === "inclusion") {
       // Existing inclusion logic stays as-is
-      const study = await StudyService.loadStudy(studyId);
       const eligibilityRef = study.recruitment?.eligibility?.reference;
       if (!eligibilityRef) return [];
 
@@ -131,7 +130,6 @@ async function loadEvidenceVariables(
 
     // type === "study"
     // 1) Load Study
-    const study = await StudyService.loadStudy(studyId);
 
     // 2) Find EXT-Datamart and collect variable references
     const datamartExtension = study.extension?.find(
@@ -142,7 +140,11 @@ async function loadEvidenceVariables(
     if (!datamartExtension?.extension?.length) return [];
 
     const baseRefs = datamartExtension.extension
-      .filter((subExtension) => subExtension.url === "variable" && subExtension.valueReference?.reference)
+      .filter(
+        (subExtension) =>
+          subExtension.url === "variable" &&
+          subExtension.valueReference?.reference
+      )
       .map((subExtension) => subExtension.valueReference!.reference as string); // e.g., "EvidenceVariable/123"
 
     if (baseRefs.length === 0) return [];
@@ -170,8 +172,7 @@ async function loadEvidenceVariables(
     const all = await resolveCanonicalsRecursive(roots);
 
     // 5) Dedup + map to models
-    return dedupeEVs(all)
-      .map((ev) => new EvidenceVariableModel(ev));
+    return dedupeEVs(all).map((ev) => new EvidenceVariableModel(ev));
   } catch (error) {
     throw new Error("Error loading evidence variables: " + error);
   }
@@ -1059,107 +1060,124 @@ async function updateEvidenceVariableWithParameterization(
     };
 
     // 3. Add parameterization extensions for all parameters
-    if (parameterization.parameterValues && Object.keys(parameterization.parameterValues).length > 0) {
+    if (
+      parameterization.parameterValues &&
+      Object.keys(parameterization.parameterValues).length > 0
+    ) {
       definitionExpression.extension = [];
 
-    // Grab the existing expression so we can preserve 'type' and 'valueSet'
-     const existingDefExpr =
-       existingEV.characteristic
-         ?.find(c => c.definitionExpression?.name === parameterization.selectedExpression)
-         ?.definitionExpression;
-      Object.entries(parameterization.parameterValues).forEach(([paramName, criteriaValue]) => {
-        if (criteriaValue) {
-          const paramExtension: any = {
-            url: "https://www.isis.com/StructureDefinition/EXT-EVParametrisation",
-            extension: [
-              { url: "name", valueString: paramName },
-            ],
-          };
+      // Grab the existing expression so we can preserve 'type' and 'valueSet'
+      const existingDefExpr = existingEV.characteristic?.find(
+        (c) =>
+          c.definitionExpression?.name === parameterization.selectedExpression
+      )?.definitionExpression;
+      Object.entries(parameterization.parameterValues).forEach(
+        ([paramName, criteriaValue]) => {
+          if (criteriaValue) {
+            const paramExtension: any = {
+              url: "https://www.isis.com/StructureDefinition/EXT-EVParametrisation",
+              extension: [{ url: "name", valueString: paramName }],
+            };
 
-           // Preserve existing 'type' and 'valueSet' if present on the EV
-           const existingParamExt = existingDefExpr?.extension?.find(
-             (ext: any) =>
-               ext.url === "https://www.isis.com/StructureDefinition/EXT-EVParametrisation" &&
-               ext.extension?.some((e: any) => e.url === "name" && e.valueString === paramName)
-           );
-           if (existingParamExt?.extension) {
-             const keep = existingParamExt.extension.filter(
-               (e: any) => e.url === "type" || e.url === "valueSet"
-             );
-             if (keep.length) paramExtension.extension.push(...keep);
-           }
-
-           // If the UI provided type/valueSet, ensure they exist too
-           if (criteriaValue.type && !paramExtension.extension.some((e: any) => e.url === "type")) {
-             // Keep the existing capitalisation used in your EV (e.g. "Coding")
-             const valueCode = criteriaValue.type === "coding" ? "Coding" : String(criteriaValue.type);
-             paramExtension.extension.push({ url: "type", valueCode });
-           }
-           if (criteriaValue.valueSetUrl && !paramExtension.extension.some((e: any) => e.url === "valueSet")) {
-             paramExtension.extension.push({ url: "valueSet", valueCanonical: criteriaValue.valueSetUrl });
-           }
-
-
-          // Add the value based on the type
-          switch (criteriaValue.type) {
-            case "integer":
-              if (criteriaValue.value !== undefined) {
-                paramExtension.extension.push({
-                  url: "value",
-                  valueInteger: criteriaValue.value,
-                });
-              }
-              break;
-            case "boolean":
-              if (criteriaValue.value !== undefined) {
-                paramExtension.extension.push({
-                  url: "value",
-                  valueBoolean: criteriaValue.value,
-                });
-              }
-              break;
-            case "datetime":
-              if (criteriaValue.value !== undefined) {
-                paramExtension.extension.push({
-                  url: "value",
-                  valueDateTime: criteriaValue.value,
-                });
-              }
-              break;
-            case "coding":
-              if (
-                criteriaValue.value !== undefined &&
-                typeof criteriaValue.value === "object" &&
-                "system" in criteriaValue.value &&
-                "code" in criteriaValue.value
-              ) {
-                paramExtension.extension.push({
-                  url: "value",
-                  valueCoding: {
-                    system: criteriaValue.value.system,
-                    code: criteriaValue.value.code,
-                  },
-                });
-              }
-              break;
-            case "string":
-              if (criteriaValue.value !== undefined) {
-                paramExtension.extension.push({
-                  url: "value",
-                  valueString: criteriaValue.value,
-                });
-              }
-              break;
-            default:
-              console.error(
-                "Type of criteriaValue not handled:",
-                criteriaValue.type
+            // Preserve existing 'type' and 'valueSet' if present on the EV
+            const existingParamExt = existingDefExpr?.extension?.find(
+              (ext: any) =>
+                ext.url ===
+                  "https://www.isis.com/StructureDefinition/EXT-EVParametrisation" &&
+                ext.extension?.some(
+                  (e: any) => e.url === "name" && e.valueString === paramName
+                )
+            );
+            if (existingParamExt?.extension) {
+              const keep = existingParamExt.extension.filter(
+                (e: any) => e.url === "type" || e.url === "valueSet"
               );
-          }
+              if (keep.length) paramExtension.extension.push(...keep);
+            }
 
-          definitionExpression.extension.push(paramExtension);
+            // If the UI provided type/valueSet, ensure they exist too
+            if (
+              criteriaValue.type &&
+              !paramExtension.extension.some((e: any) => e.url === "type")
+            ) {
+              // Keep the existing capitalisation used in your EV (e.g. "Coding")
+              const valueCode =
+                criteriaValue.type === "coding"
+                  ? "Coding"
+                  : String(criteriaValue.type);
+              paramExtension.extension.push({ url: "type", valueCode });
+            }
+            if (
+              criteriaValue.valueSetUrl &&
+              !paramExtension.extension.some((e: any) => e.url === "valueSet")
+            ) {
+              paramExtension.extension.push({
+                url: "valueSet",
+                valueCanonical: criteriaValue.valueSetUrl,
+              });
+            }
+
+            // Add the value based on the type
+            switch (criteriaValue.type) {
+              case "integer":
+                if (criteriaValue.value !== undefined) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueInteger: criteriaValue.value,
+                  });
+                }
+                break;
+              case "boolean":
+                if (criteriaValue.value !== undefined) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueBoolean: criteriaValue.value,
+                  });
+                }
+                break;
+              case "datetime":
+                if (criteriaValue.value !== undefined) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueDateTime: criteriaValue.value,
+                  });
+                }
+                break;
+              case "coding":
+                if (
+                  criteriaValue.value !== undefined &&
+                  typeof criteriaValue.value === "object" &&
+                  "system" in criteriaValue.value &&
+                  "code" in criteriaValue.value
+                ) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueCoding: {
+                      system: criteriaValue.value.system,
+                      code: criteriaValue.value.code,
+                    },
+                  });
+                }
+                break;
+              case "string":
+                if (criteriaValue.value !== undefined) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueString: criteriaValue.value,
+                  });
+                }
+                break;
+              default:
+                console.error(
+                  "Type of criteriaValue not handled:",
+                  criteriaValue.type
+                );
+            }
+
+            definitionExpression.extension.push(paramExtension);
+          }
         }
-      });
+      );
     }
 
     const newCharacteristic = {

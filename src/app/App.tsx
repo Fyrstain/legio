@@ -13,6 +13,7 @@ import { Route, Routes, useLocation, useNavigationType } from "react-router-dom"
 // Pages
 import Home from "../shared/pages/Home/Home";
 import Studies from "../features/Studies/pages/Studies";
+import StudiesInstances from '../features/Studies/pages/StudiesInstances';
 import StudyDefinitionInstances from "../features/Studies/pages/StudyDefinitionInstances";
 import Error from "../shared/pages/Error/Error";
 import InProgress from "../shared/pages/InProgress/InProgress";
@@ -72,6 +73,10 @@ function App() {
         title = "Studies";
         metaDescription = "";
         break;
+      case "/StudiesInstances":
+        title = "Studies Instances";             
+        metaDescription = "";       
+        break;                                           
       case "/Study/:studyId":
         title = "Study Details";
         metaDescription = "";
@@ -123,7 +128,11 @@ function App() {
       <Route
         path="/Studies"
         element={<Studies />}
-      /> 
+      />
+      <Route
+        path="/StudiesInstances"
+        element={<StudiesInstances />}
+      />
       {/* Intermediate page showing definition metadata and instances */}
       <Route
         path="/Studies/:definitionId"

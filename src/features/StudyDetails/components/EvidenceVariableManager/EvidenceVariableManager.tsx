@@ -38,9 +38,14 @@ import {
   FormEvidenceVariableData,
 } from "../../types/evidenceVariable.types";
 
+import { ResearchStudy } from "fhir/r5";
+
 interface EvidenceVariableManagerProps {
   studyId: string;
+  study: ResearchStudy;
   editMode: boolean;
+  inclusionCriteriaRef: string;
+  studyVariableRef: string;
   onLoading: (loading: boolean) => void;
   onError: () => void;
   onStudyVariablesChange?: (studyVariables: EvidenceVariableModel[]) => void;
@@ -48,7 +53,7 @@ interface EvidenceVariableManagerProps {
 
 const EvidenceVariableManager: FunctionComponent<
   EvidenceVariableManagerProps
-> = ({ studyId, editMode, onLoading, onError, onStudyVariablesChange }) => {
+> = ({ studyId, study, editMode, inclusionCriteriaRef, studyVariableRef, onLoading, onError, onStudyVariablesChange }) => {
   ////////////////////////////////
   //           State            //
   ////////////////////////////////
@@ -123,7 +128,7 @@ const EvidenceVariableManager: FunctionComponent<
     async (type: "inclusion" | "study") => {
       try {
         const evidenceVariables =
-          await EvidenceVariableService.loadEvidenceVariables(studyId, type);
+          await EvidenceVariableService.loadEvidenceVariables(study, type);
         if (type === "inclusion") {
           setInclusionCriteria(evidenceVariables);
         } else {
@@ -807,7 +812,7 @@ const EvidenceVariableManager: FunctionComponent<
    * To display the Inclusion Criteria
    */
   const inclusionCriteriaForDisplay = useMemo(
-    () => inclusionCriteria.filter((ev) => ev.hasDefinitionByCombination()),
+    () => inclusionCriteria.filter((ev) => ev.getId() === inclusionCriteriaRef),
     [inclusionCriteria]
   );
   const inclusionCriteriaDisplayObjects =
@@ -816,10 +821,7 @@ const EvidenceVariableManager: FunctionComponent<
   /**
    * To display the Study Variable
    */
-  const studyVariablesForDisplay = useMemo(
-    () => studyVariables.filter((ev) => ev.hasDefinitionByCombination()),
-    [studyVariables]
-  );
+  const studyVariablesForDisplay = studyVariables.filter((ev) => ev.getId() === studyVariableRef);
   const studyVariablesDisplayObjects = EvidenceVariableUtils.toDisplayObjects(
     studyVariablesForDisplay
   );
@@ -829,7 +831,7 @@ const EvidenceVariableManager: FunctionComponent<
   ////////////////////////////////
 
   useEffect(() => {
-    if (studyId) {
+    if (studyId && study) {
       loadEvidenceVariablesHandler("inclusion");
       loadEvidenceVariablesHandler("study");
     }

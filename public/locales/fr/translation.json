@@ -1,7 +1,8 @@
 {
   "navbar": {
     "items": {
-      "studies": "ÉTUDES"
+      "studies": "ÉTUDES",
+      "studyinstances": "INSTANCES D'ÉTUDE"
     },
     "dropdown": {
       "login": "Connexion",
