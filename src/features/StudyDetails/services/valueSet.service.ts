@@ -34,6 +34,9 @@ const COMPARATOR_VALUESETS = {
   string:
     process.env.REACT_APP_VALUESET_STRING_COMPARATOR_URL ||
     "https://www.centreantoinelacassagne.org/ValueSet/VS-string-comparator",
+  quantity:
+    process.env.REACT_APP_VALUESET_INTEGER_COMPARATOR_URL ||
+    "https://www.centreantoinelacassagne.org/ValueSet/VS-integer-comparator",
 } as const;
 
 /////////////////////////////////////

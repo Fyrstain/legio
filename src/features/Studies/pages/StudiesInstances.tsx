@@ -22,7 +22,7 @@ const StudiesInstances: FunctionComponent = () => {
 
   const researchStudyPhaseUrl =
     process.env.REACT_APP_VALUESET_RESEARCHSTUDYPHASES_URL ??
-    "https://www.centreantoinelacassagne.org/ValueSet/VS-ResearchStudyPhase";
+    "https://www.isis.com/ValueSet/VS-ResearchStudyPhase";
 
   /////////////////////////////////////
   //             State               //

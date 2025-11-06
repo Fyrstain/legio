@@ -217,6 +217,11 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                     type: "string",
                     value: valueExtension.valueString,
                   };
+                } else if (valueExtension.valueQuantity !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "quantity",
+                    value: valueExtension.valueQuantity,
+                  };
                 }
               }
             }
@@ -404,6 +409,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
           };
         } else if (valueExtension.valueCoding !== undefined) {
           criteriaValue = { type: "coding", value: valueExtension.valueCoding };
+        } else if (valueExtension.valueQuantity !== undefined) {
+          criteriaValue = { type: "quantity", value: valueExtension.valueQuantity}
         }
       }
     }

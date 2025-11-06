@@ -139,7 +139,8 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
         } else if (
           cv.type === "datetime" ||
           cv.type === "integer" ||
-          cv.type === "string"
+          cv.type === "string"  ||
+          cv.type === "quantity"
         ) {
           const valueError = validateField(
             `${paramName}_criteriaValue`,
@@ -264,16 +265,18 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
             {availableParameters.map((parameter) => {
               // Get or create the value for this parameter
               const paramValue = currentParameterValues[parameter.name] || {
-                type: parameter.type.toLowerCase() as any,
-                value:
-                  parameter.type.toLowerCase() === "boolean"
-                    ? false
-                    : undefined,
-                ...(parameter.valueSetUrl &&
-                  parameter.type.toLowerCase() === "coding" && {
-                    valueSetUrl: parameter.valueSetUrl,
-                  }),
-              };
+  type: parameter.type.toLowerCase() as any,
+  value:
+    parameter.type.toLowerCase() === "boolean"
+      ? false
+      : parameter.type.toLowerCase() === "quantity"
+      ? { value: undefined, comparator: undefined, unit: undefined, code: undefined, system: undefined }
+      : undefined,
+  ...(parameter.valueSetUrl &&
+    parameter.type.toLowerCase() === "coding" && {
+      valueSetUrl: parameter.valueSetUrl,
+    }),
+};
               
               return (
                 <div key={parameter.name} className="col-12">

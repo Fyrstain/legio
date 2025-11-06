@@ -65,7 +65,7 @@ interface EvidenceVariableSectionProps {
 /**
  * Type for the inclusion criteria types
  */
-type InclusionCriteriaTypes = "boolean" | "integer" | "datetime" | "coding" | "string";
+type InclusionCriteriaTypes = "boolean" | "integer" | "datetime" | "coding" | "string" | "quantity";
 
 /**
  * Interface for the value of the Inclusion Criteria
@@ -79,7 +79,8 @@ interface InclusionCriteriaValue {
     | string
     | Date
     | string[]
-    | { system?: string; code?: string };
+    | { system?: string; code?: string }
+    | { value?: number; comparator?: string; unit?: string; code?: string; system?: string };
   minValue?: number | Date;
   maxValue?: number | Date;
   valueSetUrl?: string;
