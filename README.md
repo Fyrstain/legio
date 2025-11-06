@@ -1,5 +1,9 @@
 # Legio
+
 Description : React front application for cohorting and datamart. 
+
+License : Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)  
+Link to more information to the license : [License](./licence.md)
 
 ## Prerequisites
 
