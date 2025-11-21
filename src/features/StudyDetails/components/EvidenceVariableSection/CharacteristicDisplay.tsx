@@ -112,6 +112,34 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   }
 
   /**
+   * Extract all available parameters from the EvidenceVariable's definitionExpression extensions
+   * @param characteristic The characteristic containing the definitionExpression
+   * @returns Array of parameter objects with name, type, and optional valueSet
+   */
+  const extractAvailableParameters = (characteristic: any): Array<{
+    name: string,
+    type: string,
+    valueSetUrl?: string
+  }> => {
+    const paramExtensions =
+      characteristic?.definitionExpression?.extension?.filter(
+        (ext: any) =>
+          ext.url === "https://www.isis.com/StructureDefinition/EXT-EVParametrisation"
+      ) || [];
+
+    return paramExtensions.map((paramExt: any) => {
+      const nameExt = paramExt.extension?.find((e: any) => e.url === "name");
+      const typeExt = paramExt.extension?.find((e: any) => e.url === "type");
+      const valueSetExt = paramExt.extension?.find((e: any) => e.url === "valueSet");
+      return {
+        name: nameExt?.valueString || nameExt?.valueCode || "",
+        type: typeExt?.valueCode || "string",
+        valueSetUrl: valueSetExt?.valueCanonical
+      };
+    });
+  };
+
+  /**
    * Load canonical EV data for parameterization
    * @param canonicalUrl The URL of the canonical evidence variable
    * @param index The index of the characteristic
@@ -130,8 +158,9 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         // Extract current parameter information if it exists
         const characteristic = referencedEV.characteristic?.[0];
         let selectedExpression = "";
-        let selectedParameter = "";
-        let criteriaValue = undefined;
+        const parameterValues: { [parameterName: string]: any } = {};
+        // Extract all available parameters from the EV definition
+        const availableParameters = extractAvailableParameters(characteristic);
         // Check if definitionExpression exists
         if (characteristic?.definitionExpression) {
           selectedExpression =
@@ -143,43 +172,60 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 ext.url ===
                 "https://www.isis.com/StructureDefinition/EXT-EVParametrisation"
             ) || [];
-          // Simply take the first parameter found
-          // TODO : Handle multiple parameters if needed
-          if (paramExtensions.length > 0) {
-            const firstParamExtension = paramExtensions[0];
-            const nameExt = firstParamExtension.extension?.find(
+          // Process all parameter extensions
+          paramExtensions.forEach((paramExt: any) => {
+            const nameExt = paramExt.extension?.find(
               (ext: any) => ext.url === "name"
             );
-            selectedParameter =
-              nameExt?.valueString || nameExt?.valueCode || "";
-            // Extract the value and determine the type
-            const valueExtension = firstParamExtension.extension?.find(
-              (ext: any) => ext.url === "value"
-            );
-            if (valueExtension) {
-              if (valueExtension.valueInteger !== undefined) {
-                criteriaValue = {
-                  type: "integer",
-                  value: valueExtension.valueInteger,
-                };
-              } else if (valueExtension.valueBoolean !== undefined) {
-                criteriaValue = {
-                  type: "boolean",
-                  value: valueExtension.valueBoolean,
-                };
-              } else if (valueExtension.valueDateTime !== undefined) {
-                criteriaValue = {
-                  type: "datetime",
-                  value: new Date(valueExtension.valueDateTime),
-                };
-              } else if (valueExtension.valueCoding !== undefined) {
-                criteriaValue = {
-                  type: "coding",
-                  value: valueExtension.valueCoding,
-                };
+            const paramName = nameExt?.valueString || nameExt?.valueCode || "";
+
+            if (paramName) {
+              // Extract the valueSet URL if present (for coding type)
+              const valueSetExt = paramExt.extension?.find(
+                (ext: any) => ext.url === "valueSet"
+              );
+              const valueSetUrl = valueSetExt?.valueCanonical;
+
+              // Extract the value and determine the type
+              const valueExtension = paramExt.extension?.find(
+                (ext: any) => ext.url === "value"
+              );
+              if (valueExtension) {
+                if (valueExtension.valueInteger !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "integer",
+                    value: valueExtension.valueInteger,
+                  };
+                } else if (valueExtension.valueBoolean !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "boolean",
+                    value: valueExtension.valueBoolean,
+                  };
+                } else if (valueExtension.valueDateTime !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "datetime",
+                    value: new Date(valueExtension.valueDateTime),
+                  };
+                } else if (valueExtension.valueCoding !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "coding",
+                    value: valueExtension.valueCoding,
+                    ...(valueSetUrl && { valueSetUrl }),
+                  };
+                } else if (valueExtension.valueString !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "string",
+                    value: valueExtension.valueString,
+                  };
+                } else if (valueExtension.valueQuantity !== undefined) {
+                  parameterValues[paramName] = {
+                    type: "quantity",
+                    value: valueExtension.valueQuantity,
+                  };
+                }
               }
             }
-          }
+          });
         }
         // Prepare the form data
         const formData = {
@@ -190,8 +236,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
           url: referencedEV.url || "",
           libraryUrl: evModel.getLibraryUrl(),
           selectedExpression,
-          selectedParameter,
-          criteriaValue,
+          parameterValues,
+          availableParameters,
           id: referencedEV.id,
         };
         // Update state with the loaded data
@@ -211,8 +257,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     index: number,
     data: {
       selectedExpression: string;
-      selectedParameter: string;
-      criteriaValue: any;
+      parameterValues: { [parameterName: string]: any };
     }
   ) => {
     try {
@@ -226,8 +271,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         evData.id,
         {
           selectedExpression: data.selectedExpression,
-          selectedParameter: data.selectedParameter,
-          criteriaValue: data.criteriaValue,
+          parameterValues: data.parameterValues,
           libraryUrl: evData.libraryUrl,
         }
       );
@@ -237,8 +281,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         [index]: {
           ...prev[index],
           selectedExpression: data.selectedExpression,
-          selectedParameter: data.selectedParameter,
-          criteriaValue: data.criteriaValue,
+          parameterValues: data.parameterValues,
         },
       }));
       // Notify user of success
@@ -366,6 +409,8 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
           };
         } else if (valueExtension.valueCoding !== undefined) {
           criteriaValue = { type: "coding", value: valueExtension.valueCoding };
+        } else if (valueExtension.valueQuantity !== undefined) {
+          criteriaValue = { type: "quantity", value: valueExtension.valueQuantity}
         }
       }
     }
@@ -487,7 +532,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
                 <div className="d-flex align-items-center gap-4">
                   <Title
                     level={3}
-                    content={`${i18n.t("title.canonical")} - ${
+                    content={`${
                       characteristic.linkId ||
                       (canonicalEVData[index] &&
                         canonicalEVData[index].title) ||
@@ -557,10 +602,12 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
               {/* For DefinitionCanonical - Show the parameterization form */}
               {characteristic.definitionCanonical && canonicalEVData[index] && (
                 <ParameterizableEvidenceVariableForm
-                  evidenceVariableData={canonicalEVData[index]}
+                  evidenceVariableData={{
+                    ...canonicalEVData[index],
+                    availableParameters: canonicalEVData[index].availableParameters || []
+                  }}
                   selectedExpression={canonicalEVData[index].selectedExpression}
-                  selectedParameter={canonicalEVData[index].selectedParameter}
-                  criteriaValue={canonicalEVData[index].criteriaValue}
+                  parameterValues={canonicalEVData[index].parameterValues || {}}
                   onSave={(data) => handleSaveParameterization(index, data)}
                   readonly={!editMode}
                   type={type}

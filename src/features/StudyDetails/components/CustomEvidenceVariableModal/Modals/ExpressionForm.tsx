@@ -238,13 +238,31 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
       const parameter = availableParameters.find(
         (p) => p.name === parameterName
       );
+
       if (parameter) {
-        const fhirType = parameter.type.toLowerCase();
+        const fhirType =
+          parameter.type === "quantity"
+            ? "quantity"
+            : parameter.type.toLowerCase();
+
+        const initialValue =
+          fhirType === "boolean"
+            ? false
+            : fhirType === "quantity"
+            ? {
+                value: undefined,
+                comparator: undefined,
+                unit: undefined,
+                code: undefined,
+                system: undefined,
+              }
+            : undefined;
+
         handleFieldChange(
           "criteriaValue",
           {
             type: fhirType,
-            value: fhirType === "boolean" ? false : undefined,
+            value: initialValue,
           },
           false
         );
@@ -267,11 +285,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
    * Validate form data
    */
   const isFormValid = (): boolean => {
-    const idError = validateField(
-        "expressionId", 
-        formData.expressionId, 
-        false
-    );
+    const idError = validateField("expressionId", formData.expressionId, false);
     const nameError = validateField(
       "expressionName",
       formData.expressionName,
@@ -315,6 +329,12 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
       if (cv.type === "integer") {
         const intError = validateField("criteriaValue", cv.value, true);
         parameterErrors = !!intError;
+      }
+
+      // Quantity type requires value
+      if (cv.type === "quantity") {
+        const qtyError = validateField("criteriaValue", cv.value, true);
+        parameterErrors = !!qtyError;
       }
     }
     return !(

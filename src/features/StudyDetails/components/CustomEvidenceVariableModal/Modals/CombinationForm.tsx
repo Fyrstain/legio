@@ -178,7 +178,10 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       formData.combinationId,
       true
     );
-    const codeError = validateField("code", formData.code, true);
+    const codeError =
+      props.type === "study"
+        ? false
+        : validateField("code", formData.code, true);
     const descriptionError = validateField(
       "combinationDescription",
       formData.combinationDescription,

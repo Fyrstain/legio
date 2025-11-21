@@ -11,11 +11,6 @@ import {
   FormEvidenceVariableData,
   InclusionCriteriaValue,
 } from "../../../types/evidenceVariable.types";
-import { LibraryParameter } from "../../../types/library.types";
-// Models
-import { LibraryModel } from "../../../../../shared/models/Library.model";
-// Services
-import LibraryService from "../../../services/library.service";
 // Hooks
 import { useFormValidation } from "../../../hooks/useFormValidation";
 // FontAwesome
@@ -23,23 +18,33 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 
 ////////////////////////////////
+//           Utils            //
+////////////////////////////////
+
+const capitalize = (str: string) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+
+////////////////////////////////
 //           Props            //
 ////////////////////////////////
 
 interface ParameterizableEvidenceVariableFormProps {
   // Data of the EvidenceVariable to display (read-only fields)
-  evidenceVariableData: FormEvidenceVariableData;
+  evidenceVariableData: FormEvidenceVariableData & {
+    availableParameters?: Array<{
+      name: string;
+      type: string;
+      valueSetUrl?: string;
+    }>;
+  };
   // Expression currently selected (can be empty)
   selectedExpression?: string;
-  // Parameter currently selected
-  selectedParameter?: string;
-  // Current parameter value
-  criteriaValue?: InclusionCriteriaValue;
+  // All parameter values (map of parameter name to value)
+  parameterValues?: { [parameterName: string]: InclusionCriteriaValue };
   // Callback to save changes
   onSave: (data: {
     selectedExpression: string;
-    selectedParameter: string;
-    criteriaValue: InclusionCriteriaValue | undefined;
+    parameterValues: { [parameterName: string]: InclusionCriteriaValue };
   }) => void;
   // Read-only mode (if true, all fields are disabled)
   readonly?: boolean;
@@ -52,11 +57,9 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
 > = ({
   evidenceVariableData,
   selectedExpression = "",
-  selectedParameter = "",
-  criteriaValue,
+  parameterValues = {},
   onSave,
   readonly = false,
-  type = "inclusion",
 }) => {
   ////////////////////////////////
   //           State            //
@@ -65,28 +68,17 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   // Initial data to reset the form
   const initialData = {
     selectedExpression: selectedExpression,
-    selectedParameter: selectedParameter,
-    criteriaValue: criteriaValue,
+    parameterValues: parameterValues,
   };
 
   // States for editable fields
   const [currentExpression, setCurrentExpression] =
     useState(selectedExpression);
-  const [currentParameter, setCurrentParameter] = useState(selectedParameter);
-  const [currentCriteriaValue, setCurrentCriteriaValue] = useState<
-    InclusionCriteriaValue | undefined
-  >(criteriaValue);
+  const [currentParameterValues, setCurrentParameterValues] = useState<{
+    [parameterName: string]: InclusionCriteriaValue;
+  }>(parameterValues);
 
-  // Library related state
-  const [selectedLibrary, setSelectedLibrary] = useState<LibraryModel | null>(
-    null
-  );
-  const [availableExpressions, setAvailableExpressions] = useState<
-    LibraryParameter[]
-  >([]);
-  const [availableParameters, setAvailableParameters] = useState<
-    LibraryParameter[]
-  >([]);
+  const availableParameters = evidenceVariableData.availableParameters || [];
 
   ////////////////////////////////
   //           Hooks            //
@@ -95,81 +87,22 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   const { errors, validateField, clearErrors } = useFormValidation();
 
   ////////////////////////////////
-  //        LifeCycle           //
-  ////////////////////////////////
-
-  // Load library information when component mounts
-  useEffect(() => {
-    const loadLibraryInfo = async () => {
-      if (evidenceVariableData.libraryUrl) {
-        try {
-          const libraries = await LibraryService.loadLibraries();
-          const library = libraries.find(
-            (lib) => lib.getUrl() === evidenceVariableData.libraryUrl
-          );
-          if (library) {
-            setSelectedLibrary(library);
-            // Set available expressions and parameters based on type of EV (inclusion = "out" and type boolean, study = "in" and any type)
-            if (type === "inclusion") {
-              setAvailableExpressions(library.getBooleanExpressions());
-            } else {
-              setAvailableExpressions(library.getExpressions());
-            }
-            setAvailableParameters(library.getInputParameters());
-          }
-        } catch (error) {
-          console.error("Error loading library info:", error);
-        }
-      }
-    };
-    loadLibraryInfo();
-  }, [evidenceVariableData.libraryUrl]);
-
-  ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
 
   /**
-   * Handle expression selection change
-   * @param e Event
-   */
-  const handleExpressionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const expressionName = e.target.value;
-    setCurrentExpression(expressionName);
-    validateField("selectedExpression", expressionName, true);
-  };
-
-  /**
-   * Handle parameter selection change
-   * @param e Event
-   */
-  const handleParameterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const parameterName = e.target.value;
-    setCurrentParameter(parameterName);
-    validateField("selectedParameter", parameterName);
-    if (parameterName && selectedLibrary) {
-      const parameter = availableParameters.find(
-        (p) => p.name === parameterName
-      );
-      if (parameter) {
-        const fhirType = parameter.type.toLowerCase();
-        const newCriteriaValue: InclusionCriteriaValue = {
-          type: fhirType as any,
-          value: fhirType === "boolean" ? false : undefined,
-        };
-        setCurrentCriteriaValue(newCriteriaValue);
-      }
-    } else {
-      setCurrentCriteriaValue(undefined);
-    }
-  };
-
-  /**
-   * Handle criteria value change
+   * Handle criteria value change for a specific parameter
+   * @param parameterName Name of the parameter
    * @param value New criteria value
    */
-  const handleCriteriaValueChange = (value: InclusionCriteriaValue) => {
-    setCurrentCriteriaValue(value);
+  const handleCriteriaValueChange = (
+    parameterName: string,
+    value: InclusionCriteriaValue
+  ) => {
+    setCurrentParameterValues((prev) => ({
+      ...prev,
+      [parameterName]: value,
+    }));
   };
 
   /**
@@ -182,28 +115,42 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
       currentExpression,
       true
     );
-    // If type is study, only validate expression
-    if (type === "study") {
-      return !expressionError;
-    }
-    // Validate parameter-related fields if a parameter is selected
+    // Validate all parameter values for both inclusion and study types
     let parameterErrors = false;
-    if (currentParameter && currentCriteriaValue) {
-      const cv = currentCriteriaValue;
-      // Different validation based on type
-      if (cv.type === "coding") {
-        const valueSetError = validateField(
-          "criteriaValueSet",
-          cv.valueSetUrl,
-          true
-        );
-        const codeError = validateField("criteriaCode", cv.value, true);
-        parameterErrors = !!(valueSetError || codeError);
-      } else if (cv.type === "datetime" || cv.type === "integer") {
-        const valueError = validateField("criteriaValue", cv.value, true);
-        parameterErrors = !!valueError;
+    Object.entries(currentParameterValues).forEach(([paramName, cv]) => {
+      if (cv) {
+        // Different validation based on type
+        if (cv.type === "coding") {
+          // For coding type, check if code exists within the coding object
+          let codeValue = cv.value;
+          if (
+            typeof cv.value === "object" &&
+            cv.value !== null &&
+            "code" in cv.value
+          ) {
+            codeValue = cv.value.code;
+          }
+          const codeError = validateField(
+            `${paramName}_criteriaCode`,
+            codeValue,
+            true
+          );
+          if (codeError) parameterErrors = true;
+        } else if (
+          cv.type === "datetime" ||
+          cv.type === "integer" ||
+          cv.type === "string"  ||
+          cv.type === "quantity"
+        ) {
+          const valueError = validateField(
+            `${paramName}_criteriaValue`,
+            cv.value,
+            true
+          );
+          if (valueError) parameterErrors = true;
+        }
       }
-    }
+    });
     return !(expressionError || parameterErrors);
   };
 
@@ -220,8 +167,7 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
     // Call onSave callback with current data
     onSave({
       selectedExpression: currentExpression,
-      selectedParameter: currentParameter,
-      criteriaValue: currentCriteriaValue,
+      parameterValues: currentParameterValues,
     });
   };
 
@@ -231,8 +177,30 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
   const handleReset = () => {
     clearErrors();
     setCurrentExpression(initialData.selectedExpression || "");
-    setCurrentParameter(initialData.selectedParameter || "");
-    setCurrentCriteriaValue(initialData.criteriaValue || undefined);
+    setCurrentParameterValues(initialData.parameterValues || {});
+  };
+
+  /**
+   * Get parameter-specific errors for a given parameter
+   * @param parameterName Name of the parameter
+   * @param parameterType Type of the parameter value (coding, integer, datetime, etc.)
+   * @returns Object containing the relevant errors for this parameter
+   */
+  const getParameterErrors = (
+    parameterName: string,
+    parameterType: string
+  ): { [key: string]: string } => {
+    const paramErrors: { [key: string]: string } = {};
+    if (parameterType === "coding") {
+      if (errors?.[`${parameterName}_criteriaCode`]) {
+        paramErrors.criteriaCode = errors[`${parameterName}_criteriaCode`];
+      }
+    } else {
+      if (errors?.[`${parameterName}_criteriaValue`]) {
+        paramErrors.criteriaValue = errors[`${parameterName}_criteriaValue`];
+      }
+    }
+    return paramErrors;
   };
 
   /////////////////////////////////////////////
@@ -277,80 +245,74 @@ const ParameterizableEvidenceVariableForm: FunctionComponent<
         </div>
       )}
 
-      {/* EDITABLE section - Parameterization */}
-      {/* Expression */}
-      <div className="row mb-3">
-        <div className="col-md-6">
-          <Form.Group>
-            <Form.Label>Expression {!readonly && "*"}</Form.Label>
-            <Form.Select
-              value={currentExpression}
-              onChange={handleExpressionChange}
-              disabled={
-                readonly ||
-                !selectedLibrary ||
-                availableExpressions.length === 0
-              }
-              isInvalid={!readonly && !!errors.selectedExpression}
-            >
-              <option value="">{i18n.t("placeholder.expression")}</option>
-              {availableExpressions.map((expression) => (
-                <option key={expression.name} value={expression.name}>
-                  {expression.name}
-                  {expression.documentation && ` - ${expression.documentation}`}
-                </option>
-              ))}
-            </Form.Select>
-            {!readonly && (
-              <Form.Control.Feedback type="invalid">
-                {errors?.selectedExpression}
-              </Form.Control.Feedback>
-            )}
-          </Form.Group>
-        </div>
-        {/* Parameter (only for inclusion type) */}
-        {type === "inclusion" && (!readonly || currentParameter) && (
-          <div className="col-md-6">
-            <Form.Group>
-              <Form.Label>{i18n.t("label.parameter")}</Form.Label>
-              <Form.Select
-                value={currentParameter}
-                onChange={handleParameterChange}
-                disabled={
-                  readonly ||
-                  !selectedLibrary ||
-                  availableParameters.length === 0
-                }
-                isInvalid={!readonly && !!errors.selectedParameter}
-              >
-                <option value="">{i18n.t("placeholder.parameter")}</option>
-                {availableParameters.map((parameter) => (
-                  <option
-                    key={parameter.name}
-                    value={parameter.name}
-                    title={parameter.documentation}
-                  >
-                    {parameter.name}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">
-                {errors?.selectedParameter}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </div>
-        )}
+      {/* Expression - Always readonly (expression is defined in the EV and cannot be changed) */}
+      <div className="mb-3">
+        <Form.Group>
+          <Form.Label>Expression</Form.Label>
+          <Form.Control
+            type="text"
+            value={currentExpression || "N/A"}
+            disabled
+            readOnly
+          />
+        </Form.Group>
       </div>
 
-      {/* Conditional Fields */}
-      {type === "inclusion" && currentParameter && currentCriteriaValue && (
-        <ConditionalFieldsContainer
-          value={currentCriteriaValue}
-          onChange={readonly ? () => {} : handleCriteriaValueChange}
-          errors={readonly ? {} : errors}
-          validateField={validateField}
-          readonly={readonly}
-        />
+      {/* All Parameters - for both inclusion and study types */}
+      {availableParameters.length > 0 && (
+        <div className="mb-3">
+          <div className="row g-3">
+            {availableParameters.map((parameter) => {
+              // Get or create the value for this parameter
+              const paramValue = currentParameterValues[parameter.name] || {
+  type: parameter.type.toLowerCase() as any,
+  value:
+    parameter.type.toLowerCase() === "boolean"
+      ? false
+      : parameter.type.toLowerCase() === "quantity"
+      ? { value: undefined, comparator: undefined, unit: undefined, code: undefined, system: undefined }
+      : undefined,
+  ...(parameter.valueSetUrl &&
+    parameter.type.toLowerCase() === "coding" && {
+      valueSetUrl: parameter.valueSetUrl,
+    }),
+};
+              
+              return (
+                <div key={parameter.name} className="col-12">
+                  <Form.Group>
+                    <Form.Label className="text-break">
+                      {capitalize(parameter.name)}
+                    </Form.Label>
+                    <ConditionalFieldsContainer
+                      value={paramValue}
+                      onChange={
+                        readonly
+                          ? () => {}
+                          : (value) =>
+                              handleCriteriaValueChange(parameter.name, value)
+                      }
+                      errors={
+                        readonly
+                          ? {}
+                          : getParameterErrors(parameter.name, paramValue.type)
+                      }
+                      validateField={(field, value, isRequired) => {
+                        // Prefix the field name with parameter name for unique validation
+                        validateField(
+                          `${parameter.name}_${field}`,
+                          value,
+                          isRequired
+                        );
+                      }}
+                      readonly={readonly}
+                    />
+                  </Form.Group>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Action buttons */}

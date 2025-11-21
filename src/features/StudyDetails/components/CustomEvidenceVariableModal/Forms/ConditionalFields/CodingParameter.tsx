@@ -1,23 +1,15 @@
 //React
-import { FunctionComponent, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FunctionComponent, useEffect, useState } from "react";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
 // React Bootstrap
-import { Alert, Form } from "react-bootstrap";
-// FontAwesome
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { Form } from "react-bootstrap";
 // Translation
 import i18n from "i18next";
 // HL7 Front Library
 import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // FHIR
 import Client from "fhir-kit-client";
-// Resources
-import { ValueSet } from "fhir/r5";
-// Services
-import ValueSetService from "../../../../services/valueSet.service";
 // Hook
 import { ValidationErrors } from "../../../../hooks/useFormValidation";
 
@@ -52,10 +44,6 @@ const CodingParameter: FunctionComponent<{
   //           State            //
   ////////////////////////////////
 
-  const navigate = useNavigate();
-
-  // All the ValueSets available
-  const [valueSets, setValueSets] = useState<ValueSet[]>([]);
   // The currently selected ValueSet URL
   const [selectedValueSet, setSelectedValueSet] = useState<string>("");
   // The CodeSystem URL associated with the selected ValueSet
@@ -67,48 +55,27 @@ const CodingParameter: FunctionComponent<{
   // The currently selected code
   const [selectedCode, setSelectedCode] = useState<string>("");
 
-  //////////////////////////////
-  //           Error          //
-  //////////////////////////////
-
-  /**
-   * Navigate to the error page.
-   */
-  const onError = useCallback(() => {
-    navigate("/Error");
-  }, [navigate]);
-
   /////////////////////////////////////
   //           LifeCycle             //
   /////////////////////////////////////
-
-  // To load value sets data
-  useEffect(() => {
-    const loadValueSetsData = async () => {
-      try {
-        const valueSetsData = await ValueSetService.loadValueSets();
-        setValueSets(valueSetsData);
-      } catch (error) {
-        onError();
-      }
-    };
-    loadValueSetsData();
-  }, []);
 
   useEffect(() => {
     // Complete reset: clear everything
     setSelectedValueSet("");
     setAvailableCodes([]);
     setSelectedCode("");
+    setSelectedCodeSystem(null);
     // Then load the real values if they exist
     if (value?.valueSetUrl) {
       setSelectedValueSet(value.valueSetUrl);
-      // Load the codes if not in readonly mode
-      if (!readonly) {
-        valueSetLoader.searchValueSet(value.valueSetUrl).then((codes) => {
-          setAvailableCodes(codes || []);
-        });
-      }
+      // Always load the codes from the ValueSet, even in readonly mode
+      valueSetLoader.searchValueSet(value.valueSetUrl).then((codes) => {
+        setAvailableCodes(codes || []);
+        // Extract CodeSystem from the first code if available
+        if (codes && codes.length > 0 && codes[0].system) {
+          setSelectedCodeSystem(codes[0].system);
+        }
+      });
     }
     // Set the selected code if exists
     if (value?.value) {
@@ -129,78 +96,30 @@ const CodingParameter: FunctionComponent<{
   ////////////////////////////////
 
   /**
-   * Get the CodeSystem URL from a ValueSet
-   * @param valueSet The ValueSet from which to extract the CodeSystem
-   * @returns The CodeSystem URL or null if not found
-   */
-  const getCodeSystemFromValueSet = (valueSet: ValueSet): string | null => {
-    if (valueSet.compose?.include && valueSet.compose.include.length > 0) {
-      const firstInclude = valueSet.compose.include[0];
-      return firstInclude.system || null;
-    }
-    return null;
-  };
-
-  /**
-   * This function handles the change of the ValueSet selection.
-   * @param valueSetUrl The URL of the ValueSet to load
-   */
-  const handleValueSetChange = async (valueSetUrl: string) => {
-    setSelectedValueSet(valueSetUrl);
-    setAvailableCodes([]);
-    setSelectedCode("");
-    setSelectedCodeSystem(null);
-    // If a ValueSet URL is provided, fetch the codes
-    if (valueSetUrl) {
-      try {
-        // Fetch the codes
-        const codes = await valueSetLoader.searchValueSet(valueSetUrl);
-        setAvailableCodes(codes);
-        // Extract the CodeSystem URL from a ValueSet (first include only)
-        const selectedValueSetResource = valueSets.find(
-          (vs) => vs.url === valueSetUrl
-        );
-        setSelectedCodeSystem(
-          selectedValueSetResource
-            ? getCodeSystemFromValueSet(selectedValueSetResource)
-            : null
-        );
-      } catch (error) {
-        console.error("Error loading codes:", error);
-        setAvailableCodes([]);
-      }
-    }
-    // Update the parent component with the new ValueSet URL
-    onChange({
-      ...value,
-      valueSetUrl: valueSetUrl,
-      value: "",
-    });
-    validateField("criteriaValueSet", valueSetUrl, true);
-  };
-
-  /**
    * Function to handle code selection
    * @param codeValue The selected code value
    */
   const handleCodeSelection = (codeValue: string) => {
     setSelectedCode(codeValue);
-    // Check if CodeSystem is available
-    if (!selectedCodeSystem) {
-      console.error("Cannot determine CodeSystem URL from ValueSet");
-      return;
+    // If we have a CodeSystem from the ValueSet, create a proper Coding object
+    if (selectedCodeSystem) {
+      const codingValue = {
+        system: selectedCodeSystem,
+        code: codeValue,
+      };
+      onChange({
+        ...value,
+        value: codingValue,
+        valueSetUrl: selectedValueSet,
+      });
+    } else {
+      // No CodeSystem available, just pass the code as a string
+      onChange({
+        ...value,
+        value: codeValue,
+        valueSetUrl: selectedValueSet,
+      });
     }
-    // Create the coding value object
-    const codingValue = {
-      system: selectedCodeSystem,
-      code: codeValue,
-    };
-    // Update the parent component
-    onChange({
-      ...value,
-      value: codingValue,
-      valueSetUrl: selectedValueSet,
-    });
     validateField("criteriaCode", codeValue, true);
   };
 
@@ -210,75 +129,47 @@ const CodingParameter: FunctionComponent<{
 
   return (
     <>
-      {/* ValueSet Selection */}
-      {!readonly && (
-        <Form.Group className="mb-3">
-          <Form.Label>{i18n.t("label.valueset")} *</Form.Label>
+      {/* Code Selection */}
+      <Form.Group>
+        {availableCodes.length > 0 ? (
           <Form.Select
-            value={selectedValueSet}
-            onChange={(e) => handleValueSetChange(e.target.value)}
-            isInvalid={!!errors?.criteriaValueSet}
+            value={selectedCode}
+            onChange={(e) => handleCodeSelection(e.target.value)}
+            isInvalid={!readonly && !!errors?.criteriaCode}
             disabled={readonly}
           >
-            <option value="">{i18n.t("placeholder.valueset")}</option>
-            {valueSets.map((vs) => (
-              <option key={vs.url} value={vs.url} title={vs.description}>
-                {vs.name || vs.url}
+            <option value="">{i18n.t("placeholder.selectcode")}</option>
+            {availableCodes.map((code) => (
+              <option key={code.code} value={code.code}>
+                {code.display || code.code}
               </option>
             ))}
           </Form.Select>
+        ) : (
+          <Form.Control
+            type="text"
+            value={selectedCode}
+            onChange={(e) => {
+              const newCode = e.target.value;
+              setSelectedCode(newCode);
+              onChange({
+                ...value,
+                value: newCode,
+              });
+              validateField("criteriaCode", newCode, true);
+            }}
+            placeholder={i18n.t("placeholder.entercode")}
+            isInvalid={!readonly && !!errors?.criteriaCode}
+            disabled={readonly}
+            readOnly={readonly}
+          />
+        )}
+        {!readonly && (
           <Form.Control.Feedback type="invalid">
-            {errors?.criteriaValueSet}
+            {errors?.criteriaCode}
           </Form.Control.Feedback>
-        </Form.Group>
-      )}
-
-      {/* Code Selection */}
-      {(readonly || availableCodes.length > 0 || selectedCode) && (
-        <Form.Group className="mb-3">
-          <Form.Label>Code {!readonly && "*"}</Form.Label>
-          {readonly ? (
-            <Form.Control type="text" value={selectedCode} disabled readOnly />
-          ) : (
-            <>
-              {availableCodes.length > 0 ? (
-                <Form.Select
-                  value={selectedCode}
-                  onChange={(e) => handleCodeSelection(e.target.value)}
-                  isInvalid={!!errors?.criteriaCode}
-                >
-                  <option value="">{i18n.t("placeholder.selectcode")}</option>
-                  {availableCodes.map((code) => (
-                    <option key={code.code} value={code.code}>
-                      {code.display || code.code}
-                    </option>
-                  ))}
-                </Form.Select>
-              ) : (
-                <Form.Select
-                  value={selectedCode}
-                  onChange={(e) => handleCodeSelection(e.target.value)}
-                  isInvalid={!!errors?.criteriaCode}
-                >
-                  {selectedCode && (
-                    <option value={selectedCode}>{selectedCode}</option>
-                  )}
-                </Form.Select>
-              )}
-              <Form.Control.Feedback type="invalid">
-                {errors?.criteriaCode}
-              </Form.Control.Feedback>
-            </>
-          )}
-        </Form.Group>
-      )}
-      {/* Informative message if ValueSet has no codes */}
-      {!readonly && selectedValueSet && availableCodes.length === 0 && (
-        <Alert variant="info" className="d-flex align-items-center gap-2">
-          <FontAwesomeIcon icon={faExclamationTriangle} />
-          {i18n.t("errormessage.nocodesavailable")}
-        </Alert>
-      )}
+        )}
+      </Form.Group>
     </>
   );
 };

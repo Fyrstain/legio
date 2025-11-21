@@ -1,9 +1,10 @@
 // Font awesome
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 // Fhir front library
-import { SearchableTable, ValueSetLoader } from "@fyrstain/hl7-front-library";
+import { SearchableTable } from "@fyrstain/hl7-front-library";
 // Fhir
 import Client from "fhir-kit-client";
+import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
 // Translation
 import i18n from "i18next";
 // React
@@ -13,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 // Components
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 
-const Studies: FunctionComponent = () => {
+const StudiesInstances: FunctionComponent = () => {
 
   /////////////////////////////////////
   //            Constants            //
@@ -26,6 +27,10 @@ const Studies: FunctionComponent = () => {
   /////////////////////////////////////
   //             State               //
   /////////////////////////////////////
+
+  const [researchStudyPhases, setResearchStudyPhases] = useState(
+    [] as SimpleCode[]
+  );
 
   /////////////////////////////////////
   //             Client              //
@@ -45,8 +50,7 @@ const Studies: FunctionComponent = () => {
 
   const onDetails = useCallback(
     (id: string) => {
-      // Navigate to the intermediate page showing definition metadata and instances
-      navigate(`/Studies/${id}`);
+      navigate("/Study/" + id);
     },
     [navigate]
   );
@@ -67,12 +71,27 @@ const Studies: FunctionComponent = () => {
   async function loadPage() {
     setLoading(true);
     try {
+      setResearchStudyPhases(
         await valueSetLoader.searchValueSet(researchStudyPhaseUrl)
+      );
     } catch (error) {
       console.log(error);
       onError();
     }
     setLoading(false);
+  }
+
+  /////////////////////////////////////
+  //             Actions             //
+  /////////////////////////////////////
+
+  /**
+   * Get the option element to represent the code in an Input Select.
+   * @param code the code.
+   * @returns the option element.
+   */
+  function getOption(code: SimpleCode) {
+    return { value: code.code, label: code.display ?? code.code };
   }
 
   //////////////////////////////
@@ -90,9 +109,8 @@ const Studies: FunctionComponent = () => {
   //          Content         //
   //////////////////////////////
 
-    return (
-    <LegioPage loading={loading} titleKey={i18n.t("title.studies")}> 
-        {/*Display only ResearchStudy definitions (phase code '#template').*/}
+  return (
+    <LegioPage loading={loading} titleKey={i18n.t("title.studies")}>
         <SearchableTable
             searchCriteriaProperties={{
             title: i18n.t("title.searchcriteria"),
@@ -100,9 +118,9 @@ const Studies: FunctionComponent = () => {
             resetButtonLabel: i18n.t("button.reset"),
             language: i18n.t,
             fixedParameters: {
-                _elements: "id,title",
+                _elements: "id,title,phase",
                 _sort: "-_lastUpdated",
-                phase: "template",
+                "phase:not": "template",
             },
             inputs: [
                 {
@@ -114,6 +132,13 @@ const Studies: FunctionComponent = () => {
                 label: i18n.t("label.name"),
                 type: "text",
                 searchParamsName: "title:contains",
+                },
+                {
+                label: "Phase",
+                type: "select",
+                placeholder: i18n.t("defaultvalue.phase"),
+                options: researchStudyPhases.map(getOption),
+                searchParamsName: "phase",
                 },
             ],
             }}
@@ -127,13 +152,18 @@ const Studies: FunctionComponent = () => {
                 {
                 header: i18n.t("label.name"),
                 dataField: "name",
-                width: "66%",
+                width: "40%",
+                },
+                {
+                header: "Phase",
+                dataField: "phase",
+                width: "25%",
                 },
             ],
             action: [
                 {
-                    icon: faEye,
-                    onClick: onDetails,
+                icon: faEye,
+                onClick: onDetails,
                 },
             ],
             mapResourceToData: (resource: any) => {
@@ -141,7 +171,10 @@ const Studies: FunctionComponent = () => {
                     return {
                     id: resource.id,
                     name: resource.title,
-                    }
+                    phase:
+                        resource.phase?.coding?.[0]?.display ??
+                        resource.phase?.coding?.[0]?.code,
+                    };
                 } catch (error) {
                     console.error("Error mapping resource to data:", error);
                     onError(); 
@@ -158,4 +191,4 @@ const Studies: FunctionComponent = () => {
   );
 };
 
-export default Studies;
+export default StudiesInstances;

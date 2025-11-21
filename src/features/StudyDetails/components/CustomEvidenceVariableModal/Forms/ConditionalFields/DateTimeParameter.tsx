@@ -73,8 +73,7 @@ const DateTimeParameter: FunctionComponent<{
   /////////////////////////////////////////////
 
   return (
-    <Form.Group className="mb-3">
-      <Form.Label>{i18n.t("label.date")}</Form.Label>
+    <Form.Group>
       <Form.Control
         type="datetime-local"
         placeholder={i18n.t("placeholder.date")}

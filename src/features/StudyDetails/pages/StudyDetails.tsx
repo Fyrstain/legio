@@ -14,10 +14,7 @@ import EvidenceVariableManager from "../components/EvidenceVariableManager/Evide
 // Services
 import StudyService from "../services/study.service";
 // Model
-import {
-  EvidenceVariableModel,
-  EvidenceVariableUtils,
-} from "../../../shared/models/EvidenceVariable.model";
+import { EvidenceVariableModel } from "../../../shared/models/EvidenceVariable.model";
 // Resources
 import { List, ResearchStudy } from "fhir/r5";
 // Translation
@@ -49,7 +46,7 @@ const StudyDetails: FunctionComponent = () => {
   /////////////////////////////////////
 
   const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
   });
 
   const valueSetLoader = new ValueSetLoader(fhirClient);
@@ -73,7 +70,10 @@ const StudyDetails: FunctionComponent = () => {
   const [loading, setLoading] = useState(false);
 
   // Study informations
+  const [studyResource, setStudyResource] = useState<ResearchStudy | null>(null);
   const { studyId } = useParams();
+  const [inclusionCriteriaRef, setInclusionCriteriaRef] = useState<string>("");
+  const [studyVariableRef, setStudyVariableRef] = useState<string>("");
   const [studyDetails, setStudyDetails] = useState({
     name: "",
     title: "",
@@ -110,7 +110,6 @@ const StudyDetails: FunctionComponent = () => {
 
   // A flag to indicate if no patients were found during cohorting, to show a warning
   const [noPatientsFound, setNoPatientsFound] = useState(false);
-
   //////////////////////////////
   //           Error          //
   //////////////////////////////
@@ -152,6 +151,16 @@ const StudyDetails: FunctionComponent = () => {
       // Load the ResearchStudy resource from the backend
       const response = await StudyService.loadStudy(studyId ?? "");
       const study: ResearchStudy = response as ResearchStudy;
+      setStudyResource(study);
+      // Extract inclusion criteria reference
+      const inclusionRef = study.recruitment?.eligibility?.reference || "";
+      setInclusionCriteriaRef(inclusionRef.replace("EvidenceVariable/", ""));
+      // Extract study variable reference
+      const studyVarRef = study.extension
+      ?.find(ext => ext.url === "https://www.isis.com/StructureDefinition/EXT-Datamart")
+      ?.extension?.find(ext => ext.url === "variable")
+      ?.valueReference?.reference || "";
+      setStudyVariableRef(studyVarRef.replace("EvidenceVariable/", ""));
       // Find the local contact and study sponsor contact by the role code
       const localContact =
         study.associatedParty?.find(
@@ -578,7 +587,10 @@ const StudyDetails: FunctionComponent = () => {
         {/* Section with the Inclusion Criteria and Study Variables accordeons  */}
         <EvidenceVariableManager
           studyId={studyId!}
+          study={studyResource!}
           editMode={isEditingForm}
+          inclusionCriteriaRef={inclusionCriteriaRef}
+          studyVariableRef={studyVariableRef}
           onLoading={setLoading}
           onError={onError}
           onStudyVariablesChange={setStudyVariables}

@@ -13,6 +13,8 @@ import { Route, Routes, useLocation, useNavigationType } from "react-router-dom"
 // Pages
 import Home from "../shared/pages/Home/Home";
 import Studies from "../features/Studies/pages/Studies";
+import StudiesInstances from '../features/Studies/pages/StudiesInstances';
+import StudyDefinitionInstances from "../features/Studies/pages/StudyDefinitionInstances";
 import Error from "../shared/pages/Error/Error";
 import InProgress from "../shared/pages/InProgress/InProgress";
 import StudyDetails from "../features/StudyDetails/pages/StudyDetails";
@@ -26,6 +28,9 @@ i18n
   .init({
     fallbackLng: 'en',
     supportedLngs: ['fr', 'en'],
+     backend: {
+      loadPath: `${process.env.PUBLIC_URL}/locales/{{lng}}/{{ns}}.json`,
+    }
   })
 
 dayjs.extend(relativeTime);
@@ -68,10 +73,23 @@ function App() {
         title = "Studies";
         metaDescription = "";
         break;
+      case "/StudiesInstances":
+        title = "Studies Instances";             
+        metaDescription = "";       
+        break;                                           
       case "/Study/:studyId":
         title = "Study Details";
         metaDescription = "";
         break;
+      default:
+        break;
+    }
+
+    // If no exact match was found above, check dynamic routes.  For example,
+    // '/Studies/<definitionId>' should set a custom title.  This logic is
+    // placed outside the switch to avoid interfering with case fallthrough.
+    if (!title && pathname.startsWith("/Studies/") && pathname.split("/").length === 3) {
+      title = "Study Instances";
     }
 
     if (title) {
@@ -110,7 +128,16 @@ function App() {
       <Route
         path="/Studies"
         element={<Studies />}
-      /> 
+      />
+      <Route
+        path="/StudiesInstances"
+        element={<StudiesInstances />}
+      />
+      {/* Intermediate page showing definition metadata and instances */}
+      <Route
+        path="/Studies/:definitionId"
+        element={<StudyDefinitionInstances />}
+      />
       <Route
         path="/Study/:studyId"
         element={<StudyDetails />}

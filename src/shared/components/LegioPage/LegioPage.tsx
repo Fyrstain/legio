@@ -52,26 +52,26 @@ const LegioPage: FunctionComponent<{
         // Legio logo
         logoLink: (process.env.PUBLIC_URL ?? "") + "/assets/Legiologo.png",
         alt: "Legio Logo",
-        applicationItems: [
-            ...(process.env.REACT_APP_POLUS_LOGO
-              ? [
-                  {
-                    logoLink: process.env.REACT_APP_POLUS_LOGO,
-                    link: process.env.REACT_APP_POLUS_LOGO_LINK ?? "/",
-                    alt: "Polus Logo",
-                  },
-                ]
-              : []),
-            ...(process.env.REACT_APP_SPHINX_LOGO
-              ? [
-                  {
-                    logoLink: process.env.REACT_APP_SPHINX_LOGO,
-                    link: process.env.REACT_APP_SPHINX_LOGO_LINK ?? "/",
-                    alt: "Sphinx Logo",
-                  },
-                ]
-              : []),
-          ],
+        // applicationItems: [
+        //     ...(process.env.REACT_APP_POLUS_LOGO
+        //       ? [
+        //           {
+        //             logoLink: process.env.REACT_APP_POLUS_LOGO,
+        //             link: process.env.REACT_APP_POLUS_LOGO_LINK ?? "/",
+        //             alt: "Polus Logo",
+        //           },
+        //         ]
+        //       : []),
+        //     ...(process.env.REACT_APP_SPHINX_LOGO
+        //       ? [
+        //           {
+        //             logoLink: process.env.REACT_APP_SPHINX_LOGO,
+        //             link: process.env.REACT_APP_SPHINX_LOGO_LINK ?? "/",
+        //             alt: "Sphinx Logo",
+        //           },
+        //         ]
+        //       : []),
+        //   ],
         // Authentication
         //   authentication: {
         //     handleLogin: handleLogin,
@@ -93,6 +93,10 @@ const LegioPage: FunctionComponent<{
             //     }
             // ]
             },
+            {
+            title: i18n.t("navbar.items.studyinstances"),           
+            link: (process.env.PUBLIC_URL ?? "") + "/StudiesInstances", 
+            },                                                         
         ],
         // the user items
         // Admin, Login, Logout are the default items
