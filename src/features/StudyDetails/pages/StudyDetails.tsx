@@ -20,10 +20,9 @@ import { List, ResearchStudy } from "fhir/r5";
 // Translation
 import i18n from "i18next";
 // React
-import { Alert, Button } from "react-bootstrap";
+import { Alert, Button, Table } from "react-bootstrap";
 // HL7 Front Library
 import {
-  PaginatedTable,
   SimpleCode,
   Title,
   ValueSetLoader,
@@ -101,6 +100,9 @@ const StudyDetails: FunctionComponent = () => {
 
   // Cohorting and datamart generation result
   const [datamartResult, setDatamartResult] = useState<List | undefined>();
+
+  // Transformed Parameters data for the table
+  const [datamartParameters, setDatamartParameters] = useState<any[]>([]);
 
   // Existing datamart list ID, used to check if a datamart already exists for the study
   const [isExistingDatamartListId, setIsExistingDatamartListId] =
@@ -401,16 +403,56 @@ const StudyDetails: FunctionComponent = () => {
           ?.extension?.find((se: any) => se.url === "evaluation")
           ?.valueReference?.reference;
 
-        setDatamartListId(extractListIdFromRef(evalRef));
+        const listId = extractListIdFromRef(evalRef);
+        setDatamartListId(listId);
+
+        // First, fetch the List to get Parameter references
+        const listResponse = await fetch(`${process.env.REACT_APP_FHIR_URL ?? "fhir"}/List/${listId}`);
+        const list = await listResponse.json();
+        
+        // Extract Parameter references from the List
+        const parameterRefs = (list.entry || []).map((entry: any) => entry.item.reference);
+        
+        // Fetch each Parameter resource
+        const parameterPromises = parameterRefs.map((ref: string) => 
+          fetch(`${process.env.REACT_APP_FHIR_URL ?? "fhir"}/${ref}`).then(r => r.json())
+        );
+        
+        const parameters = await Promise.all(parameterPromises);
+        
+        // Transform Parameter resources
+        const parametersResources = parameters.map((paramResource: any) => {
+            const data: any = {};
+            const subjectParam = (paramResource.parameter ?? []).find(
+              (p: any) => p.name === "Patient"
+            );
+            data.subjectId = subjectParam?.valueIdentifier?.value ?? "N/A";
+
+            // init only for variables that have expressions
+            studyVariablesWithExpressions.forEach((v) => {
+              const name = v.getExpression()!;
+              data[name] = "N/A";
+            });
+
+            (paramResource.parameter ?? []).forEach((param: any) => {
+              if (param.name !== "Patient") {
+                data[param.name] = StudyService.getParameterValue(param);
+              }
+            });
+            return data;
+          });
+
+        setDatamartParameters(parametersResources);
       } catch (e) {
         console.error(
           "[Datamart] Unable to reload ResearchStudy for evaluation List:",
           e
         );
         setDatamartListId("");
+        setDatamartParameters([]);
       }
     })();
-  }, [studyId, datamartResult?.id]);
+  }, [studyId, datamartResult?.id, studyVariablesWithExpressions]);
 
   /////////////////////////////////////////////
   //                Content                  //
@@ -599,45 +641,28 @@ const StudyDetails: FunctionComponent = () => {
                   level={3}
                   content={i18n.t("label.generateddatamart")}
                 ></Title>
-                <PaginatedTable
-                  columns={[
-                    { header: "Patient", dataField: "subjectId", width: "30%" },
-                    ...studyVariablesWithExpressions.map((v) => ({
-                      header: v.getExpression()!,
-                      dataField: v.getExpression()!,
-                    })),
-                  ]}
-                  mapResourceToData={(resource: any) => {
-                    const data: any = {};
-                    const subjectParam = (resource.parameter ?? []).find(
-                      (p: any) => p.name === "Patient"
-                    );
-                    data.subjectId =
-                      subjectParam?.valueIdentifier?.value ?? "N/A";
-
-                    // init only for variables that have expressions
-                    studyVariablesWithExpressions.forEach((v) => {
-                      const name = v.getExpression()!;
-                      data[name] = "N/A";
-                    });
-
-                    (resource.parameter ?? []).forEach((param: any) => {
-                      if (param.name !== "Patient") {
-                        data[param.name] =
-                          StudyService.getParameterValue(param);
-                      }
-                    });
-                    return data;
-                  }}
-                  searchProperties={{
-                    serverUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-                    resourceType: "Parameters",
-                    searchParameters: {
-                      "_has:List:item:_id": datamartListId || "",
-                    },
-                  }}
-                  onError={onError}
-                />
+                <div className="table-responsive">
+                  <Table striped bordered hover>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "30%" }}>Patient</th>
+                        {studyVariablesWithExpressions.map((v, index) => (
+                          <th key={index}>{v.getExpression()!}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {datamartParameters.map((row, rowIndex) => (
+                        <tr key={rowIndex}>
+                          <td>{row.subjectId}</td>
+                          {studyVariablesWithExpressions.map((v, colIndex) => (
+                            <td key={colIndex}>{row[v.getExpression()!]}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
               </>
             )}
           </div>
