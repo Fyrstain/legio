@@ -183,7 +183,12 @@
     "selectcriteria": "-- Sélectionnez un critère --",
     "selectstudyvariable": "-- Sélectionnez une variable d'étude --",
     "entercode": "Veuillez remplir avec un code",
-    "allPhases": "Toutes les phases"
+    "allPhases": "Toutes les phases",
+    "quantity": {
+      "value": "Entrer une valeur décimale",
+      "unit": "Entrer une unité (ex: kg, cm, mg/dL)",
+      "system": "Entrer un système (ex: http://unitsofmeasure.org)"
+    }
   },
   "option": {
     "addnewcriteria": "Ajouter un nouveau critère",

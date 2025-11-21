@@ -762,6 +762,24 @@ function mapFormDataToDefinitionExpression(
           });
         }
         break;
+      case "quantity":
+        if (
+          criteriaValue.value !== undefined &&
+          typeof criteriaValue.value === "object" &&
+          "value" in criteriaValue.value
+        ) {
+          paramExtension.extension.push({
+            url: "value",
+            valueQuantity: {
+              value: criteriaValue.value.value,
+              comparator: criteriaValue.value.comparator,
+              unit: criteriaValue.value.unit,
+              code: criteriaValue.value.code,
+              system: criteriaValue.value.system,
+            },
+          });
+        }
+        break;
       default:
         console.error(
           "Type of criteriaValue not handled in mapFormDataToDefinitionExpression:",
@@ -1164,6 +1182,24 @@ async function updateEvidenceVariableWithParameterization(
                   paramExtension.extension.push({
                     url: "value",
                     valueString: criteriaValue.value,
+                  });
+                }
+                break;
+              case "quantity":
+                if (
+                  criteriaValue.value !== undefined &&
+                  typeof criteriaValue.value === "object" &&
+                  "value" in criteriaValue.value
+                ) {
+                  paramExtension.extension.push({
+                    url: "value",
+                    valueQuantity: {
+                      value: criteriaValue.value.value,
+                      comparator: criteriaValue.value.comparator,
+                      unit: criteriaValue.value.unit,
+                      code: criteriaValue.value.code,
+                      system: criteriaValue.value.system,
+                    },
                   });
                 }
                 break;

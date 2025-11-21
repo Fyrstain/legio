@@ -54,25 +54,25 @@
         }
     },
     "button": {
-      "search": "Search",
-      "reset": "Reset",
-      "validate": "Submit",
-      "generate": "Generate",
-      "export": "Export CSV",
-      "savechanges": "Save Changes",
-      "save": "Save",
-      "add": "Add",
-      "cancel": "Cancel",
-      "editstudy": "Edit Study",
-      "filterobsolescence": "Filter by Obsolescence",
-      "addcriteria": "Add Criteria",
-      "addcharacteristic": "Add Characteristic",
-      "edittheevidencevariable": "Edit the Evidence Variable",
-      "editthecharacteristic": "Edit the Characteristic",
-      "addstudyvariable": "Add a Study Variable",
-      "createInstance": "Create Instance",
-      "seeInstance": "See Instance",
-      "showMore": "Show More"
+        "search": "Search",
+        "reset": "Reset",
+        "validate": "Submit",
+        "generate": "Generate",
+        "export": "Export CSV",
+        "savechanges": "Save Changes",
+        "save": "Save",
+        "add": "Add",
+        "cancel": "Cancel",
+        "editstudy": "Edit Study",
+        "filterobsolescence": "Filter by Obsolescence",
+        "addcriteria": "Add Criteria",
+        "addcharacteristic": "Add Characteristic",
+        "edittheevidencevariable": "Edit the Evidence Variable",
+        "editthecharacteristic": "Edit the Characteristic",
+        "addstudyvariable": "Add a Study Variable",
+        "createInstance": "Create Instance",
+        "seeInstance": "See Instance",
+        "showMore": "Show More"
     },
     "label": {
         "name": "Name",
@@ -95,7 +95,7 @@
         "true": "True",
         "false": "False",
         "logicaloperator": "Logical operator",
-        "equals" : "Equals",
+        "equals": "Equals",
         "lessthan": "Less than",
         "greaterthan": "Greater than",
         "lessthanorequal": "Less than or equal",
@@ -122,7 +122,9 @@
         "criteria": "Criteria",
         "studyvariable": "Study Variable",
         "excluded": "Excluded",
-        "phase": "Phase"
+        "phase": "Phase",
+        "unit": "Unit",
+        "system": "System"
     },
     "defaultvalue": {
         "phase": "-- Please choose a phase --"
@@ -184,7 +186,12 @@
         "selectcriteria": "-- Select a criteria --",
         "selectstudyvariable": "-- Select a study variable --",
         "entercode": "Enter code",
-        "allPhases": "All Phases"
+        "allPhases": "All Phases",
+        "quantity": {
+            "value": "Enter a decimal value",
+            "unit": "Enter a unit (e.g. kg, cm, mg/dL)",
+            "system": "Enter a system (e.g. http://unitsofmeasure.org)"
+        }
     },
     "option": {
         "addnewcriteria": "Add new Criteria",
