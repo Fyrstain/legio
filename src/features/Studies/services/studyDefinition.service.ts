@@ -215,11 +215,12 @@ export async function instantiateStudy(
     })) as Bundle;
 
     const entries = instanceBundle.entry ?? [];
-    if (entries.length === 0) {
+
+    const researchStudies = entries.filter((item: any) => item.resource?.resourceType === "ResearchStudy");
+    if (researchStudies.length !== 1) {
       return null;
     }
-
-    return entries[0].resource as ResearchStudy;
+    return researchStudies[0].resource as ResearchStudy;
   } catch (err) {
     console.error("Error instantiating study:", err);
     throw err;
