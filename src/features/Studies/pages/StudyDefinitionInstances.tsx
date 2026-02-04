@@ -123,7 +123,7 @@ const StudyDefinitionInstances: React.FC = () => {
         const bundle = (await fhirClient.search({
           resourceType: "ResearchStudy",
           searchParams: {
-            definition: defCanonical,
+            "url:below": defCanonical,
             _sort: "-_lastUpdated",
           },
         })) as Bundle;
