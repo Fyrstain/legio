@@ -18,6 +18,8 @@ import StudyDefinitionInstances from "../features/Studies/pages/StudyDefinitionI
 import Error from "../shared/pages/Error/Error";
 import InProgress from "../shared/pages/InProgress/InProgress";
 import StudyDetails from "../features/StudyDetails/pages/StudyDetails";
+import { toPublicUrl } from '../shared/services/PublicUrl';
+import ImplementationGuidePage from '../shared/pages/ImplementationGuidePage/ImplementationGuidePage';
 
 require('dayjs/locale/fr');
 
@@ -29,7 +31,7 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['fr', 'en'],
      backend: {
-      loadPath: `${process.env.PUBLIC_URL}/locales/{{lng}}/{{ns}}.json`,
+      loadPath: toPublicUrl("/locales/{{lng}}/{{ns}}.json"),
     }
   })
 
@@ -82,6 +84,11 @@ function App() {
         metaDescription = "";
         break;
       default:
+        break;
+      case "/ImplementationGuide":
+      case "/Saturne/ImplementationGuide":
+        title = `${applicationName} - Implementation Guide`;
+        metaDescription = "";
         break;
     }
 
@@ -149,6 +156,14 @@ function App() {
       <Route
         path="/InProgress"
         element={<InProgress />}
+      />
+      <Route
+        path="/ImplementationGuide"
+        element={<ImplementationGuidePage />}
+      />
+      <Route
+        path="/Saturne/ImplementationGuide"
+        element={<ImplementationGuidePage />}
       />
     </Routes>
   );

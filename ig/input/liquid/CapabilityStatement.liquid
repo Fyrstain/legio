@@ -1,0 +1,704 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+    <div
+      style="
+        display: inline-block;
+        background-color: #d9e0e7;
+        padding: 6px;
+        margin: 4px;
+        border: 1px solid #8da1b4;
+        border-radius: 5px;
+        width: 100%;
+      "
+    >
+      {% if CapabilityStatement.id.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>ID</b>: {{ CapabilityStatement.id }}</p>
+      {% endif %}
+      {% if CapabilityStatement.url.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>URL</b>: {{ CapabilityStatement.url }}</p>
+      {% endif %}
+      {% if CapabilityStatement.version.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Version</b>: {{ CapabilityStatement.version }}</p>
+      {% endif %}
+      {% if CapabilityStatement.name.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Name</b>: {{ CapabilityStatement.name }}</p>
+      {% endif %}
+      {% if CapabilityStatement.status.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Status</b>: {{ CapabilityStatement.status }}</p>
+      {% endif %}
+      {% if CapabilityStatement.experimental.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Experimental</b>: {{ CapabilityStatement.experimental }}</p>
+      {% endif %}
+      {% if CapabilityStatement.date.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Date</b>: {{ CapabilityStatement.date }}</p>
+      {% endif %}
+      {% if CapabilityStatement.fhirVersion.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>FHIR Version</b>: {{ CapabilityStatement.fhirVersion }}</p>
+      {% endif %}
+      {% if CapabilityStatement.description.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Description</b>:</p>
+        {{ CapabilityStatement.description }}
+      {% endif %}
+      {% if CapabilityStatement.purpose.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Purpose</b>:</p>
+        {{ CapabilityStatement.purpose }}
+      {% endif %}
+      {% if CapabilityStatement.kind.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Kind</b>: {{ CapabilityStatement.kind }}</p>
+      {% endif %}
+  
+      {% if CapabilityStatement.software.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;">
+          <b>Software covered</b>: {{ CapabilityStatement.software.name }}
+          {% if CapabilityStatement.software.version.exists() %}
+            with version {{ CapabilityStatement.software.version }}
+          {% endif %}
+        </p>
+      {% endif %}
+      {% if CapabilityStatement.implementation.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;"><b>Implementation</b>:</p>
+        {{ CapabilityStatement.implementation.description }}
+        {% if CapabilityStatement.implementation.url.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+            Base URL for the installation: {{ CapabilityStatement.implementation.url }}
+          </p>
+        {% endif %}
+        {% if CapabilityStatement.implementation.custodian.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+            Organization managing the data:{{ CapabilityStatement.implementation.custodian }}
+          </p>
+        {% endif %}
+      {% endif %}
+  
+      {% if CapabilityStatement.format.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;">
+          <b>Formats</b>:
+          {% for format in CapabilityStatement.format %}
+            <code>{{ format }}</code>
+          {% endfor %}
+        </p>
+      {% endif %}
+      {% if CapabilityStatement.patchFormat.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;">
+          <b>Patch Formats</b>:
+          {% for patchFormat in CapabilityStatement.patchFormat %}
+            <code>{{ patchFormat }}</code>
+          {% endfor %}
+        </p>
+      {% endif %}
+      {% if CapabilityStatement.acceptLanguage.exists() %}
+        <p style="padding-bottom: 0px; margin: 0px;">
+          <b>Languages supported</b>:
+          {% for patchFormat in CapabilityStatement.acceptLanguage %}
+            {{ acceptLanguage }} |
+          {% endfor %}
+        </p>
+      {% endif %}
+  
+      {% if CapabilityStatement.instantiates.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+              <b>Instantiates</b>:
+          </p>
+          <ul>
+              {% for instantiates in CapabilityStatement.instantiates %}
+              <li>{{ instantiates }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+      {% if CapabilityStatement.imports.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+              <b>Imports</b>:
+          </p>
+          <ul>
+              {% for imports in CapabilityStatement.imports %}
+              <li>{{ imports }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+      {% if CapabilityStatement.ImplementationGuide.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+              <b>Implementation guides supported</b>:
+          </p>
+          <ul>
+              {% for implementationGuide in CapabilityStatement.ImplementationGuide %}
+              <li>{{ implementationGuide }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+      {% if CapabilityStatement.publisher.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+              <b>Publisher</b>: {{ CapabilityStatement.publisher }}
+          </p>
+      {% endif %}
+      {% if CapabilityStatement.jurisdiction.exists() %}
+          <p style="padding-bottom: 0px; margin: 0px;">
+              <b>Jurisdiction</b>:
+              {% for jurisdiction in CapabilityStatement.jurisdiction %}
+                  {{ jurisdiction.coding.display }}: 
+                  {{ jurisdiction.coding.system }}#{{ jurisdiction.coding.code }}
+              {% endfor %}
+          </p>
+      {% endif %}
+      {% if CapabilityStatement.contact.exists() %}
+        <table class="grid" style="width: 100%;">
+          <tr style="background-color: #333f4c; color: #ffffff;">
+            <th style="text-align: center;"><b>Contact Name</b></th>
+            <th style="text-align: center;"><b>Contact Points</b></th>
+          </tr>
+          {% for contact in CapabilityStatement.contact %}
+            <tr style="background-color: #ffffff;">
+              <td>
+                {% if contact.name %} {{ contact.name }} {% else %} N/A {% endif %}
+              </td>
+              <td>
+                <ul>
+                  {% for contactPoint in contact.telecom %}
+                    <li>
+                      {% if contactPoint.system = 'email' %}
+                        <a href="mailto:{{contactPoint.value}}">{{ contactPoint.value }}</a>
+                      {% elsif contactPoint.system = 'url' %}
+                        <a href="{{contactPoint.value}}">{{ contactPoint.value }}</a>
+                      {% else %}
+                        {{ contactPoint.value }}
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% endif %}
+    </div>
+    <br/>
+  
+    <div
+      style="
+        display: inline-block;
+        padding: 6px;
+        margin: 4px;
+        width: 100%;
+      "
+    >
+      {% if CapabilityStatement.rest.resource.exists() %}
+        <h3>RESTful Capabilities Summary</h3>
+        <table class="grid" style="width: 100%;">
+          <tr style="background-color: #333f4c; color: #ffffff;">
+            <th style="text-align: center;"><b>Resource Type</b></th>
+            <th style="text-align: center;"><b>Supported Profiles</b></th>
+            <th style="text-align: center;"><b>Supported Search Parameters</b></th>
+            <th style="text-align: center;"><b>Supported Operations</b></th>
+          </tr>
+          {% for resource in CapabilityStatement.rest.resource %}
+            <tr>
+              <td>
+                <b>{{ resource.type }}</b>
+              </td>
+              <td>
+                {% if resource.supportedProfile.exists() %}
+                  <ul>
+                    {% for supportedProfile in resource.supportedProfile %}
+                      <li>
+                        {{ supportedProfile }}
+                        <br/>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>
+                {% if resource.searchParam.exists() %}
+                  {% for searchParam in resource.searchParam %}
+                    <code>{{ searchParam.name }}</code>
+                  {% endfor %}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>
+                {% if resource.operation.exists() %}
+                  {% for operation in resource.operation %}
+                    <code>{{ operation.name }}</code>
+                  {% endfor %}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+        <br/>
+      {% endif %}
+  
+      {% if CapabilityStatement.rest.exists() %}
+        <h3>RESTful Capabilities by Resource</h3>
+        {% for rest in CapabilityStatement.rest %}
+          <div
+            style="
+              display: inline-block;
+              background-color: #d9e0e7;
+              padding: 6px;
+              margin: 4px;
+              border: 1px solid #8da1b4;
+              border-radius: 5px;
+              width: 100%;
+            "
+          >
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Mode</b>: {{ rest.mode }}</p>
+            {% if rest.documentation.exists() %}
+              <p style="padding-bottom: 0px; margin: 0px;"><b>Documentation</b>:</p>
+              {{ rest.documentation }}
+            {% endif %}
+            {% if rest.security.exists() %}
+              <b>Security Section</b><br/>
+              {% for security in rest.security %}
+                {% if security.cors.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Cors</b>: {{ security.cors }}</p>
+                {% endif %}
+                {% if security.service.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Services</b>:
+                      {% for service in security.service %}
+                      {{ service }} |
+                      {% endfor %}
+                  </p>
+                {% endif %}
+                {% if security.description.exists() %}
+                  <b>Description</b>: {{ security.description }}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+  
+            {% for resource in rest.resource %}
+              <div
+                style="
+                  display: inline-block;
+                  background-color: #f0f1f2;
+                  padding: 6px;
+                  margin: 4px;
+                  border: 1px solid #8da1b4;
+                  border-radius: 5px;
+                  width: 100%;
+                "
+              >
+                <h4>{{ resource.type }}</h4>
+                {% if resource.profile.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Profile</b>: {{ resource.profile }}</p>
+                {% endif %}
+                {% if resource.supportedProfile.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Supported Profiles</b>:</p>
+                  <ul>
+                    {% for supportedProfile in resource.supportedProfile %}
+                      <li>{{ supportedProfile }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+                {% if resource.documentation.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Documentation</b>:</p> 
+                  {{ resource.documentation }}
+                {% endif %}
+  
+                {% if resource.interaction.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Profile interaction</b>:</p>
+                  <table class="grid" style="width: 100%;">
+                    <tr style="background-color: #333f4c; color: #ffffff;">
+                      <th style="text-align: center;"><b>Conformance</b></th>
+                      <th style="text-align: center;"><b>Code</b></th>
+                      <th style="text-align: center;"><b>Documentation</b></th>
+                    </tr>
+                    {% for interaction in resource.interaction %}
+                      <tr>
+                        <td>
+                          {% if interaction.extension.exists() %}
+                            <b>{{ interaction.extension.value }}</b>
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </td>
+                        <td>
+                          <code>{{ interaction.code }}</code>
+                        </td>
+                        <td>
+                          {% if interaction.documentation.exists() %}
+                            {{ interaction.documentation }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                {% endif %}
+  
+                {% if resource.searchParam.exists() %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Search Parameters</b>:</p>
+                  <table class="grid" style="width: 100%;">
+                    <tr style="background-color: #333f4c; color: #ffffff;">
+                      <th style="text-align: center;"><b>Name</b></th>
+                      <th style="text-align: center;"><b>Definition</b></th>
+                      <th style="text-align: center;"><b>Type</b></th>
+                      <th style="text-align: center;"><b>Documentation</b></th>
+                    </tr>
+                    {% for searchParam in resource.searchParam %}
+                      <tr>
+                        <td>
+                          <b>{{ searchParam.name }}</b>
+                        </td>
+                        <td>
+                          {% if searchParam.definition.exists() %}{{ searchParam.definition }} {% else %} N/A {% endif %}
+                        </td>
+                        <td>
+                          <code>{{ searchParam.type }}</code>
+                        </td>
+                        <td>
+                          {% if searchParam.documentation.exists() %}
+                            {{ searchParam.documentation }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                {% endif %}
+  
+                {% if resource.operation %}
+                  <p style="padding-bottom: 0px; margin: 0px;"><b>Operations</b>:</p>
+                  <table class="grid" style="width: 100%;">
+                    <tr style="background-color: #333f4c; color: #ffffff;">
+                      <th style="text-align: center;"><b>Name</b></th>
+                      <th style="text-align: center;"><b>Definition</b></th>
+                      <th style="text-align: center;"><b>Documentation</b></th>
+                    </tr>
+                    {% for operation in resource.operation %}
+                      <tr>
+                        <td>
+                          <b>{{ operation.name }}</b>
+                        </td>
+                        <td>{{ operation.definition }}</td>
+                        <td>
+                          {% if operation.documentation.exists() %}
+                            {{ operation.documentation }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                {% endif %}
+  
+                {% if resource.versioning
+                  or resource.readHistory
+                  or resource.updateCreate
+                  or resource.conditionalCreate
+                  or resource.conditionalRead
+                  or resource.conditionalUpdate
+                  or resource.conditionalPatch
+                  or resource.conditionalDelete
+                  or resource.referencePolicy
+                  or resource.searchInclude
+                  or resource.searchRevInclude
+                %}
+                <p style="padding-bottom: 0px; margin: 0px;"><b>More operations supported by the server</b>:</p>
+                  {% if resource.versioning
+                    or resource.readHistory
+                    or resource.updateCreate
+                    or resource.conditionalCreate
+                    or resource.conditionalRead
+                    or resource.conditionalUpdate
+                    or resource.conditionalPatch
+                    or resource.conditionalDelete
+                  %}
+                    <table class="grid" style="width: 100%;">
+                      <tr style="background-color: #333f4c; color: #ffffff;">
+                        {% if resource.versioning.exists() %}
+                          <th style="text-align: center;"><b>Versioning</b></th>
+                        {% endif %}
+                        {% if resource.readHistory.exists() %}
+                          <th style="text-align: center;"><b>Read History</b></th>
+                        {% endif %}
+                        {% if resource.updateCreate.exists() %}
+                          <th style="text-align: center;"><b>Update Create</b></th>
+                        {% endif %}
+                        {% if resource.conditionalCreate.exists() %}
+                          <th style="text-align: center;"><b>Conditional Create</b></th>
+                        {% endif %}
+                        {% if resource.conditionalRead.exists() %}
+                          <th style="text-align: center;"><b>Conditional Read</b></th>
+                        {% endif %}
+                        {% if resource.conditionalUpdate.exists() %}
+                          <th style="text-align: center;"><b>Conditional Update</b></th>
+                        {% endif %}
+                        {% if resource.conditionalPatch.exists() %}
+                          <th style="text-align: center;"><b>Conditional Patch</b></th>
+                        {% endif %}
+                        {% if resource.conditionalDelete.exists() %}
+                          <th style="text-align: center;"><b>Conditional Delete</b></th>
+                        {% endif %}
+                      </tr>
+                      <tr>
+                        {% if resource.versioning.exists() %}
+                          <td>
+                            <code>{{ resource.versioning }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.readHistory.exists() %}
+                          <td>
+                            <code>{{ resource.readHistory }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.updateCreate.exists() %}
+                          <td>
+                            <code>{{ resource.updateCreate }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.conditionalCreate.exists() %}
+                          <td>
+                            <code>{{ resource.conditionalCreate }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.conditionalRead.exists() %}
+                          <td>
+                            <code>{{ resource.conditionalRead }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.conditionalUpdate.exists() %}
+                          <td>
+                            <code>{{ resource.conditionalUpdate }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.conditionalPatch.exists() %}
+                          <td>
+                            <code>{{ resource.conditionalPatch }}</code>
+                          </td>
+                        {% endif %}
+                        {% if resource.conditionalDelete.exists() %}
+                          <td>
+                            <code>{{ resource.conditionalDelete }}</code>
+                          </td>
+                        {% endif %}
+                      </tr>
+                    </table>
+                  {% endif %}
+  
+                  {% if resource.referencePolicy.exists() %}
+                    <div>
+                      <p style="padding-bottom: 0px; margin: 0px;"><b>Reference Policy</b><br/></p>
+                      <ul style="column-count: 3;">
+                        {% for referencePolicy in resource.referencePolicy %}
+                          <li>
+                            <code>{{ referencePolicy }}</code>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  {% if resource.searchInclude.exists() %}
+                    <div>
+                      <p style="padding-bottom: 0px; margin: 0px;"><b>Search Include</b><br/></p>
+                      <ul style="column-count: 3;">
+                        {% for searchInclude in resource.searchInclude %}
+                          <li>
+                            <code>{{ searchInclude }}</code>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  {% if resource.searchRevInclude.exists() %}
+                    <div>
+                      <p style="padding-bottom: 0px; margin: 0px;"><b>Search RevInclude</b><br/></p>
+                      <ul style="column-count: 3;">
+                        {% for searchRevInclude in resource.searchRevInclude %}
+                          <li>
+                            <code>{{ searchRevInclude }}</code>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+            {% endfor %}
+  
+            {% if rest.interaction.exists() %}
+              <h3>RESTful interaction</h3>
+              <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                  <th style="text-align: center;"><b>Conformance</b></th>
+                  <th style="text-align: center;"><b>Code</b></th>
+                  <th style="text-align: center;"><b>Documentation</b></th>
+                </tr>
+                {% for interaction in rest.interaction %}
+                  <tr>
+                    <td>
+                      {% if interaction.extension.exists() %}
+                        <b>{{ interaction.extension.value }}</b>
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                    <td>
+                      <code>{{ interaction.code }}</code>
+                    </td>
+                    <td>
+                      {% if interaction.documentation.exists() %}
+                        {{ interaction.documentation }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+  
+            {% if rest.searchParam.exists() %}
+              <h3>RESTful Search Parameters</h3>
+              <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                  <th style="text-align: center;"><b>Name</b></th>
+                  <th style="text-align: center;"><b>Definition</b></th>
+                  <th style="text-align: center;"><b>Type</b></th>
+                  <th style="text-align: center;"><b>Documentation</b></th>
+                </tr>
+                {% for searchParam in rest.searchParam %}
+                  <tr>
+                    <td>
+                      <b>{{ searchParam.name }}</b>
+                    </td>
+                    <td>
+                      {% if searchParam.definition.exists() %}{{ searchParam.definition }} {% else %} N/A {% endif %}
+                    </td>
+                    <td>
+                      <code>{{ searchParam.type }}</code>
+                    </td>
+                    <td>
+                      {% if searchParam.documentation.exists() %}
+                        {{ searchParam.documentation }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+  
+            {% if rest.operation.exists() %}
+              <h3>RESTful Operations</h3>
+              <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                  <th style="text-align: center;"><b>Name</b></th>
+                  <th style="text-align: center;"><b>Definition</b></th>
+                  <th style="text-align: center;"><b>Documentation</b></th>
+                </tr>
+                {% for operation in rest.operation %}
+                  <tr>
+                    <td>
+                      <b>{{ operation.name }}</b>
+                    </td>
+                    <td>{{ operation.definition }}</td>
+                    <td>
+                      {% if operation.documentation.exists() %}{{ operation.documentation }} {% else %} N/A {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+          </div>
+          <br/>
+        {% endfor %}
+      {% endif %}
+  
+      {% if CapabilityStatement.messaging.exists() %}
+        <h3>Supported Messages</h3>
+        <div
+          style="
+            display: inline-block;
+            background-color: #d9e0e7;
+            padding: 6px;
+            margin: 4px;
+            border: 1px solid #8da1b4;
+            border-radius: 5px;
+            width: 100%;
+          "
+        >
+          {% for messaging in CapabilityStatement.messaging %}
+            {% if messaging.endpoint.exists() %}
+              <p style="padding-bottom: 0px; margin: 0px;"><b>Endpoints</b>:</p>
+              <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                  <th style="text-align: center;"><b>Protocol</b></th>
+                  <th style="text-align: center;"><b>Address</b></th>
+                </tr>
+                {% for endpoint in messaging.endpoint %}
+                  <tr>
+                    <td>{{ endpoint.protocol }}</td>
+                    <td>{{ endpoint.address }}</td>
+                  </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+  
+            {% if messaging.reliableCache.exists() %}
+              <p style="padding-bottom: 0px; margin: 0px;"><b>Reliable Message Cache Length</b>: {{ messaging.reliableCache }}</p>
+            {% endif %}
+            {% if messaging.documentation.exists() %}
+              <p style="padding-bottom: 0px; margin: 0px;"><b>Documentation</b>:</p> 
+              {{ messaging.documentation }}
+            {% endif %}
+  
+            {% if messaging.supportedMessage.exists() %}
+              <p style="padding-bottom: 0px; margin: 0px;"><b>Messages supported by this system</b>:</p>
+              <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                  <th style="text-align: center;"><b>Mode</b></th>
+                  <th style="text-align: center;"><b>Definition</b></th>
+                </tr>
+                {% for supportedMessage in messaging.supportedMessage %}
+                  <tr>
+                    <td>{{ supportedMessage.mode }}</td>
+                    <td>{{ supportedMessage.definition }}</td>
+                  </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if CapabilityStatement.document.exists() %}
+        <h3>Supported Documents</h3>
+        <div
+          style="
+            display: inline-block;
+            background-color: #d9e0e7;
+            padding: 6px;
+            margin: 4px;
+            border: 1px solid #8da1b4;
+            border-radius: 5px;
+            width: 100%;
+          "
+        >
+          <table class="grid" style="width: 100%;">
+            <tr style="background-color: #333f4c; color: #ffffff;">
+              <th style="text-align: center;"><b>Mode</b></th>
+              <th style="text-align: center;"><b>Profile</b></th>
+              <th style="text-align: center;"><b>Documentation</b></th>
+            </tr>
+            {% for document in CapabilityStatement.document %}
+              <tr>
+                <td>{{ document.mode }}</td>
+                <td>{{ document.profile }}</td>
+                <td>
+                  {% if document.documentation.exists() %}{{ document.documentation }} {% else %} N/A {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  

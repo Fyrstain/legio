@@ -4,6 +4,7 @@ import { FunctionComponent, JSXElementConstructor, ReactElement } from "react";
 import { Page, PageConfiguration } from "@fyrstain/hl7-front-library";
 // Translation
 import i18n from "i18next";
+import { toPublicUrl } from "../../services/PublicUrl";
 // Authentication
 // import UserService from "../../services/UserService";
 
@@ -50,7 +51,7 @@ const LegioPage: FunctionComponent<{
         language: i18n.t,
         navigationBarConfigs: {
         // Legio logo
-        logoLink: (process.env.PUBLIC_URL ?? "") + "/assets/Legiologo.png",
+        logoLink: toPublicUrl("/assets/Legiologo.png"),
         alt: "Legio Logo",
         // applicationItems: [
         //     ...(process.env.REACT_APP_POLUS_LOGO
@@ -85,7 +86,7 @@ const LegioPage: FunctionComponent<{
         menuItems: [
             {
             title: i18n.t("navbar.items.studies"),
-            link: (process.env.PUBLIC_URL ?? "") + "/Studies",
+            link: toPublicUrl ("/Studies"),
             // subItems: [
             //     {
             //         title: '',
@@ -95,7 +96,7 @@ const LegioPage: FunctionComponent<{
             },
             {
             title: i18n.t("navbar.items.studyinstances"),           
-            link: (process.env.PUBLIC_URL ?? "") + "/StudiesInstances", 
+            link: toPublicUrl ("/StudiesInstances"), 
             },                                                         
         ],
         // the user items
@@ -103,7 +104,7 @@ const LegioPage: FunctionComponent<{
         dropDownItems: [
             {
             title: "Admin",
-            link: (process.env.PUBLIC_URL ?? "") + "/InProgress",
+            link: toPublicUrl("/InProgress"),
             },
         ],
         // customItems: <ServerUrlField />
@@ -153,18 +154,22 @@ const LegioPage: FunctionComponent<{
         ],
         // TODO : Uncomment the items when the footer is ready
         items: [
-            // {
-            //   label: i18n.t("footer.items.about"),
-            //   link: (process.env.PUBLIC_URL ?? "") + "/InProgress",
-            // },
-            // {
-            //   label: i18n.t("footer.items.contact"),
-            //   link: (process.env.PUBLIC_URL ?? "") + "/InProgress",
-            // },
-            // {
-            //   label: i18n.t("footer.items.problemtracking"),
-            //   link: (process.env.PUBLIC_URL ?? "") + "/InProgress",
-            // },
+            {
+                label: i18n.t("footer.items.about"),
+                link: toPublicUrl("/InProgress"),
+            },
+            {
+                label: i18n.t("footer.items.contact"),
+                link: toPublicUrl("/InProgress"),
+            },
+            {
+                label: i18n.t("footer.items.problemtracking"),
+                link: toPublicUrl("/InProgress"),
+            },
+            {
+                label: i18n.t("footer.items.implementationguide"),
+                link: toPublicUrl("/ImplementationGuide"),
+            },
         ],
         },
     };

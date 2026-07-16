@@ -13,8 +13,9 @@ To preview and run the project on your device:
 1) Open project folder in <a href="https://code.visualstudio.com/download">Visual Studio Code</a>
 2) In the terminal, run `npm install`
 3) Run `npm run build` to retrieve images from the library
-4) Run `npm start` to view project in browser
-5) Launch the browser in no-cors mode : perform the command windows + R and enter this line : chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security, then press the 'Enter' key
+4) Run `npm run dev:ig` to generate the FHIR Implementation Guide and copy it into `public/ig`
+5) Run `npm start` to view project in browser
+6) Launch the browser in no-cors mode : perform the command windows + R and enter this line : chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security, then press the 'Enter' key
 
 For more information on integrating Nexus with our Maven, npm and Docker projects, please see the Nexus integration guide : <a href="https://github.com/Fyrstain/swf-infrastructure/blob/init/nexus/README.md">Nexus ReadMe</a>
 
@@ -183,3 +184,22 @@ The import is then made into your Keycloak with the `docker-compose.yml`:
 ```
 
 You should be able to use the users of the realm after the import.
+
+## FHIR Implementation Guide build
+
+The specification is stored in the `ig/` directory.
+
+Available npm commands:
+
+- `npm run build:ig`: downloads/updates the FHIR IG Publisher and builds the IG from `ig/`.
+- `npm run build:app`: builds the React application only.
+- `npm run copy:ig:public`: copies `ig/output` into `public/ig` for local development.
+- `npm run copy:ig:build`: copies `ig/output` into `build/ig` for production build.
+- `npm run dev:ig`: builds the IG and copies it into `public/ig`.
+- `npm run build`: runs the full production build: IG generation, React build, then IG copy.
+
+When using `npm start`, run `npm run dev:ig` first to make the IG available locally under `public/ig`.
+
+After `npm run build`, the generated application contains the specification under `build/ig`. When the app is served, the IG is available under the same base URL as the application, at `/ig/` or `<PUBLIC_URL>/ig/` when the app is deployed on a sub-path.
+
+The IG build requires Java and internet access at least when the publisher or dependencies need to be updated.
