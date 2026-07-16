@@ -3,8 +3,8 @@
   "version": "1.2.3",
   "private": true,
   "dependencies": {
-    "@fyrstain/hl7-front-library": "0.0.27-FINAL",
     "@fyrstain/fhir-front-library": "1.5.0-FINAL",
+    "@fyrstain/hl7-front-library": "0.0.27-FINAL",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -65,7 +65,10 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "typescript-plugin-css-modules": "^5.1.0",
-    "selenium-webdriver": "^4.27.0"
+    "copy-webpack-plugin": "^14.0.0",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.2.1",
+    "selenium-webdriver": "^4.27.0",
+    "typescript-plugin-css-modules": "^5.1.0"
   }
 }

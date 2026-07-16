@@ -86,8 +86,8 @@ function App() {
       default:
         break;
       case "/ImplementationGuide":
-      case "/Saturne/ImplementationGuide":
-        title = `${applicationName} - Implementation Guide`;
+      case "/Legio/ImplementationGuide":
+        title = `Implementation Guide`;
         metaDescription = "";
         break;
     }
@@ -162,7 +162,7 @@ function App() {
         element={<ImplementationGuidePage />}
       />
       <Route
-        path="/Saturne/ImplementationGuide"
+        path="/Legio/ImplementationGuide"
         element={<ImplementationGuidePage />}
       />
     </Routes>
