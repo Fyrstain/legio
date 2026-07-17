@@ -1,0 +1,269 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+
+    <div style="display: inline-block;
+                background-color: #d9e0e7; 
+                padding: 6px; 
+                margin: 4px; 
+                border: 1px solid #8da1b4;
+                border-radius: 5px; 
+                line-height: 60%;
+                width: 100%;"
+                >
+        {% if TestPlan.id.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>ID</b>: {{TestPlan.id}}
+            </p>
+        {% endif %}
+        {% if TestPlan.meta.profile.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Profile</b>: {{TestPlan.meta.profile}}
+            </p>
+        {% endif %}
+        {% if TestPlan.identifier.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Identifier</b>:</p>
+            <ul>
+                {% for identifier in TestPlan.identifier %}
+                    <li>
+                        {{identifier}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if TestPlan.experimental.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Experimental</b>: {{TestPlan.experimental}}
+            </p>
+        {% endif %}
+        {% if TestPlan.publisher.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Publisher</b>: {{TestPlan.publisher}}
+            </p>
+        {% endif %}
+        {% if TestPlan.contact.exists() %}
+            <table style="width: 100%;">
+                <tr>
+                    <th><b>Contact Name</b></th>
+                    <th><b>Contact Points</b></th>
+                </tr>
+                {% for contact in TestPlan.contact %}
+                        <tr>
+                        <td>{%if contact.name.exists() %} {{contact.name}} {% else %} N/A {% endif %} </td>
+                        <td>
+                            <ul>
+                                {% for contactPoint in contact.telecom %}
+                                    <li>
+                                    {%if contactPoint.system = 'email' %} 
+                                        <a href="mailto:{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% elsif contactPoint.system = 'url' %}
+                                        <a href="{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% else %}
+                                        {{contactPoint.value}}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        {% if TestPlan.description.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Description</b>:
+            </p>
+            {{TestPlan.description}}
+        {% endif %}
+        {% if TestPlan.jurisdiction.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Jurisdiction</b>:
+                {% for jurisdiction in TestPlan.jurisdiction %}
+                    {{jurisdiction.coding.display}}: ({{jurisdiction.coding.system}}#{{jurisdiction.coding.code}})<br/>   
+                {% endfor %}
+            </p>
+        {% endif %}
+        {% if TestPlan.purpose.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Purpose</b>:
+            </p>
+            {{TestPlan.purpose}}
+        {% endif %}
+        {% if TestPlan.category.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Category</b>: 
+                {% for category in TestPlan.category %}
+                    <code>{{category}} </code>
+                {% endfor %}
+            </p>
+        {% endif %}
+        {% if TestPlan.scope.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Scope</b>:</p>
+            <ul>
+                {% for scope in TestPlan.scope %}
+                    <li>
+                        {{scope}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if TestPlan.testTools.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Test Tools</b>: 
+            </p>
+            {{TestPlan.testTools}}
+        {% endif %}
+        {% if TestPlan.dependency.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Dependencies</b>:
+            </p>
+            <table style="width: 100%;">
+                <tr>
+                    <th><b>Description</b></th>
+                    <th><b>Predecessor</b></th>
+                </tr>
+                {% for dependency in TestPlan.dependency %}
+                    <tr>
+                        <td>{% if dependency.description.exists() %}{{ dependency.description }}{% else %} N/A {% endif %}</td>
+                        <td>{% if dependency.predecessor.exists() %}{{ dependency.predecessor }}{% else %} N/A {% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        {% if TestPlan.exitCriteria.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Exit Citeria</b>: 
+            </p>
+            {{TestPlan.exitCriteria}}
+        {% endif %}        
+    </div>
+
+    {% if TestPlan.testCase.exists() %}
+        <h3>Test Cases</h3>
+        {% for testCase in TestPlan.testCase %}
+            <blockquote>
+                {% if testCase.sequence.exists() %}
+                    <p style="padding-bottom: 0px; margin: 0px;">
+                        <b>Sequence</b>: {{testCase.sequence}}
+                    </p>
+                {% endif %}
+                {% if testCase.scope.exists() %}
+                    <p style="padding-bottom: 0px; margin: 0px;"><b>Scope</b>:</p>
+                    <ul>
+                        {% for scope in testCase.scope %}
+                            <li>
+                                {{scope}}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% if testCase.dependency.exists() %}
+                    <p style="padding-bottom: 0px; margin: 0px;"><b>Required Criteria</b>:</p>
+                    <table style="width: 100%;">
+                        <tr>
+                            <th><b>Description</b></th>
+                            <th><b>Predecessor</b></th>
+                        </tr>
+                        {% for dependency in testCase.dependency %}
+                            <tr>
+                                <td>{% if dependency.description.exists() %}{{ dependency.description }}{% else %} N/A {% endif %}</td>
+                                <td>{% if dependency.predecessor.exists() %}{{ dependency.predecessor }}{% else %} N/A {% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if testCase.testRun.exists() %}
+                    <h4>Test Runs</h4>
+                    <blockquote>
+                        <table style="width: 100%;">
+                            <tr>
+                                <th><b>Narrative</b></th>
+                                <th><b>Language</b></th>
+                                <th><b>Source</b></th>
+                            </tr>
+                            {% for testRun in testCase.testRun %}
+                                <tr>
+                                    <td>{% if testRun.narrative.exists() %}{{ testRun.narrative }}{% else %} N/A {% endif %}</td>
+                                    <td>{% if testRun.script.language.exists() %}{{ testRun.script.language.coding }}{% else %} N/A {% endif %}</td>
+                                    <td>{% if testRun.script.source.exists() %}{{ testRun.script.source }}{% else %} N/A {% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </blockquote>
+                {% endif %}
+
+                {% if testCase.testData.exists() %}
+                    <h4>Test Data</h4>
+                    <blockquote>
+                        <table style="width: 100%;">
+                            <tr>
+                                <th><b>Type</b></th>
+                                <th><b>Content</b></th>
+                                <th><b>Source</b></th>
+                            </tr>
+                            {% for testData in testCase.testData %}
+                                <tr>
+                                    <td>{{ testData.type }}</td>
+                                    <td>{% if testData.content.exists() %}{{ testData.content}}{% else %} N/A{% endif %}</td>
+                                    <td>{% if testData.source.exists() %}{{ testData.source }}{% else %} N/A{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </blockquote>
+                {% endif %}
+
+                {% if testCase.assertion.exists() %}
+                    <h4>Assertions</h4>
+                    <blockquote>
+                        <table style="width: 100%;">
+                            <tr>
+                                <th><b>Type</b></th>
+                                <th><b>Object</b></th>
+                                <th><b>Result</b></th>
+                            </tr>
+                            {% for assertion in testCase.assertion %}
+                                <tr>
+                                    <td>
+                                        {% if assertion.type.exists() %}
+                                            <ul>
+                                                {% for type in assertion.type %}
+                                                    <li>
+                                                        {{type.coding}}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %} N/A 
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if assertion.object.exists() %}
+                                            <ul>
+                                                {% for object in assertion.object %}
+                                                    <li>
+                                                        {% if object.concept.coding.exists() %}{{object.concept.coding}}{% endif %}
+                                                        {% if object.reference.exists() %}{{object.reference}}{% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %} N/A 
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if assertion.result.exists() %}
+                                            <ul>
+                                                {% for result in assertion.result %}
+                                                    <li>
+                                                        {% if result.concept.coding.exists() %}{{result.concept.coding}}{% endif %}
+                                                        {% if result.reference.exists() %}{{result.reference}}{% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %} N/A 
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </blockquote>
+                {% endif %}
+            </blockquote>
+        {% endfor %}
+    {% endif %}
+</div>

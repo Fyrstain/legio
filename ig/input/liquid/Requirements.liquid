@@ -1,0 +1,207 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+
+    <div style="display: inline-block;
+                background-color: #d9e0e7; 
+                padding: 6px; 
+                margin: 4px; 
+                border: 1px solid #8da1b4;
+                border-radius: 5px; 
+                line-height: 60%;
+                width: 100%;"
+                >
+        {% if Requirements.id.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>ID</b>: {{Requirements.id}}
+            </p>
+        {% endif %}
+        {% if Requirements.identifier.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Identifier</b>:</p>
+            <ul>
+                {% for identifier in Requirements.identifier %}
+                    <li>
+                        {{identifier}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if Requirements.experimental.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Experimental</b>: {{Requirements.experimental}}
+            </p>
+        {% endif %}
+        {% if Requirements.publisher.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Publisher</b>: {{Requirements.publisher}}
+            </p>
+        {% endif %}
+        {% if Requirements.contact.exists() %}
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Contact Name</b></th>
+                    <th style="text-align: center;"><b>Contact Points</b></th>
+                </tr>
+                {% for contact in Requirements.contact %}
+                        <tr style="background-color: #ffffff;">
+                        <td>{%if contact.name.exists() %} {{contact.name}} {% else %} N/A {% endif %} </td>
+                        <td>
+                            <ul>
+                                {% for contactPoint in contact.telecom %}
+                                    <li>
+                                    {%if contactPoint.system = 'email' %} 
+                                        <a href="mailto:{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% elsif contactPoint.system = 'url' %}
+                                        <a href="{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% else %}
+                                        {{contactPoint.value}}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        
+        {% if Requirements.description.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Description</b>:
+            </p>
+            {{Requirements.description}}
+        {% endif %}
+        
+        {% if Requirements.jurisdiction.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Jurisdiction</b>:
+                {% for jurisdiction in Requirements.jurisdiction %}
+                    {{jurisdiction.coding.display}}: ({{jurisdiction.coding.system}}#{{jurisdiction.coding.code}})<br/>   
+                {% endfor %}
+            </p>
+        {% endif %}
+        
+        {% if Requirements.purpose.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Purpose</b>:
+            </p>
+            {{Requirements.purpose}}
+        {% endif %}
+        
+        {% if Requirements.copyrightLabel.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Copyright Label</b>: {{Requirements.copyrightLabel}}
+            </p>
+        {% endif %}
+
+        {% if Requirements.derivedFrom.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Other set of Requirements this builds on</b>: 
+            </p>
+            <ul>
+                {% for derivedFrom in Requirements.derivedFrom %}
+                    <li>
+                        {{derivedFrom}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if Requirements.reference.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>External artifact</b>: 
+            </p>
+            <ul>
+                {% for reference in Requirements.reference %}
+                    <li>
+                        {{reference}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        {% if Requirements.actor.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Actor for these requirements</b>: 
+                {% for actor in Requirements.actor %}
+                    <code>{{actor}}</code> 
+                {% endfor %}
+            </p>
+        {% endif %}
+    </div><br/>
+
+    <div style="display: inline-block;
+        padding: 6px; 
+        margin: 4px; 
+        width: 100%;"
+        >
+        {% if Requirements.statement.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Statements</b>: 
+            </p>
+            {% for statement in Requirements.statement %}
+                <blockquote>
+                    <p style="padding-bottom: 0px; margin: 0px;"><b>ID</b>: {{statement.key}}</p>
+                    {% if statement.label.exists() %}
+                        <p style="padding-bottom: 0px; margin: 0px;">
+                            <b>Label</b>: {{statement.label}}
+                        </p>
+                    {% endif %}
+                    {% if statement.reference.exists() %}
+                        <p style="padding-bottom: 0px; margin: 0px;"><b>References</b>:</p>
+                        <ul>
+                            {% for reference in statement.reference %}
+                                <li>
+                                    {{reference}}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% if statement.source.exists() %}
+                        <p style="padding-bottom: 0px; margin: 0px;"><b>Sources</b>:</p>
+                        <ul>
+                            {% for source in statement.source %}
+                                <li>
+                                    {{source.display}}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <table style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            {% if statement.satisfiedBy.exists() %}<th><b>Satisfied By</b></th> {% endif %}
+                            {% if statement.conformance.exists() %}<th><b>Conformance</b></th> {% endif %}
+                            <th><b>Requirement</b></th>
+                            {% if statement.derivedFrom.exists() %}<th><b>Derived From</b></th> {% endif %}
+                            {% if statement.parent.exists() %}<th><b>Requirement Parent</b></th> {% endif %}
+                            {% if statement.conditionality.exists() %}<th><b>Conditional</b></th> {% endif %}
+                        </tr>
+                        <tr style="background-color: #ffffff;">
+                            {% if statement.satisfiedBy.exists() %} 
+                                <td>
+                                    <ul>
+                                        {% for satisfiedBy in statement.satisfiedBy %}
+                                            <li>
+                                                {{satisfiedBy}}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            {% endif %}
+                            {% if statement.conformance.exists() %}
+                                <td>
+                                    {% for conformance in statement.conformance %}
+                                        <code>{{conformance}}</code>   
+                                    {% endfor %}
+                                </td>
+                            {% endif %}
+                            <td>{{statement.requirement}}</td>
+                            {% if statement.derivedFrom.exists() %}<td>{{statement.derivedFrom}}</td>{% endif %}
+                            {% if statement.parent.exists() %}<td>{{statement.parent}}</td>{% endif %}
+                            {% if statement.conditionality.exists() %}<td>{{statement.conditionality}}</td>{% endif %}
+                        </tr>
+                    </table>
+                </blockquote>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

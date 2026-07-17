@@ -1,0 +1,512 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+
+    <div style="display: inline-block;
+                background-color: #d9e0e7; 
+                padding: 6px; 
+                margin: 4px; 
+                border: 1px solid #8da1b4;
+                border-radius: 5px; 
+                line-height: 60%;
+                width: 100%;"
+                >
+        {% if TestScript.id.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>ID</b>: {{TestScript.id}}
+            </p>
+        {% endif %}
+        {% if TestScript.meta.profile.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Profile</b>: {{TestScript.meta.profile}}
+            </p>
+        {% endif %}
+        {% if TestScript.url.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>URL</b>: {{TestScript.url}}
+            </p>
+        {% endif %}
+        {% if TestScript.version.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Version</b>: {{TestScript.version}}
+            </p>
+        {% endif %}
+        {% if TestScript.name.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Name</b>: {{TestScript.name}}
+            </p>
+        {% endif %}
+        {% if TestScript.status.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Status</b>: {{TestScript.status}}
+            </p>
+        {% endif %}
+        {% if TestScript.experimental.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Experimental</b>: {{TestScript.experimental}}
+            </p>
+        {% endif %}
+        {% if TestScript.date.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Date</b>: {{TestScript.date}}
+            </p>
+        {% endif %}
+        {% if TestScript.description.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Description</b>:</p>
+            {{TestScript.description}}
+        {% endif %}
+        {% if TestScript.purpose.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Purpose</b>:</p> 
+            {{TestScript.purpose}}
+        {% endif %}
+
+        {% if TestScript.metadata.exists() %}
+            <h4>Metadata</h4>
+            <blockquote>
+                {% if TestScript.metadata.link.exists() %}
+                    <p style="padding-bottom: 0px; margin: 0px;"><b>Links</b></p>
+                    <table class="grid" style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            <th style="text-align: center;"><b>Url</b></th>
+                            <th style="text-align: center;"><b>Description</b></th>
+                        </tr>
+                        {% for link in TestScript.metadata.link %}
+                            <tr style="background-color: #ffffff;">
+                                <td>{{ link.url }}</td>
+                                <td>{% if link.description.exists() %} {{ link.description }} {% else %} N/A {% endif %}</td>                                
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if TestScript.metadata.capability.exists() %}
+                    <p style="padding-bottom: 0px; margin: 0px;"><b>Capabilities</b></p>
+                    <table class="grid" style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            <th style="text-align: center;"><b>Required</b></th>
+                            <th style="text-align: center;"><b>Validated</b></th>
+                            <th style="text-align: center;"><b>Description</b></th>
+                            <th style="text-align: center;"><b>Links</b></th>
+                            <th style="text-align: center;"><b>Capabilities</b></th>
+                        </tr>
+                        {% for capability in TestScript.metadata.capability %}
+                            <tr style="background-color: #ffffff;">
+                                <td>{{ capability.required }}</td>
+                                <td>{{ capability.validated }}</td>
+                                <td>{{ capability.description }}</td>
+                                <td>
+                                    <ul>
+                                        {% for link in capability.link %}
+                                            <li>
+                                                {{link}}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    {{capability.capabilities}}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            </blockquote>
+        {% endif %}
+        {% if TestScript.scope.exists() %}
+        <h4>Scopes</h4>
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Artifact</b></th>
+                    <th style="text-align: center;"><b>Conformance</b></th>
+                    <th style="text-align: center;"><b>Phase</b></th>
+                </tr>
+                <tr style="background-color: #ffffff;">
+                    {% for scope in TestScript.scope %}
+                        <td>{{ scope.artifact }}</td>
+                        <td>{{ scope.conformance }}</td>
+                        <td>{{ scope.phase }}</td>
+                    {% endfor %}
+                </tr>
+            </table><br/>
+        {% endif %}
+
+        {% if TestScript.extension.url = 'http://testbedexample.org/StructureDefinition/scope-ts-r4' %}
+            <h4>Scopes</h4>
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Artifact</b></th>
+                    <th style="text-align: center;"><b>Conformance</b></th>
+                    <th style="text-align: center;"><b>Phase</b></th>
+                </tr>
+                <tr style="background-color: #ffffff;">
+                    {% for scope in TestScript.extension.extension %}
+                        <td>{%if scope.valueCanonical.exists() %} {{scope.valueCanonical}} {% else %} {{scope.valueCodeableConcept.coding.code}} {% endif %}</td>   
+                    {% endfor %}
+                </tr>
+            </table><br/>
+        {% endif %}
+
+        {% if TestScript.publisher.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Publisher</b>: {{TestScript.publisher}}
+            </p>
+        {% endif %}
+        {% if TestScript.jurisdiction.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Jurisdiction</b>:
+                {% for jurisdiction in TestScript.jurisdiction %}
+                    {{ jurisdiction.coding.display }}: 
+                    {{ jurisdiction.coding.system }}#{{ jurisdiction.coding.code }}
+                {% endfor %}
+            </p>
+        {% endif %}
+
+        {% if TestScript.contact.exists() %}
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Contact Name</b></th>
+                    <th style="text-align: center;"><b>Contact Points</b></th>
+                </tr>
+                {% for contact in TestScript.contact %}
+                        <tr style="background-color: #ffffff;">
+                        <td>{%if contact.name.exists() %} {{contact.name}} {% else %} N/A {% endif %} </td>
+                        <td>
+                            <ul>
+                                {% for contactPoint in contact.telecom %}
+                                    <li>
+                                    {%if contactPoint.system = 'email' %} 
+                                        <a href="mailto:{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% elsif contactPoint.system = 'url' %}
+                                        <a href="{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% else %}
+                                        {{contactPoint.value}}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </div><br/>
+    
+    {% if TestScript.profile.exists() %}
+        <h4>Profiles for validation</h4>
+        <ul>
+            {% for profile in TestScript.profile %}
+                <li>{{ profile }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if TestScript.fixture.exists() %}
+        <h4>Fixtures</h4>
+        <table class="grid" style="width: 100%;">
+            <tr style="background-color: #333f4c; color: #ffffff;">
+                <th style="text-align: center;"><b>ID</b></th>
+                <th style="text-align: center;"><b>Auto Create ?</b></th>
+                <th style="text-align: center;"><b>Auto Delete ?</b></th>
+                <th style="text-align: center;"><b>Resource</b></th>
+            </tr>
+            {% for fixture in TestScript.fixture %} 
+                <tr>
+                    <td>{%if fixture.id.exists() %} {{fixture.id}} {% else %} N/A {% endif %}</td>
+                    <td>{{fixture.autocreate}}</td>
+                    <td>{{fixture.autodelete}}</td>
+                    <td>{%if fixture.resource.exists() %} {{fixture.resource}} {% else %} N/A {% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table><br/>
+    {% endif %}
+
+    {% if TestScript.variable.exists() %}
+        <h4>Variables</h4>
+        <table class="grid" style="width: 100%;">
+            <tr style="background-color: #333f4c; color: #ffffff;">
+                <th style="text-align: center;"><b>Name</b></th>
+                <th style="text-align: center;"><b>Path</b></th>
+                <th style="text-align: center;"><b>SourceId</b></th>
+            </tr>
+            {% for variable in TestScript.variable %} 
+                <tr>
+                    <td>{{variable.name}}</td>
+                    <td>{%if variable.path.exists() %} {{variable.path}} {% else %} N/A {% endif %}</td>
+                    <td>{%if variable.sourceId.exists() %} {{variable.sourceId}} {% else %} N/A {% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table><br/>
+    {% endif %}
+    
+    {% if TestScript.setup.exists() %}
+        <h3>Setup</h3>
+        <blockquote>
+            {% for action in TestScript.setup.action %}
+                <blockquote>
+                    <table class="grid" style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            <th style="text-align: center;"><b>Action</b></th>
+                            {% if action.operation.id.exists() or action.assert.id.exists() %}<th style="text-align: center;"><b>ID</b></th>{% endif %}
+                            {% if action.operation.label.exists() or action.assert.label.exists() %}<th style="text-align: center;"><b>Label</b></th>{% endif %}
+                            {% if action.operation.description.exists() or action.assert.description.exists() %}<th style="text-align: center;"><b>Description</b></th>{% endif %}
+                            {% if action.operation.encodeRequestUrl.exists() %}<th style="text-align: center;"><b>EncodeRequestUrl</b></th>{% endif %}
+                            {% if action.operation.type.exists() %}<th style="text-align: center;"><b>Type</b></th>{% endif %}
+                            {% if action.operation.resource.exists() or action.assert.resource.exists() %}<th style="text-align: center;"><b>Resource</b></th>{% endif %}
+                            {% if action.operation.accept.exists() %}<th style="text-align: center;"><b>Accept</b></th>{% endif %}
+                            {% if action.operation.contentType.exists() or action.assert.contentType.exists() %}<th style="text-align: center;"><b>ContentType</b></th>{% endif %}
+                            {% if action.operation.params.exists() %}<th style="text-align: center;"><b>Params</b></th>{% endif %}
+                            {% if action.operation.method.exists() %}<th style="text-align: center;"><b>Method</b></th>{% endif %}
+                            {% if action.operation.origin.exists() %}<th style="text-align: center;"><b>Origin</b></th>{% endif %}
+                            {% if action.operation.requestHeader.exists() %}<th style="text-align: center;"><b>Request Headers</b></th>{% endif %}
+                            {% if action.operation.requestId.exists() %}<th style="text-align: center;"><b>Request Id</b></th>{% endif %}
+                            {% if action.operation.responseId.exists() %}<th style="text-align: center;"><b>Response Id</b></th>{% endif %}
+                            {% if action.operation.sourceId.exists() or action.assert.sourceId.exists() %}<th style="text-align: center;"><b>Source Id</b></th>{% endif %}
+                            {% if action.operation.targetId.exists() %}<th style="text-align: center;"><b>Target Id</b></th>{% endif %}
+                            {% if action.operation.url.exists() %}<th style="text-align: center;"><b>URL</b></th>{% endif %}
+                            
+                            {% if action.assert.direction.exists() %}<th style="text-align: center;"><b>Direction</b></th>{% endif %}
+                            {% if action.assert.compareToSourceId.exists() %}<th style="text-align: center;"><b>CompareToSourceId</b></th>{% endif %}
+                            {% if action.assert.compareToSourceExpression.exists() %}<th style="text-align: center;"><b>CompareToSourceExpression</b></th>{% endif %}
+                            {% if action.assert.compareToSourcePath.exists() %}<th style="text-align: center;"><b>CompareToSourcePath</b></th>{% endif %}
+                            {% if action.assert.expression.exists() %}<th style="text-align: center;"><b>Expression</b></th>{% endif %}
+                            {% if action.assert.headerField.exists() %}<th style="text-align: center;"><b>HeaderField</b></th>{% endif %}
+                            {% if action.assert.minimumId.exists() %}<th style="text-align: center;"><b>MinimumId</b></th>{% endif %}
+                            {% if action.assert.navigationLinks.exists() %}<th style="text-align: center;"><b>NavigationLinks</b></th>{% endif %}
+                            {% if action.assert.operator.exists() %}<th style="text-align: center;"><b>Operator</b></th>{% endif %}
+                            {% if action.assert.path.exists() %}<th style="text-align: center;"><b>Path</b></th>{% endif %}
+                            {% if action.assert.requestMethod.exists() %}<th style="text-align: center;"><b>RequestMethod</b></th>{% endif %}
+                            {% if action.assert.requestURL.exists() %}<th style="text-align: center;"><b>RequestURL</b></th>{% endif %}
+                            {% if action.assert.value.exists() %}<th style="text-align: center;"><b>Value</b></th>{% endif %}
+                            {% if action.assert.response.exists() %}<th style="text-align: center;"><b>Response</b></th>{% endif %}
+                            {% if action.assert.responseCode.exists() %}<th style="text-align: center;"><b>ResponseCode</b></th>{% endif %}
+                            {% if action.assert.validateProfileId.exists() %}<th style="text-align: center;"><b>ValidateProfileId</b></th>{% endif %}
+                            {% if action.assert.stopTestOnFail.exists() or action.assert.extension.url.exists() %}<th style="text-align: center;"><b>StopTestOnFail</b></th>{% endif %}
+                            {% if action.assert.warningOnly.exists() %}<th style="text-align: center;"><b>WarningOnly</b></th>{% endif %}
+                        </tr>
+                        {% if action.operation.exists() %}
+                            <tr>
+                                <td><b>Operation</b></td>
+                                {% if action.operation.id.exists() %}<td>{{ action.operation.id }}</td>{% endif %}
+                                {% if action.operation.label.exists() %}<td>{{ action.operation.label }}</td>{% endif %}
+                                {% if action.operation.description.exists() %}<td>{{ action.operation.description }}</td>{% endif %}
+                                {% if action.operation.encodeRequestUrl.exists() %}<td>{{ action.operation.encodeRequestUrl }}</td>{% endif %}
+                                {% if action.operation.type.exists() %}<td>{{ action.operation.type }}</td>{% endif %}
+                                {% if action.operation.resource.exists() %}<td>{{ action.operation.resource }}</td>{% endif %}
+                                {% if action.operation.accept.exists() %}<td>{{ action.operation.accept }}</td>{% endif %}
+                                {% if action.operation.contentType.exists() %}<td>{{ action.operation.contentType }}</td>{% endif %}
+                                {% if action.operation.params.exists() %}<td>{{ action.operation.params }}</td>{% endif %}
+                                {% if action.operation.method.exists() %}<td>{{ action.operation.method }}</td>{% endif %}
+                                {% if action.operation.origin.exists() %}<td>{{ action.operation.origin }}</td>{% endif %}
+                                {% if action.operation.requestHeader.exists() %}
+                                    <td>
+                                    {% for requestHeader in action.operation.requestHeader %}
+                                        {{ requestHeader.field }}:{{ requestHeader.value }} <br>
+                                    {% endfor %}
+                                    </td>
+                                {% endif %}
+                                {% if action.operation.requestId.exists() %}<td>{{ action.operation.requestId }}</td>{% endif %}
+                                {% if action.operation.responseId.exists() %}<td>{{ action.operation.responseId }}</td>{% endif %}
+                                {% if action.operation.sourceId.exists() %}<td>{{ action.operation.sourceId }}</td>{% endif %}
+                                {% if action.operation.targetId.exists() %}<td>{{ action.operation.targetId }}</td>{% endif %}
+                                {% if action.operation.url.exists() %}<td>{{ action.operation.url }}</td>{% endif %}
+                            </tr>
+                        {% elsif action.assert.exists() %}
+                            <tr>
+                                <td><b>Assert</b></td>
+                                {% if action.assert.id.exists() %}<td>{{ action.assert.id }}</td>{% endif %}
+                                {% if action.assert.label.exists() %}<td>{{ action.assert.label }}</td>{% endif %}
+                                {% if action.assert.description.exists() %}<td>{{ action.assert.description }}</td>{% endif %}
+                                {% if action.assert.direction.exists() %}<td>{{ action.assert.direction }}</td>{% endif %}
+                                {% if action.assert.compareToSourceId.exists() %}<td>{{ action.assert.compareToSourceId }}</td>{% endif %}
+                                {% if action.assert.compareToSourceExpression.exists() %}<td>{{ action.assert.compareToSourceExpression }}</td>{% endif %}
+                                {% if action.assert.compareToSourcePath.exists() %}<td>{{ action.assert.compareToSourcePath }}</td>{% endif %}
+                                {% if action.assert.contentType.exists() %}<td>{{ action.assert.contentType }}</td>{% endif %}
+                                {% if action.assert.expression.exists() %}<td>{{ action.assert.expression }}</td>{% endif %}
+                                {% if action.assert.headerField.exists() %}<td>{{ action.assert.headerField }}</td>{% endif %}
+                                {% if action.assert.minimumId.exists() %}<td>{{ action.assert.minimumId }}</td>{% endif %}
+                                {% if action.assert.navigationLinks.exists() %}<td>{{ action.assert.navigationLinks }}</td>{% endif %}
+                                {% if action.assert.operator.exists() %}<td>{{ action.assert.operator }}</td>{% endif %}
+                                {% if action.assert.path.exists() %}<td>{{ action.assert.path }}</td>{% endif %}
+                                {% if action.assert.requestMethod.exists() %}<td>{{ action.assert.requestMethod }}</td>{% endif %}
+                                {% if action.assert.requestURL.exists() %}<td>{{ action.assert.requestURL }}</td>{% endif %}
+                                {% if action.assert.resource.exists() %}<td>{{ action.assert.resource }}</td>{% endif %}
+                                {% if action.assert.sourceId.exists() %}<td>{{ action.assert.sourceId }}</td>{% endif %}
+                                {% if action.assert.value.exists() %}<td>{{ action.assert.value }}</td>{% endif %}
+                                {% if action.assert.response.exists() %}<td>{{ action.assert.response }}</td>{% endif %}
+                                {% if action.assert.responseCode.exists() %}<td>{{ action.assert.responseCode }}</td>{% endif %}
+                                {% if action.assert.validateProfileId.exists() %}<td>{{ action.assert.validateProfileId }}</td>{% endif %}
+                                {% if action.assert.stopTestOnFail.exists() %}<td>{{ action.assert.stopTestOnFail }}</td>{% else %}<td>{{ action.assert.extension.valueBoolean}}</td>{% endif %}
+                                {% if action.assert.warningOnly.exists() %}<td>{{ action.assert.warningOnly }}</td>{% endif %}
+                            </tr>
+                        {% endif %}
+                    </table>
+                </blockquote>
+            {% endfor %}
+        </blockquote>
+    {% endif %}
+
+    {% if TestScript.test.exists() %}
+        <h3>Tests</h3>
+        {% for test in TestScript.test %}
+            <blockquote>
+                <b>{{ test.name }}:</b><br/>
+                {{ test.description }}<br/>
+                {% for action in test.action %}
+                    <blockquote>
+                        <table class="grid" style="width: 100%;">
+                            <tr style="background-color: #333f4c; color: #ffffff;">
+                                <th style="text-align: center;"><b>Action</b></th>
+                                {% if action.operation.id.exists() or action.assert.id.exists() %}<th style="text-align: center;"><b>ID</b></th>{% endif %}
+                                {% if action.operation.label.exists() or action.assert.label.exists() %}<th style="text-align: center;"><b>Label</b></th>{% endif %}
+                                {% if action.operation.description.exists() or action.assert.description.exists() %}<th style="text-align: center;"><b>Description</b></th>{% endif %}
+                                {% if action.operation.encodeRequestUrl.exists() %}<th style="text-align: center;"><b>EncodeRequestUrl</b></th>{% endif %}
+                                {% if action.operation.type.exists() %}<th style="text-align: center;"><b>Type</b></th>{% endif %}
+                                {% if action.operation.resource.exists() or action.assert.resource.exists() %}<th style="text-align: center;"><b>Resource</b></th>{% endif %}
+                                {% if action.operation.accept.exists() %}<th style="text-align: center;"><b>Accept</b></th>{% endif %}
+                                {% if action.operation.contentType.exists() or action.assert.contentType.exists() %}<th style="text-align: center;"><b>ContentType</b></th>{% endif %}
+                                {% if action.operation.params.exists() %}<th style="text-align: center;"><b>Params</b></th>{% endif %}
+                                {% if action.operation.method.exists() %}<th style="text-align: center;"><b>Method</b></th>{% endif %}
+                                {% if action.operation.origin.exists() %}<th style="text-align: center;"><b>Origin</b></th>{% endif %}
+                                {% if action.operation.requestHeader.exists() %}<th style="text-align: center;"><b>Request Headers</b></th>{% endif %}
+                                {% if action.operation.requestId.exists() %}<th style="text-align: center;"><b>Request Id</b></th>{% endif %}
+                                {% if action.operation.responseId.exists() %}<th style="text-align: center;"><b>Response Id</b></th>{% endif %}
+                                {% if action.operation.sourceId.exists() or action.assert.sourceId.exists() %}<th style="text-align: center;"><b>Source Id</b></th>{% endif %}
+                                {% if action.operation.targetId.exists() %}<th style="text-align: center;"><b>Target Id</b></th>{% endif %}
+                                {% if action.operation.url.exists() %}<th style="text-align: center;"><b>URL</b></th>{% endif %}
+                                
+                                {% if action.assert.direction.exists() %}<th style="text-align: center;"><b>Direction</b></th>{% endif %}
+                                {% if action.assert.compareToSourceId.exists() %}<th style="text-align: center;"><b>CompareToSourceId</b></th>{% endif %}
+                                {% if action.assert.compareToSourceExpression.exists() %}<th style="text-align: center;"><b>CompareToSourceExpression</b></th>{% endif %}
+                                {% if action.assert.compareToSourcePath.exists() %}<th style="text-align: center;"><b>CompareToSourcePath</b></th>{% endif %}
+                                {% if action.assert.expression.exists() %}<th style="text-align: center;"><b>Expression</b></th>{% endif %}
+                                {% if action.assert.headerField.exists() %}<th style="text-align: center;"><b>HeaderField</b></th>{% endif %}
+                                {% if action.assert.minimumId.exists() %}<th style="text-align: center;"><b>MinimumId</b></th>{% endif %}
+                                {% if action.assert.navigationLinks.exists() %}<th style="text-align: center;"><b>NavigationLinks</b></th>{% endif %}
+                                {% if action.assert.operator.exists() %}<th style="text-align: center;"><b>Operator</b></th>{% endif %}
+                                {% if action.assert.path.exists() %}<th style="text-align: center;"><b>Path</b></th>{% endif %}
+                                {% if action.assert.requestMethod.exists() %}<th style="text-align: center;"><b>RequestMethod</b></th>{% endif %}
+                                {% if action.assert.requestURL.exists() %}<th style="text-align: center;"><b>RequestURL</b></th>{% endif %}
+                                {% if action.assert.value.exists() %}<th style="text-align: center;"><b>Value</b></th>{% endif %}
+                                {% if action.assert.response.exists() %}<th style="text-align: center;"><b>Response</b></th>{% endif %}
+                                {% if action.assert.responseCode.exists() %}<th style="text-align: center;"><b>ResponseCode</b></th>{% endif %}
+                                {% if action.assert.validateProfileId.exists() %}<th style="text-align: center;"><b>ValidateProfileId</b></th>{% endif %}
+                                {% if action.assert.stopTestOnFail.exists() or action.assert.extension.url.exists() %}<th style="text-align: center;"><b>StopTestOnFail</b></th>{% endif %}
+                                {% if action.assert.warningOnly.exists() %}<th style="text-align: center;"><b>WarningOnly</b></th>{% endif %}
+                            </tr>
+                            {% if action.operation.exists() %}
+                                <tr>
+                                    <td><b>Operation</b></td>
+                                    {% if action.operation.id.exists() %}<td>{{ action.operation.id }}</td>{% endif %}
+                                    {% if action.operation.label.exists() %}<td>{{ action.operation.label }}</td>{% endif %}
+                                    {% if action.operation.description.exists() %}<td>{{ action.operation.description }}</td>{% endif %}
+                                    {% if action.operation.encodeRequestUrl.exists() %}<td>{{ action.operation.encodeRequestUrl }}</td>{% endif %}
+                                    {% if action.operation.type.exists() %}<td>{{ action.operation.type }}</td>{% endif %}
+                                    {% if action.operation.resource.exists() %}<td>{{ action.operation.resource }}</td>{% endif %}
+                                    {% if action.operation.accept.exists() %}<td>{{ action.operation.accept }}</td>{% endif %}
+                                    {% if action.operation.contentType.exists() %}<td>{{ action.operation.contentType }}</td>{% endif %}
+                                    {% if action.operation.params.exists() %}<td>{{ action.operation.params }}</td>{% endif %}
+                                    {% if action.operation.method.exists() %}<td>{{ action.operation.method }}</td>{% endif %}
+                                    {% if action.operation.origin.exists() %}<td>{{ action.operation.origin }}</td>{% endif %}
+                                    {% if action.operation.requestHeader.exists() %}
+                                        <td>
+                                        {% for requestHeader in action.operation.requestHeader %}
+                                            {{ requestHeader.field }}:{{ requestHeader.value }} <br>
+                                        {% endfor %}
+                                        </td>
+                                    {% endif %}
+                                    {% if action.operation.requestId.exists() %}<td>{{ action.operation.requestId }}</td>{% endif %}
+                                    {% if action.operation.responseId.exists() %}<td>{{ action.operation.responseId }}</td>{% endif %}
+                                    {% if action.operation.sourceId.exists() %}<td>{{ action.operation.sourceId }}</td>{% endif %}
+                                    {% if action.operation.targetId.exists() %}<td>{{ action.operation.targetId }}</td>{% endif %}
+                                    {% if action.operation.url.exists() %}<td>{{ action.operation.url }}</td>{% endif %}
+                                </tr>
+                            {% elsif action.assert.exists() %}
+                                <tr>
+                                    <td><b>Assert</b></td>
+                                    {% if action.assert.id.exists() %}<td>{{ action.assert.id }}</td>{% endif %}
+                                    {% if action.assert.label.exists() %}<td>{{ action.assert.label }}</td>{% endif %}
+                                    {% if action.assert.description.exists() %}<td>{{ action.assert.description }}</td>{% endif %}
+                                    {% if action.assert.direction.exists() %}<td>{{ action.assert.direction }}</td>{% endif %}
+                                    {% if action.assert.compareToSourceId.exists() %}<td>{{ action.assert.compareToSourceId }}</td>{% endif %}
+                                    {% if action.assert.compareToSourceExpression.exists() %}<td>{{ action.assert.compareToSourceExpression }}</td>{% endif %}
+                                    {% if action.assert.compareToSourcePath.exists() %}<td>{{ action.assert.compareToSourcePath }}</td>{% endif %}
+                                    {% if action.assert.contentType.exists() %}<td>{{ action.assert.contentType }}</td>{% endif %}
+                                    {% if action.assert.expression.exists() %}<td>{{ action.assert.expression }}</td>{% endif %}
+                                    {% if action.assert.headerField.exists() %}<td>{{ action.assert.headerField }}</td>{% endif %}
+                                    {% if action.assert.minimumId.exists() %}<td>{{ action.assert.minimumId }}</td>{% endif %}
+                                    {% if action.assert.navigationLinks.exists() %}<td>{{ action.assert.navigationLinks }}</td>{% endif %}
+                                    {% if action.assert.operator.exists() %}<td>{{ action.assert.operator }}</td>{% endif %}
+                                    {% if action.assert.path.exists() %}<td>{{ action.assert.path }}</td>{% endif %}
+                                    {% if action.assert.requestMethod.exists() %}<td>{{ action.assert.requestMethod }}</td>{% endif %}
+                                    {% if action.assert.requestURL.exists() %}<td>{{ action.assert.requestURL }}</td>{% endif %}
+                                    {% if action.assert.resource.exists() %}<td>{{ action.assert.resource }}</td>{% endif %}
+                                    {% if action.assert.sourceId.exists() %}<td>{{ action.assert.sourceId }}</td>{% endif %}
+                                    {% if action.assert.value.exists() %}<td>{{ action.assert.value }}</td>{% endif %}
+                                    {% if action.assert.response.exists() %}<td>{{ action.assert.response }}</td>{% endif %}
+                                    {% if action.assert.responseCode.exists() %}<td>{{ action.assert.responseCode }}</td>{% endif %}
+                                    {% if action.assert.validateProfileId.exists() %}<td>{{ action.assert.validateProfileId }}</td>{% endif %}
+                                    {% if action.assert.stopTestOnFail.exists() %}<td>{{ action.assert.stopTestOnFail }}</td>{% else %}<td>{{ action.assert.extension.valueBoolean}}</td>{% endif %}
+                                    {% if action.assert.warningOnly.exists() %}<td>{{ action.assert.warningOnly }}</td>{% endif %}
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </blockquote>
+                {% endfor %}
+            </blockquote>
+        {% endfor %}
+    {% endif %}
+
+    {% if TestScript.teardown.exists() %}
+        <h3>Teardown</h3>
+        <blockquote>
+            <b>Operations</b><br/>
+            {% for action in TestScript.teardown.action %}
+                <blockquote>
+                    <table class="grid" style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            {% if action.operation.id.exists() %}<th style="text-align: center;"><b>ID</b></th>{% endif %}
+                            {% if action.operation.label.exists() %}<th style="text-align: center;"><b>Label</b></th>{% endif %}
+                            {% if action.operation.description.exists() %}<th style="text-align: center;"><b>Description</b></th>{% endif %}
+                            {% if action.operation.encodeRequestUrl.exists() %}<th style="text-align: center;"><b>EncodeRequestUrl</b></th>{% endif %}
+                            {% if action.operation.type.exists() %}<th style="text-align: center;"><b>Type</b></th>{% endif %}
+                            {% if action.operation.resource.exists() %}<th style="text-align: center;"><b>Resource</b></th>{% endif %}
+                            {% if action.operation.accept.exists() %}<th style="text-align: center;"><b>Accept</b></th>{% endif %}
+                            {% if action.operation.contentType.exists() %}<th style="text-align: center;"><b>ContentType</b></th>{% endif %}
+                            {% if action.operation.params.exists() %}<th style="text-align: center;"><b>Params</b></th>{% endif %}
+                            {% if action.operation.method.exists() %}<th style="text-align: center;"><b>Method</b></th>{% endif %}
+                            {% if action.operation.origin.exists() %}<th style="text-align: center;"><b>Origin</b></th>{% endif %}
+                            {% if action.operation.requestHeader.exists() %}<th style="text-align: center;"><b>Request Headers</b></th>{% endif %}
+                            {% if action.operation.requestId.exists() %}<th style="text-align: center;"><b>Request Id</b></th>{% endif %}
+                            {% if action.operation.responseId.exists() %}<th style="text-align: center;"><b>Response Id</b></th>{% endif %}
+                            {% if action.operation.sourceId.exists() %}<th style="text-align: center;"><b>Source Id</b></th>{% endif %}
+                            {% if action.operation.targetId.exists() %}<th style="text-align: center;"><b>Target Id</b></th>{% endif %}
+                            {% if action.operation.url.exists() %}<th style="text-align: center;"><b>URL</b></th>{% endif %}
+                        </tr>
+                        <tr>
+                            {% if action.operation.id.exists() %}<td>{{ action.operation.id }}</td>{% endif %}
+                            {% if action.operation.label.exists() %}<td>{{ action.operation.label }}</td>{% endif %}
+                            {% if action.operation.description.exists() %}<td>{{ action.operation.description }}</td>{% endif %}
+                            {% if action.operation.encodeRequestUrl.exists() %}<td>{{ action.operation.encodeRequestUrl }}</td>{% endif %}
+                            {% if action.operation.type.exists() %}<td>{{ action.operation.type }}</td>{% endif %}
+                            {% if action.operation.resource.exists() %}<td>{{ action.operation.resource }}</td>{% endif %}
+                            {% if action.operation.accept.exists() %}<td>{{ action.operation.accept }}</td>{% endif %}
+                            {% if action.operation.contentType.exists() %}<td>{{ action.operation.contentType }}</td>{% endif %}
+                            {% if action.operation.params.exists() %}<td>{{ action.operation.params }}</td>{% endif %}
+                            {% if action.operation.method.exists() %}<td>{{ action.operation.method }}</td>{% endif %}
+                            {% if action.operation.origin.exists() %}<td>{{ action.operation.origin }}</td>{% endif %}
+                            {% if action.operation.requestHeader.exists() %}
+                                <td>
+                                {% for requestHeader in action.operation.requestHeader %}
+                                    {{ requestHeader.field }}:{{ requestHeader.value }} <br>
+                                {% endfor %}
+                                </td>
+                            {% endif %}
+                            {% if action.operation.requestId.exists() %}<td>{{ action.operation.requestId }}</td>{% endif %}
+                            {% if action.operation.responseId.exists() %}<td>{{ action.operation.responseId }}</td>{% endif %}
+                            {% if action.operation.sourceId.exists() %}<td>{{ action.operation.sourceId }}</td>{% endif %}
+                            {% if action.operation.targetId.exists() %}<td>{{ action.operation.targetId }}</td>{% endif %}
+                            {% if action.operation.url.exists() %}<td>{{ action.operation.url }}</td>{% endif %}
+                        </tr>
+                    </table>
+                </blockquote>
+            {% endfor %}
+        </blockquote>
+    {% endif %}
+</div>

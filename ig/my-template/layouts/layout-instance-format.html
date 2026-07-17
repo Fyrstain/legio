@@ -1,0 +1,37 @@
+---
+---
+
+{% if '{{[fmt]}}' == 'xml' %}
+{% assign section = '7' %}
+{% elsif '{{[fmt]}}' == 'json' %}
+{% assign section = '8' %}
+{% else %}
+{% assign section = '9' %}
+{% endif %}
+
+{% include fragment-pagebegin.html %}
+<div style="counter-reset: section {{section}}" class="col-12">
+<!--ReleaseHeader--><p id="publish-box">Publish Box goes here</p><!--EndReleaseHeader-->
+{% include fragment-base-navtabs.html type='{{[type]}}' id='{{[id]}}' active='{{[fmt]}}' %}
+
+<a name="root"> </a>
+{% assign htmlPagePath = "{{[type]}}-{{[id]}}.html" %}
+{% if site.data.artifacts[htmlPagePath].example == true %}
+  {% assign example = 'Example ' %}
+{% endif %}
+{% assign prefix = site.data.artifacts[htmlPagePath].type %}
+  <h2 id="root">{{example}}{{prefix}}: {{site.data.pages[page.path].title | escape_once}}</h2>
+{% include fragment-simpletable.html %}
+
+<p><a href="{{[type]}}-{{[id]}}.{{[fmt]}}" no-download="true">{{[fmt]}} brut</a> | <a href="{{[type]}}-{{[id]}}.{{[fmt]}}" download>Télécharger</a></p>
+
+  <!-- insert intro if present -->
+  {% include fragment-intro.html type='{{[type]}}' id='{{[id]}}' %}
+
+  {% include {{[type]}}-{{[name]}}.xhtml %}
+
+  <!-- insert notes if present -->
+  {% include fragment-notes.html type='{{[type]}}' id='{{[id]}}' %}
+
+</div>
+{% include fragment-pageend.html %}
