@@ -140,7 +140,7 @@ done in the background.
 If you want to force the build of the image, use the following command :
 
 ```bash
-docker build -t docker.registry.fyrstain.com/legio/front:latest --secret id=npmrc,src=C:/Users/wylem/.npmrc --build-arg ARG_PORT=3000 --build-arg ARG_REACT_APP_FHIR_URL=http://localhost:8080/fhir --build-arg ARG_REACT_APP_DISPLAY_CLIENT_LOGO=false --build-arg ARG_REACT_APP_KEYCLOAK_URL=http://localhost:8999/ --build-arg ARG_REACT_APP_REDIRECTURI=http://localhost:3000/ --build-arg ARG_REACT_APP_KEYCLOAK_REALM=demo --build-arg ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID=pandora-demo --build-arg ARG_REACT_APP_KEYCLOAK_FLOW=standard --build-arg ARG_REACT_APP_KEYCLOAK_ONLOAD=check-sso --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME=false --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK=false --build-arg ARG_REACT_APP_KEYCLOAK_PKCE_METHOD=S256 --no-cache .
+docker build -t docker.registry.fyrstain.com/product/legio/front:latest --secret id=npmrc,src=C:/Users/diogo/.npmrc --build-arg ARG_PORT=3000 --build-arg ARG_REACT_APP_FHIR_URL=http://localhost:8080/fhir --build-arg ARG_REACT_APP_DISPLAY_CLIENT_LOGO=false --build-arg ARG_REACT_APP_KEYCLOAK_URL=http://localhost:8999/ --build-arg ARG_REACT_APP_REDIRECTURI=http://localhost:3000/ --build-arg ARG_REACT_APP_KEYCLOAK_REALM=demo --build-arg ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID=pandora-demo --build-arg ARG_REACT_APP_KEYCLOAK_FLOW=standard --build-arg ARG_REACT_APP_KEYCLOAK_ONLOAD=check-sso --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME=false --build-arg ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK=false --build-arg ARG_REACT_APP_KEYCLOAK_PKCE_METHOD=S256 --no-cache .
 ```
 
 The _build_ command build all images as defined in the docker-compose file. The _--no-cache_ option forces a new
