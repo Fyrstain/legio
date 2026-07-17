@@ -50,7 +50,8 @@
     "items": {
       "about": "A propos",
       "contact": "Contact",
-      "problemtracking": "Suivi de problème"
+      "problemtracking": "Suivi de problème",
+      "implementationguide": "Guide d’implémentation"
     }
   },
   "button": {

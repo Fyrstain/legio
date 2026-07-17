@@ -29,3 +29,13 @@ yarn-error.log*
 /Keycloak/data/keycloakdb.mv.db
 /Keycloak/data/keycloakdb.lock.db
 /Keycloak/data/keycloakdb.trace.db
+
+#IG
+ig/fsh-generated
+ig/input-cache
+ig/temp
+ig/template
+ig/output
+ig/my-template/**/.index.db
+ig/my-template/**/.index.json
+public/ig

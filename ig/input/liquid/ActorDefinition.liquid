@@ -1,0 +1,138 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+
+    <div style="display: inline-block;
+                background-color: #d9e0e7; 
+                padding: 6px; 
+                margin: 4px; 
+                border: 1px solid #8da1b4;
+                border-radius: 5px; 
+                line-height: 60%;
+                width: 100%;"
+                >
+        {% if ActorDefinition.id.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>ID</b>: {{ActorDefinition.id}}
+            </p>
+        {% endif %}
+        {% if ActorDefinition.identifier.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Identifier</b>:</p>
+            <ul>
+                {% for identifier in ActorDefinition.identifier %}
+                    <li>
+                        {{identifier}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if ActorDefinition.experimental.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Experimental</b>: {{ActorDefinition.experimental}}
+            </p>
+        {% endif %}
+        {% if ActorDefinition.publisher.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Publisher</b>: {{ActorDefinition.publisher}}
+            </p>
+        {% endif %}
+        {% if ActorDefinition.contact.exists() %}
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Contact Name</b></th>
+                    <th style="text-align: center;"><b>Contact Points</b></th>
+                </tr>
+                {% for contact in ActorDefinition.contact %}
+                        <tr style="background-color: #ffffff;">
+                        <td>{%if contact.name %} {{contact.name}} {% else %} N/A {% endif %} </td>
+                        <td>
+                            <ul>
+                                {% for contactPoint in contact.telecom %}
+                                    <li>
+                                    {%if contactPoint.system = 'email' %} 
+                                        <a href="mailto:{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% elsif contactPoint.system = 'url' %}
+                                        <a href="{{contactPoint.value}}">{{contactPoint.value}}</a>
+                                    {% else %}
+                                        {{contactPoint.value}}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        
+        {% if ActorDefinition.description.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Description</b>:
+            </p>
+            {{ActorDefinition.description}}
+        {% endif %}
+        
+        {% if ActorDefinition.jurisdiction.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Jurisdiction</b>:
+                {% for jurisdiction in ActorDefinition.jurisdiction %}
+                    {{jurisdiction.coding.display}}: {{jurisdiction.coding.system}}#{{jurisdiction.coding.code}}<br/>   
+                {% endfor %}
+            </p>
+        {% endif %}
+        
+        {% if ActorDefinition.purpose.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Purpose</b>:
+            </p>
+            {{ActorDefinition.purpose}}
+        {% endif %}
+        
+        {% if ActorDefinition.copyrightLabel.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Copyright Label</b>: {{ActorDefinition.copyrightLabel}}
+            </p>
+        {% endif %}
+
+        {% if ActorDefinition.derivedFrom.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>This actor inherits all the obligations of this actors</b>:</p>
+            <ul>
+                {% for derivedFrom in ActorDefinition.derivedFrom %}
+                    <li>
+                        {{derivedFrom}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if ActorDefinition.reference.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Reference to more information about the actor</b>:</p> 
+            <ul>
+                {% for reference in ActorDefinition.reference %}
+                    <li>
+                        {{reference}}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        {% if ActorDefinition.type.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Type</b>: {{ActorDefinition.type}}
+            </p>
+        {% endif %}
+        
+        {% if ActorDefinition.documentation.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Documentation</b>: 
+            </p>
+            {{ActorDefinition.documentation}}
+        {% endif %}
+        
+        {% if ActorDefinition.capabilities.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Capabilities</b>: {{ActorDefinition.capabilities}}
+            </p>
+        {% endif %}
+        
+    </div><br/>
+</div>

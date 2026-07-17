@@ -1,0 +1,105 @@
+@font-face {
+	font-family: 'Lato';
+	src: url(‘/fonts/Lato-Regular.ttf’) format(‘truetype’);
+}
+
+/* Fyrstain Content IGs */
+:root {  
+  --ig-status-text-color: #333f4c; /* 1. IG Title and status text color */
+  --navbar-bg-color: #E40032; /* 2. Header container color */
+  --footer-bg-color: #333f4c; /* 3. Footer background color*/
+  --footer-container-bg-color: #E40032; /* 4. Footer container color */
+  --stripe-bg-color: #333f4c; /* 5. Header strip color */
+
+  --btn-hover-color: #ec4159;  /* 6. Menu button hover color */
+  --btn-active-color: #b6192b; /* 7. Menu button active color */
+  --btn-gradient-start-color: #E40032; /* 9. Menu item gradient start color */
+  --btn-gradient-end-color: #c0263b; /* 10. Menu item gradient end  color */
+
+  --toc-box-bg-color: #e4e4e4; /* 17.  TOC box background color */
+  
+  --ig-header-container-color: #f5f5f5; /* 22. Header container color (center) */
+}
+
+body {
+  text-align: justify;
+  font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+table, th, td {
+  border: 1px solid silver;
+}
+
+th {
+  background-color: #333f4c; 
+  color: #ffffff;
+  text-align: center;
+}
+
+td {
+  padding: 6px;
+  line-height: 18px;
+}
+
+a,
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+p,
+li,
+ul, ol {
+  font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+code,
+pre {
+  font-family: Lato, Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+pre[class*="language-"] {
+  font-family: Lato, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+p {
+  font-size: 13px;
+}
+
+/* CSS to have two level dropdown menu in the header */
+.dropdown-menu li {
+  position: relative;
+}
+.dropdown-menu .submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -10%;
+}
+.dropdown-menu > li:hover > .submenu {
+  display: block;
+}
+
+/* 
+==================================
+JSON/XML/TTL Example Styling Start
+==================================
+*/
+
+pre.json {
+  width: 100%;
+  overflow: scroll;
+}
+
+pre.xml {
+  width: 100%;
+  overflow: scroll;
+}
+
+pre.rdf {
+  width: 100%;
+  overflow: scroll;
+}
+
+/* 
+==================================
+JSON/XML/RTL Example Styling End
+==================================
+*/

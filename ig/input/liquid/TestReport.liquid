@@ -1,0 +1,193 @@
+<div xmlns="http://www.w3.org/1999/xhtml">
+
+    <div style="display: inline-block;
+                background-color: #d9e0e7; 
+                padding: 6px; 
+                margin: 4px; 
+                border: 1px solid #8da1b4;
+                border-radius: 5px; 
+                line-height: 60%;
+                width: 100%;"
+                >
+        {% if TestReport.id.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>ID</b>: {{TestReport.id}}
+            </p>
+        {% endif %}
+        {% if TestReport.name.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Name</b>: {{TestReport.name}}
+            </p>
+        {% endif %}
+        {% if TestReport.status.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Status</b>: {{TestReport.status}}
+            </p>
+        {% endif %}
+        {% if TestReport.testScript.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Profile</b>: {{TestReport.testScript}}
+            </p>
+        {% endif %}
+        {% if TestReport.result.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Result</b>: {{TestReport.result}}
+            </p>
+        {% endif %}
+        {% if TestReport.score.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Score</b>: {{TestReport.score}}
+            </p>
+        {% endif %}
+        {% if TestReport.tester.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Tester</b>: {{TestReport.tester}}
+            </p>
+        {% endif %}
+        {% if TestReport.issued.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;">
+                <b>Issued</b>: {{TestReport.issued}}
+            </p>
+        {% endif %}
+        {% if TestReport.participant.exists() %}
+            <p style="padding-bottom: 0px; margin: 0px;"><b>Participant</b>:</p>
+            <table class="grid" style="width: 100%;">
+                <tr style="background-color: #333f4c; color: #ffffff;">
+                    <th style="text-align: center;"><b>Type</b></th>
+                    <th style="text-align: center;"><b>URL</b></th>
+                    <th style="text-align: center;"><b>Display</b></th>
+                </tr>
+                {% for participant in TestReport.participant %}
+                    <tr style="background-color: #ffffff;">
+                        <td>{{participant.type}}</td>
+                        <td>{{participant.uri}}</td>
+                        <td>{% if participant.display.exists() %} {{ participant.display }} {% else %} N/A {% endif %}</td>                                
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </div><br/>
+
+    <div style="display: inline-block;
+                padding: 6px; 
+                margin: 4px; 
+                width: 100%;"
+                >
+        {% if TestReport.setup.exists() %}
+            <h3>Setup</h3>
+            <blockquote>
+                <table class="grid" style="width: 100%;">
+                    <tr style="background-color: #333f4c; color: #ffffff;">
+                        <th style="text-align: center;"><b>Action</b></th>
+                        <th style="text-align: center;"><b>ID</b></th>
+                        <th style="text-align: center;"><b>Result</b></th>
+                        <th style="text-align: center;"><b>Message</b></th>
+                        <th style="text-align: center;"><b>Details</b></th>
+                        <th style="text-align: center;"><b>Requirements</b></th>
+                    </tr>
+                    {% for action in TestReport.setup.action %}
+                        {% if action.operation.exists() %}
+                            <tr><td colspan="6" style="background-color: #dde2e3; color: #dde2e3;">New Action</td></tr>
+                            <tr>
+                                <td><b>Operation</b></td>
+                                <td>{% if action.operation.id.exists() %}{{ action.operation.id }}{% else %} N/A {% endif %}</td>
+                                <td>{{ action.operation.result }}</td>
+                                <td>{% if action.operation.message.exists() %}{{ action.operation.message }}{% else %} N/A {% endif %}</td>
+                                <td>{% if action.operation.detail.exists() %}{{ action.operation.detail }}{% else %} N/A {% endif %}</td>
+                                <td style="background-color: #F0F0F0;">N/A</td>
+                            </tr>
+                        {% elsif action.assert.exists() %}
+                            <tr>
+                                <td><b>Assert</b></td>
+                                <td>{% if action.assert.id.exists() %}{{ action.assert.id }}{% else %} N/A {% endif %}</td>
+                                <td>{{ action.assert.result }}</td>
+                                <td>{% if action.assert.message.exists() %}{{ action.assert.message }}{% else %} N/A {% endif %}</td>
+                                <td>{% if action.assert.detail.exists() %}{{ action.assert.detail }}{% else %} N/A {% endif %}</td>
+                                <td>
+                                    {% if action.assert.requirement %}
+                                        {% for requirement in action.operation.requirement %}
+                                            {% if requirement.link.exists() %}{{ requirement.link }}{% else %} N/A {% endif %}
+                                        {% endfor %}
+                                    {% else %} N/A 
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </blockquote> 
+        {% endif %}
+
+        {% if TestReport.test.exists() %}
+            <h3>Tests</h3>
+            {% for test in TestReport.test %}
+                <blockquote>
+                    <b>{{ test.name }}:</b><br/>
+                    {{ test.description }}<br/>
+                    <table class="grid" style="width: 100%;">
+                        <tr style="background-color: #333f4c; color: #ffffff;">
+                            <th style="text-align: center;"><b>Action</b></th>
+                            <th style="text-align: center;"><b>ID</b></th>
+                            <th style="text-align: center;"><b>Result</b></th>
+                            <th style="text-align: center;"><b>Message</b></th>
+                            <th style="text-align: center;"><b>Details</b></th>
+                            <th style="text-align: center;"><b>Requirements</b></th>
+                        </tr>
+                        {% for action in test.action %}
+                            {% if action.operation.exists() %} 
+                                <tr><td colspan="6" style="background-color: #dde2e3; color: #dde2e3;">New Action</td></tr>
+                                <tr>
+                                    <td><b>Operation</b></td>
+                                    <td>{% if action.operation.id.exists() %}{{ action.operation.id }}{% else %} N/A {% endif %}</td>
+                                    <td>{{ action.operation.result }}</td>
+                                    <td>{% if action.operation.message.exists() %}{{ action.operation.message }}{% else %} N/A {% endif %}</td>
+                                    <td>{% if action.operation.detail.exists() %}{{ action.operation.detail }}{% else %} N/A {% endif %}</td>
+                                    <td style="background-color: #F0F0F0;">N/A</td>
+                                </tr>
+                            {% elsif action.assert.exists() %}
+                                <tr>
+                                    <td><b>Assert</b></td>
+                                    <td>{% if action.assert.id.exists() %}{{ action.assert.id }}{% else %} N/A {% endif %}</td>
+                                    <td>{{ action.assert.result }}</td>
+                                    <td>{% if action.assert.message.exists() %}{{ action.assert.message }}{% else %} N/A {% endif %}</td>
+                                    <td>{% if action.assert.detail.exists() %}{{ action.assert.detail }}{% else %} N/A {% endif %}</td>
+                                    <td>
+                                        {% if action.assert.requirement.exists() %}
+                                            {% for requirement in action.operation.requirement %}
+                                                {% if requirement.link.exists() %}{{ requirement.link }}{% else %} N/A {% endif %}
+                                            {% endfor %}
+                                        {% else %} N/A 
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </blockquote>
+            {% endfor %}
+        {% endif %}
+
+        {% if TestReport.teardown.exists() %}
+            <h3>Teardown</h3>
+            <blockquote>
+                <b>Operations</b><br/>
+                <table class="grid" style="width: 100%;">
+                    <tr style="background-color: #333f4c; color: #ffffff;">
+                        <th style="text-align: center;"><b>ID</b></th>
+                        <th style="text-align: center;"><b>Result</b></th>
+                        <th style="text-align: center;"><b>Message</b></th>
+                        <th style="text-align: center;"><b>Details</b></th>
+                    </tr>
+                    {% for action in TestReport.teardown.action %}
+                        <tr>
+                            <td>{% if action.operation.id.exists() %}{{ action.operation.id }}{% else %} N/A {% endif %}</td>
+                            <td>{{ action.operation.result }}</td>
+                            <td>{% if action.operation.message.exists() %}{{ action.operation.message }}{% else %} N/A {% endif %}</td>
+                            <td>{% if action.operation.detail.exists() %}{{ action.operation.detail }}{% else %} N/A {% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </blockquote>
+        {% endif %}
+    </div><br/>
+</div>
