@@ -84,7 +84,7 @@ const ExistingCanonicalForm: FunctionComponent<ExistingCanonicalFormProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   /**
    * Load EvidenceVariable data when modal opens.

@@ -1,5 +1,6 @@
 // React
 import { FunctionComponent, JSXElementConstructor, ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 // Components
 import { Page, PageConfiguration } from "@fyrstain/hl7-front-library";
 // Translation
@@ -23,6 +24,8 @@ const LegioPage: FunctionComponent<{
     needsLogin?: boolean;
     }> = (props) => {
 
+    const navigate = useNavigate();
+
     /////////////////////////////////
     //           METHODS           //
     /////////////////////////////////
@@ -44,6 +47,14 @@ const LegioPage: FunctionComponent<{
 
     const handleLangChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         i18n.changeLanguage(event.target.value);
+    };
+
+    const handleLogoClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest(".navbar-brand")) return;
+
+        event.preventDefault();
+        navigate("/Home");
     };
 
     const fullConfig: PageConfiguration = {
@@ -174,7 +185,11 @@ const LegioPage: FunctionComponent<{
         },
     };
 
-    return <Page {...fullConfig} />;
+    return (
+        <div onClickCapture={handleLogoClick}>
+            <Page {...fullConfig} />
+        </div>
+    );
 };
 
 export default LegioPage;

@@ -78,7 +78,7 @@ const EvidenceVariableModal: FunctionComponent<EvidenceVariableModalProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   ////////////////////////////////
   //          Actions           //

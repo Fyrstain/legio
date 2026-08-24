@@ -75,7 +75,7 @@ const ExistingStudyVariableForm: FunctionComponent<
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   /**
    * Load StudyVariable data on component mount.

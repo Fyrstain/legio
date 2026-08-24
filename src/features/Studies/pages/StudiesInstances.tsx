@@ -1,7 +1,7 @@
 // Font awesome
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 // Fhir front library
-import { SearchableTable } from "@fyrstain/hl7-front-library";
+import { SearchableTable, getErrorDetails } from "@fyrstain/hl7-front-library";
 // Fhir
 import Client from "fhir-kit-client";
 import { SimpleCode, ValueSetLoader } from "@fyrstain/hl7-front-library";
@@ -36,12 +36,6 @@ const StudiesInstances: FunctionComponent = () => {
   //             Client              //
   /////////////////////////////////////
 
-  const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
-  });
-
-  const valueSetLoader = new ValueSetLoader(fhirClient);
-
   //////////////////////////////
   //        Navigation        //
   //////////////////////////////
@@ -60,26 +54,30 @@ const StudiesInstances: FunctionComponent = () => {
   /////////////////////////////////////
 
   const [loading, setLoading] = useState(false);
+  const [filtersUnavailable, setFiltersUnavailable] = useState(false);
 
   useEffect(() => {
-    loadPage();
-  }, []);
+    const loadPage = async () => {
+      setLoading(true);
+      try {
+        const fhirClient = new Client({
+          baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+        });
+        const valueSetLoader = new ValueSetLoader(fhirClient);
+        setResearchStudyPhases(
+          await valueSetLoader.searchValueSet(researchStudyPhaseUrl)
+        );
+      } catch {
+        // The phase ValueSet is used by an optional search filter.
+        setResearchStudyPhases([]);
+        setFiltersUnavailable(true);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  /**
-   * Load the initial state of the page.
-   */
-  async function loadPage() {
-    setLoading(true);
-    try {
-      setResearchStudyPhases(
-        await valueSetLoader.searchValueSet(researchStudyPhaseUrl)
-      );
-    } catch (error) {
-      console.log(error);
-      onError();
-    }
-    setLoading(false);
-  }
+    loadPage();
+  }, [researchStudyPhaseUrl]);
 
   /////////////////////////////////////
   //             Actions             //
@@ -101,8 +99,8 @@ const StudiesInstances: FunctionComponent = () => {
   /**
    * Redirect to the error page.
    */
-  const onError = useCallback(() => {
-    navigate("/Error");
+  const onError = useCallback((error?: unknown) => {
+    navigate("/Error", { state: { error: getErrorDetails(error) } });
   }, [navigate]);
 
   //////////////////////////////
@@ -111,6 +109,8 @@ const StudiesInstances: FunctionComponent = () => {
 
   return (
     <LegioPage loading={loading} titleKey={i18n.t("title.studies")}>
+      <>
+        {filtersUnavailable && <div className="alert alert-warning" role="alert">{i18n.t("status.filtersUnavailable", { defaultValue: "Some search filters are currently unavailable." })}</div>}
         <SearchableTable
             searchCriteriaProperties={{
             title: i18n.t("title.searchcriteria"),
@@ -177,7 +177,7 @@ const StudiesInstances: FunctionComponent = () => {
                     };
                 } catch (error) {
                     console.error("Error mapping resource to data:", error);
-                    onError(); 
+                    onError(error); 
                 }
             },
             searchProperties: {
@@ -187,6 +187,7 @@ const StudiesInstances: FunctionComponent = () => {
             onError: onError,
             }}
         />
+      </>
     </LegioPage>
   );
 };

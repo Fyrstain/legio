@@ -7,6 +7,7 @@ import InstanceCard from "../components/InstanceCard";
 import AddInstanceCard from "../components/AddInstanceCard";
 import { instantiateStudy } from "../services/studyDefinition.service";
 import i18n from "i18next";
+import { getErrorDetails } from "@fyrstain/hl7-front-library";
 
 const definitionCache: Record<string, ResearchStudy> = {};
 const instancesCache: Record<string, ResearchStudy[]> = {};
@@ -21,24 +22,6 @@ function getPhaseCode(study: ResearchStudy | null | undefined): string {
     study?.phase?.coding?.[0]?.display ??
     "";
   return raw.toLowerCase().trim();
-}
-
-/**
- * Return the CSS class for the phase badge (shown in the page header).
- */
-function getPhaseBadgeClass(phase: string): string {
-  switch (phase) {
-    case "template":
-      return "instance-card-phase-badge instance-card-phase-default";
-    case "initial":
-      return "instance-card-phase-badge instance-card-phase-initial";
-    case "post-cohorting":
-      return "instance-card-phase-badge instance-card-phase-post-cohorting";
-    case "post-datamart":
-      return "instance-card-phase-badge instance-card-phase-post-datamart";
-    default:
-      return "instance-card-phase-badge instance-card-phase-default";
-  }
 }
 
 /**
@@ -79,35 +62,23 @@ const StudyDefinitionInstances: React.FC = () => {
 
   const [phaseFilter, setPhaseFilter] = useState<string>("");
 
-  const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-  });
+  const fhirClient = useMemo(
+    () =>
+      new Client({
+        baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
+      }),
+    []
+  );
 
-  const onError = useCallback(() => {
-      navigate("/Error");
+  const onError = useCallback((error?: unknown) => {
+      navigate("/Error", { state: { error: getErrorDetails(error) } });
     }, [navigate]);
-
-  useEffect(() => {
-    if (!definitionId) return;
-
-    if (
-      definitionCache[definitionId] &&
-      instancesCache[definitionId]
-    ) {
-      setDefinitionStudy(definitionCache[definitionId]);
-      setInstances(instancesCache[definitionId]);
-      setLoading(false);
-      return;
-    }
-
-    loadData(definitionId);
-  }, [definitionId]);
 
   /**
    * Fetch the study definition (template) and then
    * fetch all its related instances using the custom `definition` search parameter.
    */
-  async function loadData(currentDefId: string) {
+  const loadData = useCallback(async (currentDefId: string) => {
     setLoading(true);
 
     try {
@@ -144,11 +115,27 @@ const StudyDefinitionInstances: React.FC = () => {
       instancesCache[currentDefId] = fetchedInstances;
     } catch (err) {
       console.error(i18n.t("errormessage.loadingresearchstudyinstances"), err);
-      onError();
+      onError(err);
     }
 
     setLoading(false);
-  }
+  }, [fhirClient, onError]);
+
+  useEffect(() => {
+    if (!definitionId) return;
+
+    if (
+      definitionCache[definitionId] &&
+      instancesCache[definitionId]
+    ) {
+      setDefinitionStudy(definitionCache[definitionId]);
+      setInstances(instancesCache[definitionId]);
+      setLoading(false);
+      return;
+    }
+
+    loadData(definitionId);
+  }, [definitionId, loadData]);
 
   /**
    * Client-side filtering by phase.
@@ -167,10 +154,7 @@ const StudyDefinitionInstances: React.FC = () => {
     definitionStudy?.id ??
     "Study";
 
-  const defPhase = getPhaseCode(definitionStudy);
   const defDescription = definitionStudy?.description ?? "";
-
-  const defPhaseClass = getPhaseBadgeClass(defPhase);
 
   /**
    * handleAddInstance:
@@ -206,7 +190,7 @@ const StudyDefinitionInstances: React.FC = () => {
       navigate(`/Study/${newInstance.id}`);
     } catch (err) {
       console.error(i18n.t("errorDuringInstantiation"), err);
-      onError();
+      onError(err);
     }
   }
 

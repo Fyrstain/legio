@@ -203,5 +203,28 @@
         "addexistingcanonicalreference": "Add existing Canonical Reference",
         "addexpression": "Add Expression",
         "addcombination": "Add Combination"
+    },
+  "status": {
+    "filtersUnavailable": "Some search filters are currently unavailable.",
+    "error": {
+      "oops": "Oops!",
+      "problem": "Something went wrong",
+      "details": "Technical details",
+      "home": "Back to home",
+      "httpStatus": "HTTP status: {{status}}",
+      "reason": {
+        "cors": "The request was blocked by the browser's cross-origin policy.",
+        "network": "The service could not be reached. Please check your connection and try again.",
+        "unauthorized": "You need to sign in to access this page.",
+        "forbidden": "You are not allowed to access this page.",
+        "not-found": "The requested page or resource could not be found.",
+        "server": "The service encountered an unexpected error. Please try again later.",
+        "generic": "An unexpected error occurred."
+      }
+    },
+    "inProgress": {
+      "prefix": "Work in progress!",
+      "content": "Coming soon..."
     }
+  }
 }

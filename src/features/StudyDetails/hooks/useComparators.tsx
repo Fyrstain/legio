@@ -1,5 +1,5 @@
 // React
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 // Services
 import ValueSetService from "../services/valueSet.service";
 // HL7 Front Library
@@ -37,12 +37,19 @@ export const useComparators = (
   /////////////////////////////////////
 
   // Create FHIR client instance
-  const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
-  });
+  const fhirClient = useMemo(
+    () =>
+      new Client({
+        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+      }),
+    []
+  );
 
   // Create ValueSetLoader instance to fetch ValueSets
-  const valueSetLoader = new ValueSetLoader(fhirClient);
+  const valueSetLoader = useMemo(
+    () => new ValueSetLoader(fhirClient),
+    [fhirClient]
+  );
 
   /////////////////////////////////////
   //             Actions             //
@@ -84,7 +91,7 @@ export const useComparators = (
 
   useEffect(() => {
     loadComparators();
-  }, [parameterType]);
+  }, [loadComparators]);
 
   return {
     comparatorOptions,
