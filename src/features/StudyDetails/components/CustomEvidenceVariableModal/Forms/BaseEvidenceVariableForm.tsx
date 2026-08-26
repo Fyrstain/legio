@@ -1,5 +1,5 @@
 // React
-import { FunctionComponent, useCallback, useEffect, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // React Bootstrap
 import { Card, Form } from "react-bootstrap";
@@ -7,7 +7,11 @@ import { Card, Form } from "react-bootstrap";
 import i18n from "i18next";
 // HL7 Front Library
 import { StatusSelect } from "@fyrstain/fhir-front-library";
-import { FhirStatus, StatusTag } from "@fyrstain/hl7-front-library";
+import {
+  FhirStatus,
+  StatusTag,
+  getErrorDetails,
+} from "@fyrstain/hl7-front-library";
 // Types
 import { FormEvidenceVariableData } from "../../../types/evidenceVariable.types";
 import {
@@ -103,21 +107,10 @@ const BaseEvidenceVariableForm: FunctionComponent<
         const librariesData = await LibraryService.loadLibraries();
         setLibraries(librariesData);
       } catch (error) {
-        onError();
+        navigate("/Error", { state: { error: getErrorDetails(error) } });
       }
     };
     loadLibrariesData();
-  }, []);
-
-  //////////////////////////////
-  //           Error          //
-  //////////////////////////////
-
-  /**
-   * Navigate to the error page.
-   */
-  const onError = useCallback(() => {
-    navigate("/Error");
   }, [navigate]);
 
   ////////////////////////////////

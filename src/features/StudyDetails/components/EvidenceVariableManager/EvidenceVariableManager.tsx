@@ -32,7 +32,6 @@ import {
   CombinationFormData,
   EvidenceVariableActionType,
   ExistingCanonicalCriteriaFormData,
-  ExistingCanonicalFormData,
   ExistingStudyVariableFormData,
   ExpressionFormData,
   FormEvidenceVariableData,
@@ -47,7 +46,7 @@ interface EvidenceVariableManagerProps {
   inclusionCriteriaRef: string;
   studyVariableRef: string;
   onLoading: (loading: boolean) => void;
-  onError: () => void;
+  onError: (error?: unknown) => void;
   onStudyVariablesChange?: (studyVariables: EvidenceVariableModel[]) => void;
 }
 
@@ -117,6 +116,21 @@ const EvidenceVariableManager: FunctionComponent<
     number[] | undefined
   >();
 
+  /** Find and populate a library reference from its URL. */
+  const findLibraryByUrl = useCallback(async (libraryUrl: string) => {
+    if (!libraryUrl) return undefined;
+    try {
+      const availableLibraries = await LibraryService.loadLibraries();
+      const matchingLibrary = availableLibraries.find(
+        (lib) => lib.getUrl() === libraryUrl
+      );
+      return matchingLibrary?.toDisplayLibraryReference();
+    } catch (error) {
+      console.error("Error loading libraries:", error);
+      return undefined;
+    }
+  }, []);
+
   ////////////////////////////////
   //          Actions           //
   ////////////////////////////////
@@ -137,10 +151,10 @@ const EvidenceVariableManager: FunctionComponent<
         }
       } catch (error) {
         console.error(`Error loading ${type} variables:`, error);
-        onError();
+        onError(error);
       }
     },
-    [studyId, onError, onStudyVariablesChange]
+    [study, onError, onStudyVariablesChange]
   );
 
   /**
@@ -199,7 +213,7 @@ const EvidenceVariableManager: FunctionComponent<
           break;
       }
     },
-    []
+    [findLibraryByUrl]
   );
 
   /**
@@ -336,7 +350,7 @@ const EvidenceVariableManager: FunctionComponent<
           break;
       }
     },
-    []
+    [findLibraryByUrl]
   );
 
   /**
@@ -412,14 +426,18 @@ const EvidenceVariableManager: FunctionComponent<
             alert(i18n.t("errormessage.nostudyvariablefound"));
             return;
           }
-          parentEVId = studyVariablesForDisplay[0]?.getId();
+          parentEVId = studyVariables.find(
+            (ev) => ev.getId() === studyVariableRef
+          )?.getId();
         } else {
           // The inclusion criteria should only have one parent EvidenceVariable
           if (inclusionCriteria.length === 0) {
             alert(i18n.t("errormessage.noevidencevariablefound"));
             return;
           }
-          parentEVId = inclusionCriteriaForDisplay[0]?.getId();
+          parentEVId = inclusionCriteria.find(
+            (ev) => ev.getId() === inclusionCriteriaRef
+          )?.getId();
         }
         if (combinationMode === "update" && currentActionPath) {
           // Edit mode
@@ -453,6 +471,8 @@ const EvidenceVariableManager: FunctionComponent<
       currentContext,
       inclusionCriteria,
       studyVariables,
+      studyVariableRef,
+      inclusionCriteriaRef,
       currentActionPath,
       combinationMode,
       loadEvidenceVariablesHandler,
@@ -664,7 +684,7 @@ const EvidenceVariableManager: FunctionComponent<
         console.error("Error preparing edit data:", error);
       }
     },
-    [inclusionCriteria, studyVariables, currentContext]
+    [inclusionCriteria, studyVariables, currentContext, findLibraryByUrl]
   );
 
   /**
@@ -790,30 +810,11 @@ const EvidenceVariableManager: FunctionComponent<
   };
 
   /**
-   * Find and populate library reference from URL
-   * @param libraryUrl The URL of the library to find
-   * @returns LibraryReference or undefined if not found
-   */
-  const findLibraryByUrl = useCallback(async (libraryUrl: string) => {
-    if (!libraryUrl) return undefined;
-    try {
-      const availableLibraries = await LibraryService.loadLibraries();
-      const matchingLibrary = availableLibraries.find(
-        (lib) => lib.getUrl() === libraryUrl
-      );
-      return matchingLibrary?.toDisplayLibraryReference();
-    } catch (error) {
-      console.error("Error loading libraries:", error);
-      return undefined;
-    }
-  }, []);
-
-  /**
    * To display the Inclusion Criteria
    */
   const inclusionCriteriaForDisplay = useMemo(
     () => inclusionCriteria.filter((ev) => ev.getId() === inclusionCriteriaRef),
-    [inclusionCriteria]
+    [inclusionCriteria, inclusionCriteriaRef]
   );
   const inclusionCriteriaDisplayObjects =
     EvidenceVariableUtils.toDisplayObjects(inclusionCriteriaForDisplay);
@@ -835,7 +836,7 @@ const EvidenceVariableManager: FunctionComponent<
       loadEvidenceVariablesHandler("inclusion");
       loadEvidenceVariablesHandler("study");
     }
-  }, [studyId, loadEvidenceVariablesHandler]);
+  }, [studyId, study, loadEvidenceVariablesHandler]);
 
   /////////////////////////////////////////////
   //                Content                  //

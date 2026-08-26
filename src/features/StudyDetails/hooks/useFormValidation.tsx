@@ -1,5 +1,5 @@
 // React
-import { useState } from "react";
+import { useCallback, useState } from "react";
 // Translation
 import i18n from "i18next";
 
@@ -22,6 +22,8 @@ export interface SimpleValidationResult {
   clearErrors: () => void;
 }
 
+const idRegex = /^[A-Za-z0-9-.]{1,64}$/;
+
 //////////////////////////
 //         Hook         //
 //////////////////////////
@@ -32,9 +34,6 @@ export const useFormValidation = (): SimpleValidationResult => {
   // Determine if the form is valid (no errors)
   const hasNoErrors = Object.keys(errors).length === 0;
 
-  // Regular expression for validating IDs (LinkId) (alphanumeric, dashes, dots, 1-64 chars)
-  const idRegex = /^[A-Za-z0-9\-\.]{1,64}$/;
-
   /**
    * Validate a form field.
    * @param fieldName The name of the field to validate.
@@ -42,7 +41,7 @@ export const useFormValidation = (): SimpleValidationResult => {
    * @param isRequired Whether the field is required.
    * @returns An error message if validation fails, or null if it passes.
    */
-  const validateField = (
+  const validateField = useCallback((
     fieldName: string,
     value: any,
     isRequired = false
@@ -91,14 +90,14 @@ export const useFormValidation = (): SimpleValidationResult => {
       }
     });
     return error;
-  };
+  }, []);
 
   /**
    * Clear all validation errors.
    */
-  const clearErrors = () => {
+  const clearErrors = useCallback(() => {
     setErrors({});
-  };
+  }, []);
 
   return {
     errors,

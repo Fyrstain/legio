@@ -165,6 +165,7 @@ function App() {
         path="/Legio/ImplementationGuide"
         element={<ImplementationGuidePage />}
       />
+      <Route path="*" element={<Error notFound />} />
     </Routes>
   );
 }

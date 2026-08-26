@@ -1,5 +1,5 @@
 // React
-import { FunctionComponent, useState, useEffect } from "react";
+import { FunctionComponent, useState, useEffect, useCallback } from "react";
 // React Bootstrap
 import { Accordion, Alert, Badge, Form } from "react-bootstrap";
 // FontAwesome
@@ -62,15 +62,6 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
   //        LifeCycle           //
   ////////////////////////////////
 
-  // Load canonical EV data when characteristics change
-  useEffect(() => {
-    characteristics.forEach((characteristic, index) => {
-      if (characteristic.definitionCanonical) {
-        loadCanonicalEVData(characteristic.definitionCanonical, index);
-      }
-    });
-  }, [characteristics]);
-
   ////////////////////////////////
   //           Actions          //
   ////////////////////////////////
@@ -116,7 +107,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
    * @param characteristic The characteristic containing the definitionExpression
    * @returns Array of parameter objects with name, type, and optional valueSet
    */
-  const extractAvailableParameters = (characteristic: any): Array<{
+  const extractAvailableParameters = useCallback((characteristic: any): Array<{
     name: string,
     type: string,
     valueSetUrl?: string
@@ -137,7 +128,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
         valueSetUrl: valueSetExt?.valueCanonical
       };
     });
-  };
+  }, []);
 
   /**
    * Load canonical EV data for parameterization
@@ -145,7 +136,7 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
    * @param index The index of the characteristic
    * @returns A promise that resolves when the data is loaded
    */
-  const loadCanonicalEVData = async (canonicalUrl: string, index: number) => {
+  const loadCanonicalEVData = useCallback(async (canonicalUrl: string, index: number) => {
     if (canonicalEVData[index]) {
       return;
     }
@@ -246,7 +237,16 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     } catch (error) {
       console.error("Error loading canonical EV data:", error);
     }
-  };
+  }, [canonicalEVData, extractAvailableParameters]);
+
+  // Load canonical EV data when characteristics change
+  useEffect(() => {
+    characteristics.forEach((characteristic, index) => {
+      if (characteristic.definitionCanonical) {
+        loadCanonicalEVData(characteristic.definitionCanonical, index);
+      }
+    });
+  }, [characteristics, loadCanonicalEVData]);
 
   /**
    * Handle saving parameterized data
@@ -430,47 +430,6 @@ const CharacteristicDisplay: FunctionComponent<CharacteristicDisplayProps> = ({
     // Build the path to the characteristic
     const targetPath = [...currentPath, index];
     onAction?.("expression", targetPath, editData);
-  };
-
-  /**
-   * Handles the editing of a canonical characteristic.
-   */
-  const handleEditCanonical = async (characteristic: any, index: number) => {
-    try {
-      // Fetch the referenced EvidenceVariable using the canonical URL
-      const canonicalUrl = characteristic.definitionCanonical;
-      const canonicalEV =
-        await EvidenceVariableService.readEvidenceVariableByUrl(canonicalUrl);
-      // Check if an entry was found
-      if (!canonicalEV.entry || canonicalEV.entry.length === 0) {
-        throw new Error(
-          `EvidenceVariable not found at canonical URL: ${canonicalUrl}`
-        );
-      }
-      // TODO : Remplace the ANY with the correct type for referencedEV
-      const referencedEV = canonicalEV.entry[0].resource as any;
-      const evModel = new EvidenceVariableModel(referencedEV);
-      const selectedExpression = evModel.getExpression();
-      // Prepare the data to edit the canonical
-      const editData = {
-        exclude: characteristic.exclude || false,
-        evidenceVariable: {
-          id: referencedEV.id,
-          title: referencedEV.title || "",
-          description: referencedEV.description || "",
-          identifier: referencedEV.identifier?.[0]?.value || "",
-          status: referencedEV.status || "",
-          url: referencedEV.url || "",
-          selectedLibrary: undefined,
-        },
-        selectedExpression: selectedExpression,
-      };
-      // Build the path to the characteristic
-      const targetPath = [...currentPath, index];
-      onAction?.("editCanonical", targetPath, editData);
-    } catch (error) {
-      console.error("Error during the canonical edit data:", error);
-    }
   };
 
   /////////////////////////////////////////////

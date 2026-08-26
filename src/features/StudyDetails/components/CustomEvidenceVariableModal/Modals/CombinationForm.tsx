@@ -76,7 +76,7 @@ const CombinationForm: FunctionComponent<CombinationFormProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData, props.type]);
+  }, [props.show, props.mode, props.initialData, props.type, clearErrors]);
 
   ////////////////////////////////
   //          Actions           //

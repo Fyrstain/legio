@@ -26,6 +26,7 @@ import {
   SimpleCode,
   Title,
   ValueSetLoader,
+  getErrorDetails,
 } from "@fyrstain/hl7-front-library";
 // Buffer
 import { Buffer } from "buffer";
@@ -45,12 +46,6 @@ const StudyDetails: FunctionComponent = () => {
   //             Client              //
   /////////////////////////////////////
 
-  const fhirClient = new Client({
-        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
-  });
-
-  const valueSetLoader = new ValueSetLoader(fhirClient);
-
   /////////////////////////////////////
   //      Constants / ValueSet       //
   /////////////////////////////////////
@@ -60,7 +55,6 @@ const StudyDetails: FunctionComponent = () => {
     process.env.REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL ??
     "http://hl7.org/fhir/ValueSet/study-design";
 
-  const [datamartListId, setDatamartListId] = useState<string>("");
   // State to manage the ResearchStudy study design value set
   const [researchStudyStudyDesign, setResearchStudyStudyDesign] = useState(
     [] as SimpleCode[]
@@ -117,33 +111,46 @@ const StudyDetails: FunctionComponent = () => {
   /**
    * Navigate to the error page.
    */
-  const onError = useCallback(() => {
-    navigate("/Error");
+  const onError = useCallback((error?: unknown) => {
+    navigate("/Error", {
+      state: { error: getErrorDetails(error) },
+    });
   }, [navigate]);
 
   ////////////////////////////////
   //          Lifecyle          //
   ////////////////////////////////
 
-  useEffect(() => {
-    if (studyId) {
-      loadStudy();
-    }
-  }, [studyId]);
-
-  ////////////////////////////////
-  //           Actions          //
-  ////////////////////////////////
+  const loadDatamartForStudyHandler = useCallback(
+    async (study: ResearchStudy) => {
+      try {
+        const datamartList = await StudyService.loadDatamartForStudy(study);
+        if (datamartList) {
+          setDatamartResult(datamartList);
+          setIsExistingDatamartListId(true);
+        } else {
+          setIsExistingDatamartListId(false);
+        }
+      } catch (error) {
+        onError(error);
+      }
+    },
+    [onError]
+  );
 
   /**
    * Load Study from the back to populate the fields.
    *
    * @returns the promise of a Study.
    */
-  async function loadStudy() {
+  const loadStudy = useCallback(async () => {
     setLoading(true);
     try {
       // Load the value set for study design
+      const fhirClient = new Client({
+        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+      });
+      const valueSetLoader = new ValueSetLoader(fhirClient);
       const studyDesignValueSet = await valueSetLoader.searchValueSet(
         researchStudyStudyDesignUrl
       );
@@ -195,11 +202,26 @@ const StudyDetails: FunctionComponent = () => {
       // Set the actual version of the study
       setActualVersion(study.version ?? "");
     } catch (error) {
-      onError();
+      onError(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [
+    studyId,
+    onError,
+    loadDatamartForStudyHandler,
+    researchStudyStudyDesignUrl,
+  ]);
+
+  useEffect(() => {
+    if (studyId) {
+      loadStudy();
+    }
+  }, [studyId, loadStudy]);
+
+  ////////////////////////////////
+  //           Actions          //
+  ////////////////////////////////
 
   /**
    * Get the display values for the study design.
@@ -286,25 +308,6 @@ const StudyDetails: FunctionComponent = () => {
   };
 
   /**
-   * Load the datamart for a study if it exists
-   *
-   * @param study The ResearchStudy resource
-   */
-  async function loadDatamartForStudyHandler(study: ResearchStudy) {
-    try {
-      const datamartList = await StudyService.loadDatamartForStudy(study);
-      if (datamartList) {
-        setDatamartResult(datamartList);
-        setIsExistingDatamartListId(true);
-      } else {
-        setIsExistingDatamartListId(false);
-      }
-    } catch (error) {
-      onError();
-    }
-  }
-
-  /**
    * Extracts the pure List ID from a FHIR Reference.
    * Works with both relative ("List/123") and absolute ("http://.../List/123") refs.
    * Used to query Parameters via: /Parameters?_has:List:item:_id={LIST_ID}
@@ -345,7 +348,7 @@ const StudyDetails: FunctionComponent = () => {
         setNoPatientsFound(false);
       }
     } catch (error) {
-      onError();
+      onError(error);
     } finally {
       setLoading(false);
     }
@@ -379,7 +382,7 @@ const StudyDetails: FunctionComponent = () => {
       // Remove the link from the document
       document.body.removeChild(link);
     } catch (error) {
-      onError();
+      onError(error);
     } finally {
       setLoading(false);
     }
@@ -404,8 +407,6 @@ const StudyDetails: FunctionComponent = () => {
           ?.valueReference?.reference;
 
         const listId = extractListIdFromRef(evalRef);
-        setDatamartListId(listId);
-
         // First, fetch the List to get Parameter references
         const listResponse = await fetch(`${process.env.REACT_APP_FHIR_URL ?? "fhir"}/List/${listId}`);
         const list = await listResponse.json();
@@ -448,7 +449,6 @@ const StudyDetails: FunctionComponent = () => {
           "[Datamart] Unable to reload ResearchStudy for evaluation List:",
           e
         );
-        setDatamartListId("");
         setDatamartParameters([]);
       }
     })();
