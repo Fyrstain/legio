@@ -328,31 +328,96 @@ const StudyDetails: FunctionComponent = () => {
   );
 
   /**
-   * Handle the cohorting and datamart generation.
-   * This function is called when the user clicks on the "Generate" button.
+   * Generate the cohort and/or datamart depending on the current study state.
+   *
+   * Rules:
+   * - If a datamart already exists, do not generate it again.
+   * - If a cohort already exists (or the phase is post-cohorting), only run
+   *   $generate-datamart.
+   * - Otherwise, run $cohorting first, then $generate-datamart if patients
+   *   were found.
    */
-  const handleCohortingAndDatamart = async () => {
-    setLoading(true);
-    try {
-      const response = await StudyService.generateCohortAndDatamart(
-        studyId ?? ""
-      );
-      if (response.datamartResult === null) {
-        // No patients found
-        setNoPatientsFound(true);
-        setIsExistingDatamartListId(false);
-        alert(i18n.t("message.noeligiblepatients"));
-      } else {
-        setDatamartResult(response.datamartResult);
-        setIsExistingDatamartListId(true);
-        setNoPatientsFound(false);
-      }
-    } catch (error) {
-      onError(error);
-    } finally {
-      setLoading(false);
+  const handleGenerate = async () => {
+  console.log("[GENERATE] clicked");
+
+  if (!studyId || !studyResource) {
+    console.log("[GENERATE] missing study", {
+      studyId,
+      studyResource,
+    });
+    return;
+  }
+
+  const phaseCode =
+    studyResource.phase?.coding?.[0]?.code?.toLowerCase().trim() ?? "";
+
+  const hasExistingCohort = Boolean(
+    studyResource.recruitment?.actualGroup?.reference
+  );
+
+  console.log("[GENERATE] context", {
+    studyId,
+    phaseCode,
+    hasExistingCohort,
+    actualGroup: studyResource.recruitment?.actualGroup?.reference,
+    isExistingDatamartListId,
+    studyVariablesCount: studyVariables.length,
+  });
+
+  setLoading(true);
+
+  try {
+    if (hasExistingCohort || phaseCode === "post-cohorting") {
+      console.log("[GENERATE] calling executeGenerateDatamart");
+
+      const generatedDatamart =
+        await StudyService.executeGenerateDatamart(studyId);
+
+      console.log("[GENERATE] datamart result", generatedDatamart);
+
+      setDatamartResult(generatedDatamart);
+      setIsExistingDatamartListId(true);
+      setNoPatientsFound(false);
+
+      await loadStudy();
+      return;
     }
-  };
+
+    console.log("[GENERATE] calling executeCohorting");
+
+    const cohortingResult =
+      await StudyService.executeCohorting(studyId);
+
+    console.log("[GENERATE] cohorting result", cohortingResult);
+
+    const hasPatients =
+      Boolean(cohortingResult?.member?.length);
+
+    if (!hasPatients) {
+      console.log("[GENERATE] no patients");
+      setNoPatientsFound(true);
+      return;
+    }
+
+    console.log("[GENERATE] calling executeGenerateDatamart after cohorting");
+
+    const generatedDatamart =
+      await StudyService.executeGenerateDatamart(studyId);
+
+    console.log("[GENERATE] datamart result", generatedDatamart);
+
+    setDatamartResult(generatedDatamart);
+    setIsExistingDatamartListId(true);
+    setNoPatientsFound(false);
+
+    await loadStudy();
+  } catch (error) {
+    console.error("[GENERATE] error", error);
+    onError(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /**
    * Handle the export of the datamart.
@@ -407,6 +472,11 @@ const StudyDetails: FunctionComponent = () => {
           ?.valueReference?.reference;
 
         const listId = extractListIdFromRef(evalRef);
+        if (!listId) {
+          setDatamartParameters([]);
+          return;
+        }
+
         // First, fetch the List to get Parameter references
         const listResponse = await fetch(`${process.env.REACT_APP_FHIR_URL ?? "fhir"}/List/${listId}`);
         const list = await listResponse.json();
@@ -607,8 +677,8 @@ const StudyDetails: FunctionComponent = () => {
           {/* Button to generate the datamart*/}
           <Button
             variant="primary"
-            onClick={handleCohortingAndDatamart}
-            disabled={studyVariables.length === 0}
+            onClick={handleGenerate}
+            disabled={studyVariables.length === 0 }
           >
             {i18n.t("button.generate")}
           </Button>

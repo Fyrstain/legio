@@ -1,243 +1,345 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Client from "fhir-kit-client";
-import { ResearchStudy, Bundle } from "fhir/r5";
+import { ResearchStudy } from "fhir/r5";
+import i18n from "i18next";
+import { getErrorDetails } from "@fyrstain/hl7-front-library";
 import LegioPage from "../../../shared/components/LegioPage/LegioPage";
 import InstanceCard from "../components/InstanceCard";
 import AddInstanceCard from "../components/AddInstanceCard";
-import { instantiateStudy } from "../services/studyDefinition.service";
-import i18n from "i18next";
-import { getErrorDetails } from "@fyrstain/hl7-front-library";
+import {
+  instantiateStudy,
+  loadStudyDefinition,
+  loadStudyInstances,
+} from "../services/studyDefinition.service";
 
 const definitionCache: Record<string, ResearchStudy> = {};
 const instancesCache: Record<string, ResearchStudy[]> = {};
 
-/**
- * Return the normalized (lowercased) phase of a ResearchStudy,
- */
-function getPhaseCode(study: ResearchStudy | null | undefined): string {
-  if (!study) return "";
-  const raw =
-    study?.phase?.coding?.[0]?.code ??
-    study?.phase?.coding?.[0]?.display ??
-    "";
-  return raw.toLowerCase().trim();
-}
+/////////////////////////////////////
+//           Helpers               //
+/////////////////////////////////////
 
-/**
- * Compute the canonical identifier used by the custom `definition` SearchParameter..
- */
-function getDefinitionCanonical(
-  defStudy: ResearchStudy | null
-): string | null {
-  if (!defStudy) return null;
-
-  if (defStudy.url && defStudy.url.trim() !== "") {
-    return defStudy.url.trim();
+function getPhaseCode(
+  study: ResearchStudy | null | undefined
+): string {
+  if (!study) {
+    return "";
   }
 
-  const ident =
-    defStudy.identifier && defStudy.identifier.length > 0
-      ? defStudy.identifier[0].value
-      : undefined;
-
-  if (ident && ident.trim() !== "") {
-    return ident.trim();
-  }
-
-  return null;
+  return (
+    study.phase?.coding?.[0]?.code ??
+    ""
+  )
+    .toLowerCase()
+    .trim();
 }
+
+/////////////////////////////////////
+//           Component             //
+/////////////////////////////////////
 
 const StudyDefinitionInstances: React.FC = () => {
-  const { definitionId } = useParams<{ definitionId: string }>();
+  const { definitionId } = useParams<{
+    definitionId: string;
+  }>();
+
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  /////////////////////////////////////
+  //             State               //
+  /////////////////////////////////////
 
-  const [definitionStudy, setDefinitionStudy] = useState<ResearchStudy | null>(
-    null
+  const [loading, setLoading] = useState(false);
+
+  const [definitionStudy, setDefinitionStudy] =
+    useState<ResearchStudy | null>(null);
+
+  const [instances, setInstances] =
+    useState<ResearchStudy[]>([]);
+
+  const [phaseFilter, setPhaseFilter] =
+    useState("");
+
+  /////////////////////////////////////
+  //             Error               //
+  /////////////////////////////////////
+
+  const onError = useCallback(
+    (error?: unknown) => {
+      navigate("/Error", {
+        state: {
+          error: getErrorDetails(error),
+        },
+      });
+    },
+    [navigate]
   );
 
-  const [instances, setInstances] = useState<ResearchStudy[]>([]);
+  /////////////////////////////////////
+  //          Data loading           //
+  /////////////////////////////////////
 
-  const [phaseFilter, setPhaseFilter] = useState<string>("");
+  const loadData = useCallback(
+    async (currentDefinitionId: string) => {
+      setLoading(true);
 
-  const fhirClient = useMemo(
-    () =>
-      new Client({
-        baseUrl: process.env.REACT_APP_FHIR_URL ?? "fhir",
-      }),
-    []
-  );
+      try {
+        const definition =
+          await loadStudyDefinition(
+            currentDefinitionId
+          );
 
-  const onError = useCallback((error?: unknown) => {
-      navigate("/Error", { state: { error: getErrorDetails(error) } });
-    }, [navigate]);
+        const fetchedInstances =
+          await loadStudyInstances(definition);
 
-  /**
-   * Fetch the study definition (template) and then
-   * fetch all its related instances using the custom `definition` search parameter.
-   */
-  const loadData = useCallback(async (currentDefId: string) => {
-    setLoading(true);
+        setDefinitionStudy(definition);
+        setInstances(fetchedInstances);
 
-    try {
-      const defStudy = (await fhirClient.read({
-        resourceType: "ResearchStudy",
-        id: currentDefId,
-      })) as ResearchStudy;
-      const defCanonical = getDefinitionCanonical(defStudy);
+        definitionCache[currentDefinitionId] =
+          definition;
 
-      let fetchedInstances: ResearchStudy[] = [];
+        instancesCache[currentDefinitionId] =
+          fetchedInstances;
+      } catch (error) {
+        console.error(
+          i18n.t(
+            "errormessage.loadingresearchstudyinstances"
+          ),
+          error
+        );
 
-      if (defCanonical) {
-        const bundle = (await fhirClient.search({
-          resourceType: "ResearchStudy",
-          searchParams: {
-            "url:below": defCanonical,
-            _sort: "-_lastUpdated",
-          },
-        })) as Bundle;
-
-        const entries = bundle.entry ?? [];
-        fetchedInstances = entries
-          .map((e) => e.resource as ResearchStudy)
-          .filter(Boolean)
-          .filter((rs) => getPhaseCode(rs) !== "template");
-      } else {
-        fetchedInstances = [];
+        onError(error);
+      } finally {
+        setLoading(false);
       }
-
-      setDefinitionStudy(defStudy);
-      setInstances(fetchedInstances);
-
-      definitionCache[currentDefId] = defStudy;
-      instancesCache[currentDefId] = fetchedInstances;
-    } catch (err) {
-      console.error(i18n.t("errormessage.loadingresearchstudyinstances"), err);
-      onError(err);
-    }
-
-    setLoading(false);
-  }, [fhirClient, onError]);
+    },
+    [onError]
+  );
 
   useEffect(() => {
-    if (!definitionId) return;
+    if (!definitionId) {
+      return;
+    }
+
+    const cachedDefinition =
+      definitionCache[definitionId];
+
+    const cachedInstances =
+      instancesCache[definitionId];
 
     if (
-      definitionCache[definitionId] &&
-      instancesCache[definitionId]
+      cachedDefinition &&
+      cachedInstances
     ) {
-      setDefinitionStudy(definitionCache[definitionId]);
-      setInstances(instancesCache[definitionId]);
-      setLoading(false);
+      setDefinitionStudy(cachedDefinition);
+      setInstances(cachedInstances);
+
       return;
     }
 
     loadData(definitionId);
   }, [definitionId, loadData]);
 
-  /**
-   * Client-side filtering by phase.
-   */
+  /////////////////////////////////////
+  //           Filtering             //
+  /////////////////////////////////////
+
   const filteredInstances = useMemo(() => {
-    if (!phaseFilter) return instances;
-    return instances.filter((rs) => getPhaseCode(rs) === phaseFilter);
+    if (!phaseFilter) {
+      return instances;
+    }
+
+    return instances.filter(
+      (study) =>
+        getPhaseCode(study) === phaseFilter
+    );
   }, [instances, phaseFilter]);
 
-  /**
-   * Header metadata displayed at the top of the page.
-   */
-  const defTitle =
+  /////////////////////////////////////
+  //          Definition             //
+  /////////////////////////////////////
+
+  const definitionPhase =
+    getPhaseCode(definitionStudy);
+
+  const isTemplate =
+    definitionPhase === "template";
+
+  const definitionTitle =
     definitionStudy?.title ??
     definitionStudy?.name ??
     definitionStudy?.id ??
     "Study";
 
-  const defDescription = definitionStudy?.description ?? "";
+  const definitionDescription =
+    definitionStudy?.description ?? "";
 
-  /**
-   * handleAddInstance:
-   * - Calls $instantiate-study via the service layer
-   * - Inserts the newly created instance at the top of the current list
-   * - Updates the cache
-   * - Navigates to /Study/{newInstanceId}
-   */
-  async function handleAddInstance() {
-    if (!definitionStudy) return;
+  /////////////////////////////////////
+  //        Instantiation            //
+  /////////////////////////////////////
 
-    try {
-      const newInstance: ResearchStudy | null = await instantiateStudy(
-        definitionStudy
-      );
-
-      if (!newInstance?.id) {
-        console.error(
-          i18n.t("errormessage.noResearchInstanceReturned")
-        );
-        onError();
+  const handleAddInstance =
+    useCallback(async () => {
+      if (!definitionStudy) {
         return;
       }
 
-      setInstances((prev) => {
-        const updated = [newInstance, ...prev];
-        if (definitionId) {
-          instancesCache[definitionId] = updated;
-        }
-        return updated;
-      });
+      if (!isTemplate) {
+        console.warn(
+          "Cannot instantiate a ResearchStudy that is not a template."
+        );
 
-      navigate(`/Study/${newInstance.id}`);
-    } catch (err) {
-      console.error(i18n.t("errorDuringInstantiation"), err);
-      onError(err);
-    }
-  }
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const newInstance =
+          await instantiateStudy(
+            definitionStudy
+          );
+
+        if (!newInstance?.id) {
+          throw new Error(
+            i18n.t(
+              "errormessage.noResearchInstanceReturned"
+            )
+          );
+        }
+
+        setInstances((previous) => {
+          const updated = [
+            newInstance,
+            ...previous,
+          ];
+
+          if (definitionId) {
+            instancesCache[definitionId] =
+              updated;
+          }
+
+          return updated;
+        });
+
+        navigate(
+          `/Study/${newInstance.id}`
+        );
+      } catch (error) {
+        console.error(
+          i18n.t("errorDuringInstantiation"),
+          error
+        );
+
+        onError(error);
+      } finally {
+        setLoading(false);
+      }
+    }, [
+      definitionId,
+      definitionStudy,
+      isTemplate,
+      navigate,
+      onError,
+    ]);
+
+  /////////////////////////////////////
+  //             Render              //
+  /////////////////////////////////////
 
   return (
-    <LegioPage loading={loading} titleKey={defTitle}>
+    <LegioPage
+      loading={loading}
+      titleKey={definitionTitle}
+    >
       <section className="instances-section">
         <div className="instances-header">
           <div className="instances-header-top">
             <div className="instances-header-left">
-              {defDescription && (
+              {definitionDescription && (
                 <p className="instances-definition-desc-text">
-                  {defDescription}
+                  {definitionDescription}
                 </p>
               )}
+
+              <p>
+                <strong>Phase:</strong>{" "}
+                {definitionPhase || "-"}
+              </p>
             </div>
           </div>
 
-          {/* ===== FILTERS ROW ===== */}
           <div className="instances-filters-row instances-filters-row-marginTop">
             <div className="filter-group">
-              <label htmlFor="phaseFilter" className="filter-label">
+              <label
+                htmlFor="phaseFilter"
+                className="filter-label"
+              >
                 Phase
               </label>
+
               <select
                 id="phaseFilter"
                 className="filter-select"
                 value={phaseFilter}
-                onChange={(e) => setPhaseFilter(e.target.value)}
+                onChange={(event) =>
+                  setPhaseFilter(
+                    event.target.value
+                  )
+                }
               >
-                <option value="">{i18n.t("placeholder.allPhases")}</option>
-                <option value="initial">Initial</option>
-                <option value="post-cohorting">Post-cohorting</option>
-                <option value="post-datamart">Post-datamart</option>
+                <option value="">
+                  {i18n.t(
+                    "placeholder.allPhases"
+                  )}
+                </option>
+
+                <option value="initial">
+                  Initial
+                </option>
+
+                <option value="post-cohorting">
+                  Post-cohorting
+                </option>
+
+                <option value="post-datamart">
+                  Post-datamart
+                </option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* ===== GRID OF INSTANCES ===== */}
         <div className="instances-grid">
-          {filteredInstances.map((study) => (
-            <InstanceCard key={study.id ?? Math.random()} study={study} />
-          ))}
+          {filteredInstances.map(
+            (study) => (
+              <InstanceCard
+                key={study.id}
+                study={study}
+              />
+            )
+          )}
 
-          {/* "+" dashed card to create a new instance */}
-          <AddInstanceCard onAdd={handleAddInstance} />
+          {isTemplate && (
+            <AddInstanceCard
+              onAdd={
+                handleAddInstance
+              }
+            />
+          )}
         </div>
+
+        {!isTemplate && (
+          <div
+            className="alert alert-info mt-3"
+            role="alert"
+          >
+            This ResearchStudy is not a
+            study definition template.
+            Instantiation is therefore
+            unavailable.
+          </div>
+        )}
       </section>
     </LegioPage>
   );

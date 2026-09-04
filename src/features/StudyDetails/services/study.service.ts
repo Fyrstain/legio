@@ -312,7 +312,13 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_KNOWLEDGE_URL || "",
+          // The ResearchStudy may live on a dedicated knowledge server.
+          // On environments where no separate knowledge server is configured,
+          // use the same FHIR server as Legio.
+          address:
+            process.env.REACT_APP_KNOWLEDGE_URL ||
+            process.env.REACT_APP_FHIR_URL ||
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -517,6 +523,12 @@ async function executeFhirOperation<T>(
  * @returns The promise of the operation result. A list of people that are eligible for the study.
  */
 async function executeCohorting(studyId: string): Promise<Group> {
+   console.log("[SERVICE] executeCohorting", {
+    studyId,
+    cohortingUrl: process.env.REACT_APP_COHORTING_URL,
+    fhirUrl: process.env.REACT_APP_FHIR_URL,
+    knowledgeUrl: process.env.REACT_APP_KNOWLEDGE_URL,
+  });
   return executeFhirOperation<Group>(
     studyId,
     "$cohorting",
@@ -608,13 +620,139 @@ function getParameterValue(param: any): string {
  * @returns a promise of the operation result. A datamart containing the data for the study.
  */
 async function executeExportDatamart(studyId: string): Promise<any> {
-  const study = await loadStudy(studyId);
-  if (!study) {
-    throw new Error("Study not found with ID: " + studyId);
-  }
-  const parameters: Parameters = createParametersForExportDatamart(
-    study.url ?? ""
+  const study = await fhirClient.read({
+  resourceType: "ResearchStudy",
+  id: studyId,
+});
+
+if (!study.url) {
+  throw new Error(
+    `ResearchStudy ${studyId} has no canonical url`
   );
+}
+  const parameters = {
+  resourceType: "Parameters",
+  parameter: [
+    {
+      name: "researchStudyUrl",
+      valueCanonical: study.url,
+    },
+    {
+      name: "researchStudyEndpoint",
+      resource: {
+        resourceType: "Endpoint",
+        status: "active",
+        connectionType: {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+              code: "hl7-fhir-rest",
+            },
+          ],
+        },
+        payloadType: [
+          {
+            coding: [
+              {
+                system: "http://hl7.org/fhir/resource-types",
+                code: "ResearchStudy",
+              },
+            ],
+          },
+        ],
+        address:
+          process.env.REACT_APP_KNOWLEDGE_URL ||
+          process.env.REACT_APP_FHIR_URL ||
+          "",
+      },
+    },
+    {
+      name: "dataEndpoint",
+      resource: {
+        resourceType: "Endpoint",
+        status: "active",
+        connectionType: {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+              code: "hl7-fhir-rest",
+            },
+          ],
+        },
+        payloadType: [
+          {
+            coding: [
+              {
+                system: "http://hl7.org/fhir/resource-types",
+                code: "Patient",
+              },
+            ],
+          },
+        ],
+        address:
+          process.env.REACT_APP_FHIR_URL || "",
+      },
+    },
+    {
+      name: "terminologyEndpoint",
+      resource: {
+        resourceType: "Endpoint",
+        status: "active",
+        connectionType: {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+              code: "hl7-fhir-rest",
+            },
+          ],
+        },
+        payloadType: [
+          {
+            coding: [
+              {
+                system: "http://hl7.org/fhir/resource-types",
+                code: "ValueSet",
+              },
+            ],
+          },
+        ],
+        address:
+          process.env.REACT_APP_TERMINOLOGY_URL || "",
+      },
+    },
+    {
+      name: "cqlEngineEndpoint",
+      resource: {
+        resourceType: "Endpoint",
+        status: "active",
+        connectionType: {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/endpoint-connection-type",
+              code: "hl7-fhir-rest",
+            },
+          ],
+        },
+        payloadType: [
+          {
+            coding: [
+              {
+                system: "http://hl7.org/fhir/resource-types",
+                code: "Parameters",
+              },
+            ],
+          },
+        ],
+        address:
+          process.env.REACT_APP_CQL_URL || "",
+      },
+    },
+  ],
+};
   return fhirDatamartEngineClient.operation({
     resourceType: "ResearchStudy",
     name: "$export-datamart",
