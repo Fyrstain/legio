@@ -10,7 +10,7 @@ import "./Home.css";
 
 const Home: FunctionComponent = () => {
     return (
-        <LegioPage loading={false} fitFooter={true}>
+        <LegioPage loading={false} fitFooter={true} needsLogin={true}>
             <>
                 <div className='home-content d-flex justify-content-center align-items-center flex-md-row flex-column gap-3'>
                     <div className='home-illustration'>

@@ -195,7 +195,7 @@ const StudyDefinitionInstances: React.FC = () => {
   }
 
   return (
-    <LegioPage loading={loading} titleKey={defTitle}>
+    <LegioPage loading={loading} titleKey={defTitle} needsLogin={true}>
       <section className="instances-section">
         <div className="instances-header">
           <div className="instances-header-top">
