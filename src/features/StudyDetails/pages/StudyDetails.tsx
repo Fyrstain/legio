@@ -478,6 +478,7 @@ const StudyDetails: FunctionComponent = () => {
         />
       }
       loading={loading}
+      needsLogin={true}
     >
       <>
         {/* Section with the ResearchStudy details  */}

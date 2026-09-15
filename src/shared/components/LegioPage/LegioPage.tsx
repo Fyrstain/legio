@@ -7,7 +7,7 @@ import { Page, PageConfiguration } from "@fyrstain/hl7-front-library";
 import i18n from "i18next";
 import { toPublicUrl } from "../../services/PublicUrl";
 // Authentication
-// import UserService from "../../services/UserService";
+import UserService from "../../services/UserService";
 
 const LegioPage: FunctionComponent<{
     // The title of the page
@@ -84,15 +84,12 @@ const LegioPage: FunctionComponent<{
         //         ]
         //       : []),
         //   ],
-        // Authentication
-        //   authentication: {
-        //     handleLogin: handleLogin,
-        //     token: UserService.getKC().token,
-        //     doLogin: UserService.doLogin,
-        //     doLogout: UserService.doLogout,
-        //     isAuthenticated: () => UserService.isAuthenticated() || false,
-        //     getUserName: () => UserService.getUsername(),
-        //   },
+        authentication: {
+            doLogin: UserService.doLogin,
+            doLogout: UserService.doLogout,
+            isAuthenticated: UserService.isAuthenticated,
+            getUserName: UserService.getUsername,
+        },
         // the menu items with their subItems who contains the navigation to the differents pages
         menuItems: [
             {

@@ -312,7 +312,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_KNOWLEDGE_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_RESEARCH_STUDY_ENDPOINT ??
+            process.env.REACT_APP_KNOWLEDGE_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -348,7 +351,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_FHIR_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_DATA_ENDPOINT ??
+            process.env.REACT_APP_FHIR_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -384,7 +390,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_TERMINOLOGY_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_TERMINOLOGY_ENDPOINT ??
+            process.env.REACT_APP_TERMINOLOGY_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -420,7 +429,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_CQL_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_CQL_ENDPOINT ??
+            process.env.REACT_APP_CQL_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -479,7 +491,10 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
             ],
           },
         ],
-        address: process.env.REACT_APP_MAPPING_URL || "",
+        address:
+          process.env.REACT_APP_DATAMART_MAPPING_ENDPOINT ??
+          process.env.REACT_APP_MAPPING_URL ??
+          "",
         header: ["Content-Type: application/json"],
       },
     }

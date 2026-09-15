@@ -20,6 +20,7 @@ import InProgress from "../shared/pages/InProgress/InProgress";
 import StudyDetails from "../features/StudyDetails/pages/StudyDetails";
 import { toPublicUrl } from '../shared/services/PublicUrl';
 import ImplementationGuidePage from '../shared/pages/ImplementationGuidePage/ImplementationGuidePage';
+import UserService from '../shared/services/UserService';
 
 require('dayjs/locale/fr');
 
@@ -37,6 +38,18 @@ i18n
 
 dayjs.extend(relativeTime);
 dayjs.locale(i18n.language);
+
+function AuthenticatedApp({ children }: { children: React.ReactNode }) {
+  const authenticated = UserService.isAuthenticated();
+
+  useEffect(() => {
+    if (!authenticated) {
+      void UserService.doLogin();
+    }
+  }, [authenticated]);
+
+  return authenticated ? <>{children}</> : null;
+}
 
 function App() {
   const action = useNavigationType();
@@ -114,7 +127,8 @@ function App() {
   }, [pathname]);
 
   return (
-    <Routes>
+    <AuthenticatedApp>
+      <Routes>
       <Route index element={<Home />} />
       <Route
         path="/"
@@ -166,7 +180,8 @@ function App() {
         element={<ImplementationGuidePage />}
       />
       <Route path="*" element={<Error notFound />} />
-    </Routes>
+      </Routes>
+    </AuthenticatedApp>
   );
 }
 
