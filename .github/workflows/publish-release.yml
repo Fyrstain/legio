@@ -1,0 +1,43 @@
+name: Publish release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    uses: Fyrstain/github-workflows/.github/workflows/react-publish-release.yml@1.0.0
+    with:
+      main_branch: main
+      feature_branch: feature
+      node_version: '24'
+      java_version: '17'
+      fsh_sushi_version: latest
+      install_jekyll: true
+      ruby_version: '3.3'
+      working_directory: .
+      image_name: product/legio/front
+      docker_context: .
+      dockerfile: Dockerfile
+      build_args: |
+        ARG_PORT=3000
+        ARG_REACT_APP_FHIR_URL=http://localhost:8080/fhir
+        ARG_REACT_APP_KEYCLOAK_URL=http://localhost:8999/
+        ARG_REACT_APP_REDIRECTURI=http://localhost:3000/
+        ARG_REACT_APP_KEYCLOAK_REALM=demo
+        ARG_REACT_APP_KEYCLOAK_REALM_CLIENT_ID=pandora-demo
+        ARG_REACT_APP_KEYCLOAK_FLOW=standard
+        ARG_REACT_APP_KEYCLOAK_ONLOAD=check-sso
+        ARG_REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME=false
+        ARG_REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK=false
+        ARG_REACT_APP_KEYCLOAK_PKCE_METHOD=S256
+    secrets:
+      registry: ${{ secrets.NEXUS_REGISTRY }}
+      username: ${{ secrets.NEXUS_USERNAME }}
+      password: ${{ secrets.NEXUS_PASSWORD }}
+      npmrc: ${{ secrets.NPMRC }}

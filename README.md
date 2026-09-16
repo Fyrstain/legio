@@ -203,3 +203,5 @@ When using `npm start`, run `npm run dev:ig` first to make the IG available loca
 After `npm run build`, the generated application contains the specification under `build/ig`. When the app is served, the IG is available under the same base URL as the application, at `/ig/` or `<PUBLIC_URL>/ig/` when the app is deployed on a sub-path.
 
 The IG build requires Java and internet access at least when the publisher or dependencies need to be updated.
+
+The Docker image installs the FHIR IG build prerequisites and runs the full production build, so it contains the generated guide in both `build/ig` and `public/ig`.
