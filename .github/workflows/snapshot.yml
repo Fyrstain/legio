@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   snapshot:
-    uses: Fyrstain/github-workflows/.github/workflows/react-snapshot.yml@1.0.0
+    uses: ./.github/workflows/react-snapshot.yml
     with:
       node_version: '24'
       working_directory: .

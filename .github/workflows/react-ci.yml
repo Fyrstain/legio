@@ -1,0 +1,105 @@
+name: React CI (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: Node.js version used for the build.
+        required: false
+        default: '24'
+        type: string
+      working_directory:
+        description: Directory containing package.json.
+        required: false
+        default: '.'
+        type: string
+      java_version:
+        description: Optional Java version required by the build.
+        required: false
+        default: ''
+        type: string
+      fsh_sushi_version:
+        description: Optional FSH SUSHI version required by the build.
+        required: false
+        default: ''
+        type: string
+      install_jekyll:
+        description: Install Jekyll and Bundler for FHIR Implementation Guide builds.
+        required: false
+        default: false
+        type: boolean
+      ruby_version:
+        description: Ruby version used when Jekyll installation is enabled.
+        required: false
+        default: '3.3'
+        type: string
+    secrets:
+      npmrc:
+        description: Complete .npmrc content for private npm registry authentication.
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Lint, tests and build
+    runs-on: ubuntu-latest
+    env:
+      NPMRC: ${{ secrets.npmrc }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        if: ${{ inputs.java_version != '' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working_directory }}/package-lock.json
+
+      - name: Setup Ruby
+        if: ${{ inputs.install_jekyll }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby_version }}
+
+      - name: Install Jekyll
+        if: ${{ inputs.install_jekyll }}
+        run: gem install jekyll bundler
+
+      - name: Install FSH SUSHI
+        if: ${{ inputs.fsh_sushi_version != '' }}
+        run: npm install --global "fsh-sushi@${{ inputs.fsh_sushi_version }}"
+
+      - name: Configure npm registry authentication
+        if: ${{ env.NPMRC != '' }}
+        shell: bash
+        run: |
+          NPMRC_PATH="$RUNNER_TEMP/.npmrc"
+          printf '%s' "$NPMRC" > "$NPMRC_PATH"
+          printf 'NPM_CONFIG_USERCONFIG=%s\n' "$NPMRC_PATH" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Lint
+        run: npm run lint --if-present
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Tests
+        run: npm run test --if-present
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Build
+        run: npm run build
+        working-directory: ${{ inputs.working_directory }}

@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   prepare:
-    uses: Fyrstain/github-workflows/.github/workflows/react-prepare-release.yml@1.0.0
+    uses: ./.github/workflows/react-prepare-release.yml
     with:
       release_version: ${{ inputs.release_version }}
       next_version: ${{ inputs.next_version }}

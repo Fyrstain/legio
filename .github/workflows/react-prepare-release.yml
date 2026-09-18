@@ -1,0 +1,139 @@
+name: React prepare release (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: Release version in X.Y.Z format.
+        required: true
+        type: string
+      next_version:
+        description: Next development version in X.Y.Z-SNAPSHOT format.
+        required: true
+        type: string
+      source_branch:
+        required: false
+        default: feature
+        type: string
+      target_branch:
+        required: false
+        default: main
+        type: string
+      node_version:
+        required: false
+        default: '24'
+        type: string
+      working_directory:
+        required: false
+        default: '.'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: react-prepare-release-${{ inputs.release_version }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Create release pull request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ensure the workflow runs from the integration branch
+        shell: bash
+        env:
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+        run: |
+          if [[ "$GITHUB_REF_NAME" != "$SOURCE_BRANCH" ]]; then
+            echo "Run this workflow from branch $SOURCE_BRANCH, not $GITHUB_REF_NAME." >&2
+            exit 1
+          fi
+
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working_directory }}/package-lock.json
+
+      - name: Validate versions and current package version
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          NEXT_VERSION: ${{ inputs.next_version }}
+        run: |
+          if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_version must use X.Y.Z." >&2
+            exit 1
+          fi
+          if [[ ! "$NEXT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$ ]]; then
+            echo "next_version must use X.Y.Z-SNAPSHOT." >&2
+            exit 1
+          fi
+
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$CURRENT_VERSION" != "$RELEASE_VERSION-SNAPSHOT" ]]; then
+            echo "Expected $RELEASE_VERSION-SNAPSHOT on the integration branch; got $CURRENT_VERSION." >&2
+            exit 1
+          fi
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Ensure release branch and tag do not already exist
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          if git ls-remote --exit-code --heads origin "release/$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "Branch release/$RELEASE_VERSION already exists." >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "Tag $RELEASE_VERSION already exists; release tags are immutable." >&2
+            exit 1
+          fi
+
+      - name: Set release version
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: npm version "$RELEASE_VERSION" --no-git-tag-version
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Commit and push release branch
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          RELEASE_BRANCH="release/$RELEASE_VERSION"
+          git switch -c "$RELEASE_BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --check
+          git add "$GITHUB_WORKSPACE/${{ inputs.working_directory }}/package.json" \
+                  "$GITHUB_WORKSPACE/${{ inputs.working_directory }}/package-lock.json"
+          git commit -m "chore(release): prepare $RELEASE_VERSION"
+          git push origin "HEAD:refs/heads/$RELEASE_BRANCH"
+
+      - name: Create release pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          NEXT_VERSION: ${{ inputs.next_version }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          PR_BODY="$(printf 'Release-Version: %s\n\nNext-Version: %s\n' "$RELEASE_VERSION" "$NEXT_VERSION")"
+          gh pr create \
+            --base "$TARGET_BRANCH" \
+            --head "release/$RELEASE_VERSION" \
+            --title "Release $RELEASE_VERSION" \
+            --body "$PR_BODY"

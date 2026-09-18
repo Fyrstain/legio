@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    uses: Fyrstain/github-workflows/.github/workflows/react-publish-release.yml@1.0.0
+    uses: ./.github/workflows/react-publish-release.yml
     with:
       main_branch: main
       feature_branch: feature
