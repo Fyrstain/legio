@@ -41,8 +41,16 @@ ENV REACT_APP_SPHINX_LOGO=$ARG_REACT_APP_SPHINX_LOGO
 ARG ARG_REACT_APP_SPHINX_LOGO_LINK
 ENV REACT_APP_SPHINX_LOGO_LINK=$ARG_REACT_APP_SPHINX_LOGO_LINK
 # ==== BUILD =====
+RUN apk add --no-cache bash curl openjdk17-jre ruby ruby-dev build-base zlib-dev
+
 # Install dependencies (npm ci makes sure the exact versions in the lockfile gets installed)
 RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm ci --force
+
+RUN gem install jekyll bundler && npm install --global fsh-sushi@latest
+
+RUN find ig -type f -name '*.sh' -exec sed -i 's/\\r$//' {} +
+
+RUN npm run build && npm run copy:ig:public && test -f build/ig/index.html && test -f public/ig/index.html
 # Build the app
 #RUN npm run build
 # ==== RUN =======
