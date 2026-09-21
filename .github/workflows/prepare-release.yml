@@ -1,0 +1,28 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Release version in X.Y.Z format (for example, 0.1.1)
+        required: true
+        type: string
+      next_version:
+        description: Next development version in X.Y.Z-SNAPSHOT format (for example, 0.1.2-SNAPSHOT)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    uses: ./.github/workflows/react-prepare-release.yml
+    with:
+      release_version: ${{ inputs.release_version }}
+      next_version: ${{ inputs.next_version }}
+      source_branch: feature
+      target_branch: main
+      node_version: '24'
+      working_directory: .
