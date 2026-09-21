@@ -100,7 +100,7 @@ const ExpressionForm: FunctionComponent<ExpressionFormProps> = (
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   // Update expressions and parameters when library changes
   useEffect(() => {

@@ -312,7 +312,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_KNOWLEDGE_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_RESEARCH_STUDY_ENDPOINT ??
+            process.env.REACT_APP_KNOWLEDGE_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -348,7 +351,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_FHIR_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_DATA_ENDPOINT ??
+            process.env.REACT_APP_FHIR_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -384,7 +390,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_TERMINOLOGY_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_TERMINOLOGY_ENDPOINT ??
+            process.env.REACT_APP_TERMINOLOGY_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -420,7 +429,10 @@ function createParameters(studyURL: string): Parameters {
               ],
             },
           ],
-          address: process.env.REACT_APP_CQL_URL || "",
+          address:
+            process.env.REACT_APP_COHORTING_CQL_ENDPOINT ??
+            process.env.REACT_APP_CQL_URL ??
+            "",
           header: ["Content-Type: application/json"],
         },
       },
@@ -479,7 +491,10 @@ function createParametersForExportDatamart(studyURL: string): Parameters {
             ],
           },
         ],
-        address: process.env.REACT_APP_MAPPING_URL || "",
+        address:
+          process.env.REACT_APP_DATAMART_MAPPING_ENDPOINT ??
+          process.env.REACT_APP_MAPPING_URL ??
+          "",
         header: ["Content-Type: application/json"],
       },
     }
@@ -498,7 +513,7 @@ async function executeFhirOperation<T>(
   studyId: string,
   operationName: string,
   client: Client
-): Promise<any> {
+): Promise<T> {
   const study = await loadStudy(studyId);
   if (!study) {
     throw new Error("Study not found with ID: " + studyId);
@@ -508,7 +523,7 @@ async function executeFhirOperation<T>(
     resourceType: "ResearchStudy",
     name: operationName,
     input: parameters,
-  }) as Promise<any>;
+  }) as Promise<T>;
 }
 
 /**
@@ -560,7 +575,9 @@ async function generateCohortAndDatamart(
     const datamartResult = await executeGenerateDatamart(studyId);
     return { cohortingResult, datamartResult };
   } catch (error) {
-    throw new Error("Error while generating cohort and datamart: " + error);
+    // Preserve the original HTTP response so the UI can extract a FHIR
+    // OperationOutcome and present its diagnostic message to the user.
+    throw error;
   }
 }
 

@@ -1,5 +1,5 @@
 // React
-import { FunctionComponent, useState, useEffect } from "react";
+import { FunctionComponent, useState } from "react";
 // React Bootstrap
 import { Form, Button, Alert } from "react-bootstrap";
 // Translation

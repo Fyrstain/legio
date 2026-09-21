@@ -1,40 +1,15 @@
-// React
 import { FunctionComponent } from "react";
-// Components
-import LegioPage from "../../components/LegioPage/LegioPage";
-// Styles
-import "../Home/Home.css";
-// Fhir front library
-import { Title } from "@fyrstain/hl7-front-library";
-// Translation
+import { InProgressPage, Title } from "@fyrstain/hl7-front-library";
 import i18n from "i18next";
+import LegioPage from "../../components/LegioPage/LegioPage";
 
-const InProgress: FunctionComponent = () => {
-
-  //////////////////////////////
-  //          Content         //
-  //////////////////////////////
-
-    return (
-        <LegioPage loading={false} fitFooter={true}>
-            <div className="h-100 d-flex justify-content-center align-items-center flex-md-row flex-column gap-3">
-                <div>
-                    <img
-                        className="home-image-icon"
-                        src={(process.env.PUBLIC_URL ?? "") + "/assets/InProgress.png"}
-                        alt="Oops !"
-                    />
-                </div>
-                <div>
-                    <Title
-                        level={1}
-                        prefix={i18n.t("title.inprogress.wip")}
-                        content={i18n.t("title.inprogress.comingsoon")}
-                    />
-                </div>
-            </div>
-        </LegioPage>
-    );
-};
+const InProgress: FunctionComponent = () => (
+  <LegioPage loading={false} fitFooter={true}>
+    <InProgressPage
+      heading={<Title level={1} prefix={i18n.t("status.inProgress.prefix", { defaultValue: "Work in progress!" })} content={i18n.t("status.inProgress.content", { defaultValue: "Coming soon..." })} />}
+      illustration={<img src={(process.env.PUBLIC_URL ?? "") + "/assets/InProgress.png"} alt="" />}
+    />
+  </LegioPage>
+);
 
 export default InProgress;

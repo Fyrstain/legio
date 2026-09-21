@@ -121,7 +121,7 @@ const CanonicalForm: FunctionComponent<CanonicalFormProps> = (
       };
       loadLibraries();
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   // Update selected library and available expressions when selectedLibrary changes
   useEffect(() => {

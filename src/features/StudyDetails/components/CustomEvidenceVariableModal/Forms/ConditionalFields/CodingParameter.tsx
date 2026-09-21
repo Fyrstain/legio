@@ -1,5 +1,5 @@
 //React
-import { FunctionComponent, useEffect, useState } from "react";
+import { FunctionComponent, useEffect, useMemo, useState } from "react";
 // Components
 import { InclusionCriteriaValue } from "../../../../types/evidenceVariable.types";
 // React Bootstrap
@@ -33,12 +33,19 @@ const CodingParameter: FunctionComponent<{
   /////////////////////////////////////
 
   // FHIR Client for ValueSet operations
-  const fhirClient = new Client({
-    baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
-  });
+  const fhirClient = useMemo(
+    () =>
+      new Client({
+        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+      }),
+    []
+  );
 
   // ValueSet Loader for fetching codes
-  const valueSetLoader = new ValueSetLoader(fhirClient);
+  const valueSetLoader = useMemo(
+    () => new ValueSetLoader(fhirClient),
+    [fhirClient]
+  );
 
   ////////////////////////////////
   //           State            //
@@ -89,7 +96,7 @@ const CodingParameter: FunctionComponent<{
 
       setSelectedCode(codeToDisplay);
     }
-  }, [value, readonly]);
+  }, [value, valueSetLoader]);
   
   ////////////////////////////////
   //          Actions           //

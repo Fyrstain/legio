@@ -1,0 +1,273 @@
+name: React publish release (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      main_branch:
+        required: false
+        default: main
+        type: string
+      feature_branch:
+        required: false
+        default: feature
+        type: string
+      node_version:
+        required: false
+        default: '24'
+        type: string
+      working_directory:
+        required: false
+        default: '.'
+        type: string
+      java_version:
+        description: Optional Java version required by the build.
+        required: false
+        default: ''
+        type: string
+      fsh_sushi_version:
+        description: Optional FSH SUSHI version required by the build.
+        required: false
+        default: ''
+        type: string
+      install_jekyll:
+        description: Install Jekyll and Bundler for FHIR Implementation Guide builds.
+        required: false
+        default: false
+        type: boolean
+      ruby_version:
+        description: Ruby version used when Jekyll installation is enabled.
+        required: false
+        default: '3.3'
+        type: string
+      image_name:
+        description: Image name without the registry, for example product/sphinx/front.
+        required: true
+        type: string
+      docker_context:
+        required: false
+        default: '.'
+        type: string
+      dockerfile:
+        required: false
+        default: Dockerfile
+        type: string
+      build_args:
+        description: Newline-delimited Docker build arguments.
+        required: false
+        default: ''
+        type: string
+    secrets:
+      registry:
+        description: Docker registry host name.
+        required: true
+      username:
+        required: true
+      password:
+        required: true
+      npmrc:
+        description: Complete .npmrc content for private npm registry authentication.
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: react-publish-release-${{ github.event.repository.full_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish merged release
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == inputs.main_branch &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    env:
+      NPMRC: ${{ secrets.npmrc }}
+
+    steps:
+      - name: Checkout merged release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Fetch branches and tags
+        shell: bash
+        env:
+          MAIN_BRANCH: ${{ inputs.main_branch }}
+          FEATURE_BRANCH: ${{ inputs.feature_branch }}
+        run: git fetch origin "$MAIN_BRANCH" "$FEATURE_BRANCH" --tags --prune
+
+      - name: Setup Java
+        if: ${{ inputs.java_version != '' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working_directory }}/package-lock.json
+
+      - name: Setup Ruby
+        if: ${{ inputs.install_jekyll }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby_version }}
+
+      - name: Install Jekyll
+        if: ${{ inputs.install_jekyll }}
+        run: gem install jekyll bundler
+
+      - name: Install FSH SUSHI
+        if: ${{ inputs.fsh_sushi_version != '' }}
+        run: npm install --global "fsh-sushi@${{ inputs.fsh_sushi_version }}"
+
+      - name: Configure npm registry authentication
+        if: ${{ env.NPMRC != '' }}
+        shell: bash
+        run: |
+          NPMRC_PATH="$RUNNER_TEMP/.npmrc"
+          printf '%s' "$NPMRC" > "$NPMRC_PATH"
+          printf 'NPM_CONFIG_USERCONFIG=%s\n' "$NPMRC_PATH" >> "$GITHUB_ENV"
+
+      - name: Read and validate release metadata
+        id: version
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          RELEASE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          MAIN_BRANCH: ${{ inputs.main_branch }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          RELEASE_FROM_PR="$(printf '%s\n' "$PR_BODY" | sed -nE 's/^Release-Version:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' | head -n 1)"
+          NEXT_VERSION="$(printf '%s\n' "$PR_BODY" | sed -nE 's/^Next-Version:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' | head -n 1)"
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "The merged package version must use X.Y.Z; got: $VERSION" >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_BRANCH" != "release/$VERSION" || "$RELEASE_FROM_PR" != "$VERSION" ]]; then
+            echo "The release branch and PR metadata must match package.json version $VERSION." >&2
+            exit 1
+          fi
+          if [[ ! "$NEXT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$ ]]; then
+            echo "Missing or invalid Next-Version metadata in the release PR." >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor HEAD "origin/$MAIN_BRANCH"; then
+            echo "The checked out release commit is not on $MAIN_BRANCH." >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "Git tag $VERSION already exists; release tags are immutable." >&2
+            exit 1
+          fi
+
+          printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+          printf 'next_version=%s\n' "$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Lint
+        run: npm run lint --if-present
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Tests
+        run: npm run test --if-present
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Build
+        run: npm run build
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Login to Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+
+      - name: Ensure release image is absent
+        shell: bash
+        env:
+          REGISTRY: ${{ secrets.registry }}
+          IMAGE_NAME: ${{ inputs.image_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if docker manifest inspect "$REGISTRY/$IMAGE_NAME:$VERSION" >/dev/null 2>&1; then
+            echo "Image $REGISTRY/$IMAGE_NAME:$VERSION already exists; release images are immutable." >&2
+            exit 1
+          fi
+
+      - name: Build and push release image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.docker_context }}
+          file: ${{ inputs.dockerfile }}
+          build-args: ${{ inputs.build_args }}
+          push: true
+          secrets: |
+            "npmrc=${{ secrets.npmrc }}"
+          tags: |
+            ${{ secrets.registry }}/${{ inputs.image_name }}:${{ steps.version.outputs.version }}
+            ${{ secrets.registry }}/${{ inputs.image_name }}:latest
+
+      - name: Create and push Git tag
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" "$RELEASE_COMMIT" -m "Release $VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Create GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+        run: gh release create "$VERSION" --target "$RELEASE_COMMIT" --title "Release $VERSION" --generate-notes
+
+      - name: Create next development version pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          FEATURE_BRANCH: ${{ inputs.feature_branch }}
+        run: |
+          NEXT_BRANCH="chore/prepare-$NEXT_VERSION"
+          if git ls-remote --exit-code --heads origin "$NEXT_BRANCH" >/dev/null 2>&1; then
+            echo "Branch $NEXT_BRANCH already exists." >&2
+            exit 1
+          fi
+
+          git switch -c "$NEXT_BRANCH"
+          npm version "$NEXT_VERSION" --no-git-tag-version
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --check
+          git add "$GITHUB_WORKSPACE/${{ inputs.working_directory }}/package.json" \
+                  "$GITHUB_WORKSPACE/${{ inputs.working_directory }}/package-lock.json"
+          git commit -m "chore: prepare next development version $NEXT_VERSION"
+          git push origin "HEAD:refs/heads/$NEXT_BRANCH"
+          gh pr create \
+            --base "$FEATURE_BRANCH" \
+            --head "$NEXT_BRANCH" \
+            --title "chore: prepare $NEXT_VERSION" \
+            --body "Sets the next development version after release ${{ steps.version.outputs.version }}."
+        working-directory: ${{ inputs.working_directory }}

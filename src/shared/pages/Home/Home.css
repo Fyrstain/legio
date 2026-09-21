@@ -1,5 +1,31 @@
+.home-content {
+  min-height: min(62vh, 38rem);
+  padding: 1.5rem;
+}
+
+.home-illustration {
+  max-width: min(100%, 42rem);
+}
+
 .home-image-icon {
-  width: auto;
+  display: block;
+  width: 100%;
   height: auto;
-  max-height: 40vh;
+  max-height: min(65vh, 32rem);
+  object-fit: contain;
+}
+
+.home-title {
+  max-width: 24rem;
+}
+
+@media (max-width: 767.98px) {
+  .home-content {
+    min-height: auto;
+    padding: 1rem;
+  }
+
+  .home-image-icon {
+    max-height: 42vh;
+  }
 }

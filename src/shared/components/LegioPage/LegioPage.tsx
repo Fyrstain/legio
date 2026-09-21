@@ -1,12 +1,13 @@
 // React
 import { FunctionComponent, JSXElementConstructor, ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 // Components
 import { Page, PageConfiguration } from "@fyrstain/hl7-front-library";
 // Translation
 import i18n from "i18next";
 import { toPublicUrl } from "../../services/PublicUrl";
 // Authentication
-// import UserService from "../../services/UserService";
+import UserService from "../../services/UserService";
 
 const LegioPage: FunctionComponent<{
     // The title of the page
@@ -22,6 +23,8 @@ const LegioPage: FunctionComponent<{
     // If the page needs login or not
     needsLogin?: boolean;
     }> = (props) => {
+
+    const navigate = useNavigate();
 
     /////////////////////////////////
     //           METHODS           //
@@ -44,6 +47,14 @@ const LegioPage: FunctionComponent<{
 
     const handleLangChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         i18n.changeLanguage(event.target.value);
+    };
+
+    const handleLogoClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest(".navbar-brand")) return;
+
+        event.preventDefault();
+        navigate("/Home");
     };
 
     const fullConfig: PageConfiguration = {
@@ -73,15 +84,12 @@ const LegioPage: FunctionComponent<{
         //         ]
         //       : []),
         //   ],
-        // Authentication
-        //   authentication: {
-        //     handleLogin: handleLogin,
-        //     token: UserService.getKC().token,
-        //     doLogin: UserService.doLogin,
-        //     doLogout: UserService.doLogout,
-        //     isAuthenticated: () => UserService.isAuthenticated() || false,
-        //     getUserName: () => UserService.getUsername(),
-        //   },
+        authentication: {
+            doLogin: UserService.doLogin,
+            doLogout: UserService.doLogout,
+            isAuthenticated: UserService.isAuthenticated,
+            getUserName: UserService.getUsername,
+        },
         // the menu items with their subItems who contains the navigation to the differents pages
         menuItems: [
             {
@@ -174,7 +182,11 @@ const LegioPage: FunctionComponent<{
         },
     };
 
-    return <Page {...fullConfig} />;
+    return (
+        <div onClickCapture={handleLogoClick}>
+            <Page {...fullConfig} />
+        </div>
+    );
 };
 
 export default LegioPage;

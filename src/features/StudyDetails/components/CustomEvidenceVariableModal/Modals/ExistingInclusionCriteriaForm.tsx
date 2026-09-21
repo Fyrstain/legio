@@ -75,7 +75,7 @@ const ExistingInclusionCriteriaForm: FunctionComponent<
       }
       setHasChanges(false);
     }
-  }, [props.show, props.mode, props.initialData]);
+  }, [props.show, props.mode, props.initialData, clearErrors]);
 
   /**
    * Load EvidenceVariable data on component mount.

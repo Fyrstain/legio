@@ -184,7 +184,10 @@ export async function instantiateStudy(
         name: "researchStudyEndpoint",
         resource: {
           resourceType: "Endpoint",
-          address: process.env.REACT_APP_FHIR_URL ?? "fhir",
+          address:
+            process.env.REACT_APP_COHORTING_RESEARCH_STUDY_ENDPOINT ??
+            process.env.REACT_APP_FHIR_URL ??
+            "fhir",
         },
       },
     ],
