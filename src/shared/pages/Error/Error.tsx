@@ -13,7 +13,7 @@ const Error: FunctionComponent<ErrorPageProps> = ({ error: suppliedError, notFou
   const error = suppliedError ?? locationError ?? ({ kind: notFound ? "not-found" : "generic" } as ErrorDetails);
 
   return (
-    <LegioPage loading={false} fitFooter={true}>
+    <LegioPage loading={false} fitFooter={true} needsLogin={true}>
       <SharedErrorPage
         description={i18n.t(getReasonKey(error), { defaultValue: i18n.t("status.error.reason.generic", { defaultValue: "An unexpected error occurred." }) })}
         detailsLabel={i18n.t("status.error.details", { defaultValue: "Technical details" })}

@@ -48,6 +48,11 @@ The following environment variables are available to configure the application:
 - **REACT_APP_TERMINOLOGY_URL**: Address of the Terminology service.
 - **REACT_APP_MAPPING_URL**: Address of the Mapping service.
 - **REACT_APP_CQL_URL**: Address of the CQL service.
+- **REACT_APP_COHORTING_RESEARCH_STUDY_ENDPOINT**: FHIR endpoint used by cohorting to resolve ResearchStudy canonicals.
+- **REACT_APP_COHORTING_DATA_ENDPOINT**: FHIR endpoint used by cohorting and datamart to access patient data.
+- **REACT_APP_COHORTING_TERMINOLOGY_ENDPOINT**: FHIR terminology endpoint used by cohorting and datamart.
+- **REACT_APP_COHORTING_CQL_ENDPOINT**: CQL endpoint used by cohorting and datamart.
+- **REACT_APP_DATAMART_MAPPING_ENDPOINT**: Mapping endpoint used by datamart exports.
 - **REACT_APP_FHIR_URL_MOCK**: Address of the FHIR mock backend.
 - **REACT_APP_VALUESET_RESEARCHSTUDYPHASES_URL**: ValueSet for Research Study Phases.
 - **REACT_APP_VALUESET_RESEARCHSTUDYSTUDYDESIGN_URL**: ValueSet for Study Design.
@@ -67,14 +72,12 @@ The following environment variables are available to configure the application:
 
 - **REACT_APP_DISPLAY_CLIENT_LOGO**: If true, display the client logo in the footer. Uses public/assets/client_logo.jpg.
 
-- **REACT_APP_KEYCLOAK_ENABLED**: Set to false to disable Keycloak (remove when Keycloak is fully used).
-
 - **REACT_APP_KEYCLOAK_URL**: Address of the Keycloak.
 - **REACT_APP_REDIRECTURI**: Redirection URI after connection.
 - **REACT_APP_KEYCLOAK_REALM**: Keycloak realm to be used.
 - **REACT_APP_KEYCLOAK_REALM_CLIENT_ID**: Client ID to use inside the realm.
 - **REACT_APP_KEYCLOAK_FLOW**: Authentication flow used by Keycloak.
-- **REACT_APP_KEYCLOAK_ONLOAD**: Specifies an action to do on load.
+- **REACT_APP_KEYCLOAK_ONLOAD**: Use `login-required` so every Legio route requires an authenticated Keycloak session.
 - **REACT_APP_KEYCLOAK_CHECKSSO_LOGIN_IFRAME**: Set to enable/disable monitoring login state.
 - **REACT_APP_KEYCLOAK_CHECKSSO_FALLBACK**: Specifies whether the silent check-sso should fallback to "non-silent" check-sso when 3rd party cookies are blocked by the browser.
 - **REACT_APP_KEYCLOAK_PKCE_METHOD**: Configures the Proof Key for Code Exchange (PKCE) method to use.
@@ -203,5 +206,3 @@ When using `npm start`, run `npm run dev:ig` first to make the IG available loca
 After `npm run build`, the generated application contains the specification under `build/ig`. When the app is served, the IG is available under the same base URL as the application, at `/ig/` or `<PUBLIC_URL>/ig/` when the app is deployed on a sub-path.
 
 The IG build requires Java and internet access at least when the publisher or dependencies need to be updated.
-
-The Docker image installs the FHIR IG build prerequisites and runs the full production build, so it contains the generated guide in both `build/ig` and `public/ig`.

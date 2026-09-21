@@ -92,7 +92,7 @@ const Studies: FunctionComponent = () => {
   //////////////////////////////
 
     return (
-    <LegioPage loading={loading} titleKey={i18n.t("title.studies")}> 
+    <LegioPage loading={loading} titleKey={i18n.t("title.studies")} needsLogin={true}> 
       <>
         {filtersUnavailable && <div className="alert alert-warning" role="alert">{i18n.t("status.filtersUnavailable", { defaultValue: "Some search filters are currently unavailable." })}</div>}
         {/*Display only ResearchStudy definitions (phase code '#template').*/}
