@@ -1,6 +1,6 @@
 {
   "name": "legio",
-  "version": "1.4.0",
+  "version": "1.4.1-SNAPSHOT",
   "private": true,
   "dependencies": {
     "@fyrstain/fhir-front-library": "1.6.0-FINAL",
