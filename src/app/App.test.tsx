@@ -2,6 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
+jest.mock('../shared/services/UserService', () => ({
+  __esModule: true,
+  default: {
+    isAuthenticated: () => true,
+    doLogin: jest.fn(),
+  },
+}));
+
 jest.mock('i18next-http-backend', () => ({
   __esModule: true,
   default: {
