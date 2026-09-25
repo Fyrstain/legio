@@ -1,0 +1,42 @@
+{
+  "resourceType": "EvidenceVariable",
+  "id": "EV-LegioLabVariablesGroup",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+      "valueCanonical": "https://fyrstain.com/fhir/R4/legio/Library/LegioLabResearchVariables"
+    }
+  ],
+  "url": "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-LegioLabVariablesGroup",
+  "identifier": [
+    {
+      "system": "https://fyrstain.com/fhir/R4/legio/EvidenceVariable",
+      "value": "LegioLabVariablesGroup"
+    }
+  ],
+  "version": "1.0.0",
+  "name": "LegioLabVariablesGroup",
+  "title": "Legio Laboratory Research Variables",
+  "status": "active",
+  "description": "Group of research variables for the Legio laboratory study.",
+  "actual": true,
+  "characteristic": [
+    {
+      "description": "Legio laboratory research variables",
+      "definitionByCombination": {
+        "code": "dataset",
+        "characteristic": [
+          {
+            "definitionCanonical": "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-Gender"
+          },
+          {
+            "definitionCanonical": "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-BirthDate"
+          },
+          {
+            "definitionCanonical": "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-HbA1c"
+          }
+        ]
+      }
+    }
+  ]
+}
