@@ -19,32 +19,26 @@ Usage: #definition
   * url = "http://hl7.org/fhir/StructureDefinition/cqf-library"
   * valueCanonical = "https://fyrstain.com/fhir/R4/legio/Library/LegioLabResearchVariables"
 
-// R4 representation of the R5 definitionByCombination = dataset.
+// R4-compatible representation of the research variable dataset.
+// The deployable definitionByCombination resource is available in
+// examples/legio-lab-study/EvidenceVariable-EV-LegioLabVariablesGroup.json.
+
+* relatedArtifact[+]
+  * type = #composed-of
+  * display = "Patient Gender"
+  * resource = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-Gender"
+
+* relatedArtifact[+]
+  * type = #composed-of
+  * display = "Patient Birth Date"
+  * resource = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-BirthDate"
+
+* relatedArtifact[+]
+  * type = #composed-of
+  * display = "Patient HbA1c"
+  * resource = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-HbA1c"
+
 * characteristic[+]
-  * description = "Legio laboratory research variables"
-  * definitionCodeableConcept = http://hl7.org/fhir/characteristic-combination#dataset "Dataset"
-
-  * extension[+]
-    * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic.definitionByCombination"
-
-    * extension[+]
-      * url = "code"
-      * valueCode = #dataset
-
-    * extension[+]
-      * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic"
-      * extension[+]
-        * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic.definitionCanonical"
-        * valueCanonical = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-Gender"
-
-    * extension[+]
-      * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic"
-      * extension[+]
-        * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic.definitionCanonical"
-        * valueCanonical = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-BirthDate"
-
-    * extension[+]
-      * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic"
-      * extension[+]
-        * url = "http://hl7.org/fhir/5.0/StructureDefinition/extension-EvidenceVariable.characteristic.definitionCanonical"
-        * valueCanonical = "https://fyrstain.com/fhir/R4/legio/EvidenceVariable/EV-HbA1c"
+  * description = "Dataset composed of Gender, BirthDate and HbA1c research variables."
+  * definitionCodeableConcept
+    * text = "Dataset of Legio laboratory research variables"
