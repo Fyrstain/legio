@@ -8,9 +8,10 @@ permissions:
 
 jobs:
   ci:
-    uses: ./.github/workflows/react-ci.yml
+    uses: Fyrstain/github-workflows/.github/workflows/react-ci.yml@1.2.0
     with:
       node_version: '24'
+      run_e2e: true
       java_version: '17'
       fsh_sushi_version: latest
       install_jekyll: true

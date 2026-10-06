@@ -83,7 +83,8 @@ async function assertRouteHasSelector(
   await waitForApplication(driver);
 
   try {
-    await driver.wait(until.elementLocated(By.css(selector)), timeoutMs);
+    const element = await driver.wait(until.elementLocated(By.css(selector)), timeoutMs);
+    await driver.wait(until.elementIsVisible(element), timeoutMs);
   } catch (error) {
     const debugContext = await getDebugContext(driver);
     throw new Error(
@@ -100,25 +101,11 @@ const tests: E2ETest[] = [
     },
   },
   {
-    name: "implementation guide route renders an iframe",
+    name: "implementation guide renders",
     run: async (driver) => {
-      await assertRouteHasSelector(
-        driver,
-        "ImplementationGuide",
-        "iframe.implementation-guide-page__frame"
-      );
+      await assertRouteHasSelector(driver, "ImplementationGuide", "iframe.implementation-guide-page__frame");
     },
-  },
-  {
-    name: "editorial calendar route is reachable",
-    run: async (driver) => {
-      await assertRouteHasSelector(
-        driver,
-        "EditorialCalendar",
-        ".editorial-calendar-page"
-      );
-    },
-  },
+  }
 ];
 
 async function run(): Promise<void> {

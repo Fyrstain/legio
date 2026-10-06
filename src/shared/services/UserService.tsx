@@ -27,7 +27,7 @@ const keycloak = new Keycloak(keycloakConfig);
  * @param onAuthenticatedCallback
  */
 const initKeycloak = async (onAuthenticatedCallback: () => void) => {
-  if (process.env.REACT_APP_E2E_MODE === "true") {
+  if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_E2E_MODE === "true") {
     onAuthenticatedCallback();
     return;
   }
@@ -99,7 +99,7 @@ const getTokenParsed = () => keycloak.tokenParsed;
  * Checks if the user is authenticated
  */
 const isAuthenticated = (): boolean | undefined => {
-   if (process.env.REACT_APP_E2E_MODE === "true") {
+   if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_E2E_MODE === "true") {
     return true;
   }
   return !!keycloak.token;
@@ -128,7 +128,7 @@ const getKC = () => keycloak;
  * @param successCallback
  */
 const updateToken = async <T,>(successCallback: () => T | Promise<T>): Promise<T> => {
-  if (process.env.REACT_APP_E2E_MODE === "true") {
+  if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_E2E_MODE === "true") {
     return successCallback();
   }
 
