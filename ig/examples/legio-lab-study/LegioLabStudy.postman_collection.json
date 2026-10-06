@@ -1,0 +1,1124 @@
+{
+  "info": {
+    "_postman_id": "3b89d98b-8c93-4d68-b3c7-leg223labstudy",
+    "name": "Legio Lab Study - Cohorting and Datamart",
+    "description": "Reproduces the LEG-223 Legio study on a clean environment. It deploys two example patients and HbA1c observations, the CQL/ELM Libraries, inclusion and research EvidenceVariables, the dataset EvidenceVariable, a ResearchStudy template and initial instance, then runs cohorting and datamart generation. Expected result: exactly 2 patients and three evaluated variables (gender, birthDate, hba1c). Update the collection variables to target another environment. The ResearchStudy template is created with POST; on repeated runs against the same environment this can create additional template resources.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "knowledgeServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "dataServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "cohortingServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "datamartServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "terminologyServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "cqlServer",
+      "value": "https://had.dev.sandbox-chms.fyrstain.com/fhir",
+      "type": "string"
+    },
+    {
+      "key": "canonicalBaseR4",
+      "value": "https://fyrstain.com/fhir/R4/legio",
+      "type": "string"
+    },
+    {
+      "key": "canonicalBaseR5",
+      "value": "https://fyrstain.com/fhir/R5/legio",
+      "type": "string"
+    },
+    {
+      "key": "patientSystem",
+      "value": "https://legio.test/patients",
+      "type": "string"
+    },
+    {
+      "key": "templateServerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cohortGroupId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "datamartListId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "param1Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "param2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "param1Result",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Deploy example data",
+      "item": [
+        {
+          "name": "PUT Patient/LegioPatient1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{dataServer}}/Patient/LegioPatient1",
+              "host": [
+                "{{dataServer}}/Patient/LegioPatient1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Patient\",\n  \"id\": \"LegioPatient1\",\n  \"identifier\": [\n    {\n      \"system\": \"{{patientSystem}}\",\n      \"value\": \"PATIENT-001\"\n    }\n  ],\n  \"name\": [\n    {\n      \"family\": \"Martin\",\n      \"given\": [\n        \"Alice\"\n      ]\n    }\n  ],\n  \"gender\": \"female\",\n  \"birthDate\": \"1981-03-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Patient/LegioPatient1 deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT Patient/LegioPatient2",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{dataServer}}/Patient/LegioPatient2",
+              "host": [
+                "{{dataServer}}/Patient/LegioPatient2"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Patient\",\n  \"id\": \"LegioPatient2\",\n  \"identifier\": [\n    {\n      \"system\": \"{{patientSystem}}\",\n      \"value\": \"PATIENT-002\"\n    }\n  ],\n  \"name\": [\n    {\n      \"family\": \"Durand\",\n      \"given\": [\n        \"Bob\"\n      ]\n    }\n  ],\n  \"gender\": \"male\",\n  \"birthDate\": \"1964-08-22\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Patient/LegioPatient2 deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT Observation/LegioHbA1cPatient1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{dataServer}}/Observation/LegioHbA1cPatient1",
+              "host": [
+                "{{dataServer}}/Observation/LegioHbA1cPatient1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Observation\",\n  \"id\": \"LegioHbA1cPatient1\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"laboratory\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"4548-4\",\n        \"display\": \"Hemoglobin A1c/Hemoglobin.total in Blood\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/LegioPatient1\"\n  },\n  \"effectiveDateTime\": \"2026-09-01T10:00:00+02:00\",\n  \"valueQuantity\": {\n    \"value\": 6.2,\n    \"unit\": \"%\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"%\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Observation/LegioHbA1cPatient1 deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT Observation/LegioHbA1cPatient2",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{dataServer}}/Observation/LegioHbA1cPatient2",
+              "host": [
+                "{{dataServer}}/Observation/LegioHbA1cPatient2"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Observation\",\n  \"id\": \"LegioHbA1cPatient2\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"laboratory\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"4548-4\",\n        \"display\": \"Hemoglobin A1c/Hemoglobin.total in Blood\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/LegioPatient2\"\n  },\n  \"effectiveDateTime\": \"2026-09-01T10:00:00+02:00\",\n  \"valueQuantity\": {\n    \"value\": 7.4,\n    \"unit\": \"%\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"%\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Observation/LegioHbA1cPatient2 deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Deploy knowledge artifacts",
+      "item": [
+        {
+          "name": "PUT Library/LegioLabInclusionCriteria",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/Library/LegioLabInclusionCriteria",
+              "host": [
+                "{{knowledgeServer}}/Library/LegioLabInclusionCriteria"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Library\",\n  \"id\": \"LegioLabInclusionCriteria\",\n  \"url\": \"{{canonicalBaseR4}}/Library/LegioLabInclusionCriteria\",\n  \"version\": \"1.0.0\",\n  \"name\": \"LegioLabInclusionCriteria\",\n  \"title\": \"Legio Lab Inclusion Criteria\",\n  \"status\": \"draft\",\n  \"type\": {\n    \"coding\": [\n      {\n        \"system\": \"http://terminology.hl7.org/CodeSystem/library-type\",\n        \"code\": \"logic-library\"\n      }\n    ]\n  },\n  \"subjectCodeableConcept\": {\n    \"coding\": [\n      {\n        \"system\": \"http://hl7.org/fhir/resource-types\",\n        \"code\": \"Patient\"\n      }\n    ]\n  },\n  \"content\": [\n    {\n      \"contentType\": \"text/cql\",\n      \"data\": \"bGlicmFyeSBMZWdpb0xhYkluY2x1c2lvbkNyaXRlcmlhIHZlcnNpb24gJzEuMC4wJwoKdXNpbmcgRkhJUiB2ZXJzaW9uICc0LjAuMScKCmluY2x1ZGUgRkhJUkhlbHBlcnMgdmVyc2lvbiAnNC4wLjEnIGNhbGxlZCBGSElSSGVscGVycwoKY29kZXN5c3RlbSAiTE9JTkMiOiAnaHR0cDovL2xvaW5jLm9yZycKCmNvZGUgIkhiQTFjIjogJzQ1NDgtNCcgZnJvbSAiTE9JTkMiCiAgZGlzcGxheSAnSGVtb2dsb2JpbiBBMWMvSGVtb2dsb2Jpbi50b3RhbCBpbiBCbG9vZCcKCmNvbnRleHQgUGF0aWVudAoKZGVmaW5lICJoYXNIYkExYyI6CiAgICBleGlzdHMoCiAgICAgICAgW09ic2VydmF0aW9uOiAiSGJBMWMiXSBPCiAgICAgICAgICAgIHdoZXJlIE8uc3RhdHVzID0gJ2ZpbmFsJwogICAgKQoKZGVmaW5lICJpc0luY2x1ZGVkIjoKICAgIGhhc0hiQTFjCg==\",\n      \"title\": \"LegioLabInclusionCriteria.cql\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Library/LegioLabInclusionCriteria deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT Library/LegioLabResearchVariables",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/Library/LegioLabResearchVariables",
+              "host": [
+                "{{knowledgeServer}}/Library/LegioLabResearchVariables"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Library\",\n  \"id\": \"LegioLabResearchVariables\",\n  \"url\": \"{{canonicalBaseR4}}/Library/LegioLabResearchVariables\",\n  \"version\": \"1.0.0\",\n  \"name\": \"LegioLabResearchVariables\",\n  \"title\": \"Legio Lab Research Variables\",\n  \"status\": \"draft\",\n  \"type\": {\n    \"coding\": [\n      {\n        \"system\": \"http://terminology.hl7.org/CodeSystem/library-type\",\n        \"code\": \"logic-library\"\n      }\n    ]\n  },\n  \"subjectCodeableConcept\": {\n    \"coding\": [\n      {\n        \"system\": \"http://hl7.org/fhir/resource-types\",\n        \"code\": \"Patient\"\n      }\n    ]\n  },\n  \"content\": [\n    {\n      \"contentType\": \"text/cql\",\n      \"data\": \"bGlicmFyeSBMZWdpb0xhYlJlc2VhcmNoVmFyaWFibGVzIHZlcnNpb24gJzEuMC4wJw0KDQp1c2luZyBGSElSIHZlcnNpb24gJzQuMC4xJw0KDQppbmNsdWRlIEZISVJIZWxwZXJzIHZlcnNpb24gJzQuMC4xJyBjYWxsZWQgRkhJUkhlbHBlcnMNCg0KY29kZXN5c3RlbSAiTE9JTkMiOiAnaHR0cDovL2xvaW5jLm9yZycNCg0KY29kZSAiSGJBMWMiOiAnNDU0OC00JyBmcm9tICJMT0lOQyINCiAgZGlzcGxheSAnSGVtb2dsb2JpbiBBMWMvSGVtb2dsb2Jpbi50b3RhbCBpbiBCbG9vZCcNCg0KY29udGV4dCBQYXRpZW50DQoNCmRlZmluZSAiZ2VuZGVyIjoNCiAgICBGSElSSGVscGVycy5Ub1N0cmluZyhQYXRpZW50LmdlbmRlcikNCg0KZGVmaW5lICJiaXJ0aERhdGUiOg0KICAgIEZISVJIZWxwZXJzLlRvRGF0ZShQYXRpZW50LmJpcnRoRGF0ZSkNCg0KZGVmaW5lICJoYmExYyI6DQogICAgRmlyc3QoDQogICAgICAgIFtPYnNlcnZhdGlvbjogIkhiQTFjIl0gTw0KICAgICAgICAgICAgd2hlcmUgTy5zdGF0dXMgPSAnZmluYWwnDQogICAgICAgICAgICByZXR1cm4gTy52YWx1ZQ0KICAgICk=\",\n      \"title\": \"LegioLabResearchVariables.cql\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Library/LegioLabResearchVariables deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT EvidenceVariable/EV-LegioLabInclusion",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/EvidenceVariable/EV-LegioLabInclusion",
+              "host": [
+                "{{knowledgeServer}}/EvidenceVariable/EV-LegioLabInclusion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"EvidenceVariable\",\n  \"id\": \"EV-LegioLabInclusion\",\n  \"extension\": [\n    {\n      \"url\": \"http://hl7.org/fhir/StructureDefinition/cqf-library\",\n      \"valueCanonical\": \"{{canonicalBaseR4}}/Library/LegioLabInclusionCriteria\"\n    }\n  ],\n  \"url\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-LegioLabInclusion\",\n  \"identifier\": [\n    {\n      \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n      \"value\": \"LegioLabInclusionVariable\"\n    }\n  ],\n  \"name\": \"LegioLabInclusionVariable\",\n  \"title\": \"Inclusion Variable for Legio Laboratory Study\",\n  \"status\": \"draft\",\n  \"description\": \"Include patients who have a final HbA1c laboratory observation.\",\n  \"characteristic\": [\n    {\n      \"description\": \"Patient has a final HbA1c laboratory observation.\",\n      \"definitionExpression\": {\n        \"description\": \"Evaluates whether the patient has a final HbA1c observation.\",\n        \"language\": \"text/cql-identifier\",\n        \"expression\": \"isIncluded\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"EvidenceVariable/EV-LegioLabInclusion deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT EvidenceVariable/EV-Gender",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/EvidenceVariable/EV-Gender",
+              "host": [
+                "{{knowledgeServer}}/EvidenceVariable/EV-Gender"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"EvidenceVariable\",\n  \"id\": \"EV-Gender\",\n  \"extension\": [\n    {\n      \"url\": \"http://hl7.org/fhir/StructureDefinition/cqf-library\",\n      \"valueCanonical\": \"{{canonicalBaseR4}}/Library/LegioLabResearchVariables\"\n    }\n  ],\n  \"url\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-Gender\",\n  \"identifier\": [\n    {\n      \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n      \"value\": \"Gender\"\n    }\n  ],\n  \"name\": \"Gender\",\n  \"title\": \"Patient Gender\",\n  \"status\": \"draft\",\n  \"description\": \"Gender of the patient.\",\n  \"characteristic\": [\n    {\n      \"description\": \"Patient gender.\",\n      \"definitionExpression\": {\n        \"description\": \"Returns the gender of the patient.\",\n        \"language\": \"text/cql-identifier\",\n        \"expression\": \"gender\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"EvidenceVariable/EV-Gender deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT EvidenceVariable/EV-BirthDate",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/EvidenceVariable/EV-BirthDate",
+              "host": [
+                "{{knowledgeServer}}/EvidenceVariable/EV-BirthDate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"EvidenceVariable\",\n  \"id\": \"EV-BirthDate\",\n  \"extension\": [\n    {\n      \"url\": \"http://hl7.org/fhir/StructureDefinition/cqf-library\",\n      \"valueCanonical\": \"{{canonicalBaseR4}}/Library/LegioLabResearchVariables\"\n    }\n  ],\n  \"url\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-BirthDate\",\n  \"identifier\": [\n    {\n      \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n      \"value\": \"BirthDate\"\n    }\n  ],\n  \"name\": \"BirthDate\",\n  \"title\": \"Patient Birth Date\",\n  \"status\": \"draft\",\n  \"description\": \"Birth date of the patient.\",\n  \"characteristic\": [\n    {\n      \"description\": \"Patient birth date.\",\n      \"definitionExpression\": {\n        \"description\": \"Returns the birth date of the patient.\",\n        \"language\": \"text/cql-identifier\",\n        \"expression\": \"birthDate\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"EvidenceVariable/EV-BirthDate deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT EvidenceVariable/EV-HbA1c",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/EvidenceVariable/EV-HbA1c",
+              "host": [
+                "{{knowledgeServer}}/EvidenceVariable/EV-HbA1c"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"EvidenceVariable\",\n  \"id\": \"EV-HbA1c\",\n  \"extension\": [\n    {\n      \"url\": \"http://hl7.org/fhir/StructureDefinition/cqf-library\",\n      \"valueCanonical\": \"{{canonicalBaseR4}}/Library/LegioLabResearchVariables\"\n    }\n  ],\n  \"url\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-HbA1c\",\n  \"identifier\": [\n    {\n      \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n      \"value\": \"HbA1c\"\n    }\n  ],\n  \"name\": \"HbA1c\",\n  \"title\": \"Patient HbA1c\",\n  \"status\": \"draft\",\n  \"description\": \"HbA1c laboratory result of the patient.\",\n  \"characteristic\": [\n    {\n      \"description\": \"Patient HbA1c laboratory result.\",\n      \"definitionExpression\": {\n        \"description\": \"Returns the final HbA1c result of the patient.\",\n        \"language\": \"text/cql-identifier\",\n        \"expression\": \"hba1c\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"EvidenceVariable/EV-HbA1c deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT EvidenceVariable/EV-LegioLabVariablesGroup",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/EvidenceVariable/EV-LegioLabVariablesGroup",
+              "host": [
+                "{{knowledgeServer}}/EvidenceVariable/EV-LegioLabVariablesGroup"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"EvidenceVariable\",\n  \"id\": \"EV-LegioLabVariablesGroup\",\n  \"extension\": [\n    {\n      \"url\": \"http://hl7.org/fhir/StructureDefinition/cqf-library\",\n      \"valueCanonical\": \"{{canonicalBaseR4}}/Library/LegioLabResearchVariables\"\n    }\n  ],\n  \"url\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-LegioLabVariablesGroup\",\n  \"identifier\": [\n    {\n      \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n      \"value\": \"LegioLabVariablesGroup\"\n    }\n  ],\n  \"version\": \"1.0.0\",\n  \"name\": \"LegioLabVariablesGroup\",\n  \"title\": \"Legio Laboratory Research Variables\",\n  \"status\": \"active\",\n  \"description\": \"Group of research variables for the Legio laboratory study.\",\n  \"actual\": true,\n  \"characteristic\": [\n    {\n      \"description\": \"Legio laboratory research variables\",\n      \"definitionByCombination\": {\n        \"code\": \"dataset\",\n        \"characteristic\": [\n          {\n            \"definitionCanonical\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-Gender\"\n          },\n          {\n            \"definitionCanonical\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-BirthDate\"\n          },\n          {\n            \"definitionCanonical\": \"{{canonicalBaseR5}}/EvidenceVariable/EV-HbA1c\"\n          }\n        ]\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test(\"Dataset EvidenceVariable deployed\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.resourceType).to.be.a(\"string\");",
+                  "  pm.expect(r.id).to.be.a(\"string\");",
+                  "});",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Variable group is a dataset\", function () {",
+                  "  pm.expect(r.characteristic[0].definitionByCombination.code).to.eql(\"dataset\");",
+                  "  pm.expect(r.characteristic[0].definitionByCombination.characteristic).to.have.length(3);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Deploy study",
+      "item": [
+        {
+          "name": "POST ResearchStudy template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/ResearchStudy",
+              "host": [
+                "{{knowledgeServer}}/ResearchStudy"
+              ]
+            },
+            "description": "Creates the template with POST, matching the FLUTE/Legio workflow. On a clean environment this should be run once.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ResearchStudy\",\n  \"url\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\",\n  \"name\": \"LegioLabStudyTemplate\",\n  \"title\": \"Legio Laboratory Study\",\n  \"status\": \"active\",\n  \"phase\": {\n    \"coding\": [\n      {\n        \"system\": \"https://www.isis.com/CodeSystem/COS-ResearchStudyPhase\",\n        \"code\": \"template\",\n        \"display\": \"Template\"\n      }\n    ]\n  },\n  \"description\": \"Template study used to validate the Legio workflow with two patients, an HbA1c laboratory observation and three research variables: gender, birth date and HbA1c.\",\n  \"period\": {\n    \"start\": \"2026-09-01\"\n  },\n  \"recruitment\": {\n    \"eligibility\": {\n      \"reference\": \"EvidenceVariable/EV-LegioLabInclusion\",\n      \"identifier\": {\n        \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n        \"value\": \"LegioLabInclusion\"\n      }\n    }\n  },\n  \"extension\": [\n    {\n      \"url\": \"https://www.isis.com/StructureDefinition/EXT-Datamart\",\n      \"extension\": [\n        {\n          \"url\": \"variable\",\n          \"valueReference\": {\n            \"reference\": \"EvidenceVariable/EV-LegioLabVariablesGroup\",\n            \"identifier\": {\n              \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n              \"value\": \"LegioLabVariablesGroup\"\n            }\n          }\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () { pm.expect([200,201]).to.include(pm.response.code); });",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set(\"templateServerId\", r.id || \"\");",
+                  "pm.test(\"Template phase\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"template\"); });",
+                  "pm.test(\"Template has inclusion criteria\", function () { pm.expect(r.recruitment.eligibility.reference).to.eql(\"EvidenceVariable/EV-LegioLabInclusion\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT ResearchStudy initial instance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "host": [
+                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ResearchStudy\",\n  \"url\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\",\n  \"name\": \"LegioLabStudy\",\n  \"title\": \"Legio Laboratory Study\",\n  \"status\": \"active\",\n  \"phase\": {\n    \"coding\": [\n      {\n        \"system\": \"https://www.isis.com/CodeSystem/COS-ResearchStudyPhase\",\n        \"code\": \"initial\",\n        \"display\": \"Initial Phase\"\n      }\n    ]\n  },\n  \"description\": \"Test study used to validate the Legio workflow with two patients, an HbA1c laboratory observation and three research variables: gender, birth date and HbA1c.\",\n  \"period\": {\n    \"start\": \"2026-09-01\"\n  },\n  \"recruitment\": {\n    \"eligibility\": {\n      \"reference\": \"EvidenceVariable/EV-LegioLabInclusion\",\n      \"identifier\": {\n        \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n        \"value\": \"LegioLabInclusion\"\n      }\n    }\n  },\n  \"extension\": [\n    {\n      \"url\": \"https://www.isis.com/StructureDefinition/EXT-Datamart\",\n      \"extension\": [\n        {\n          \"url\": \"variable\",\n          \"valueReference\": {\n            \"reference\": \"EvidenceVariable/EV-LegioLabVariablesGroup\",\n            \"identifier\": {\n              \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n              \"value\": \"LegioLabVariablesGroup\"\n            }\n          }\n        }\n      ]\n    }\n  ],\n  \"id\": \"RS-LegioLabStudy\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 or 201\", function () { pm.expect([200,201]).to.include(pm.response.code); });",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Initial phase\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"initial\"); });",
+                  "pm.test(\"Uses grouped research variables\", function () {",
+                  "  const dm=(r.extension||[]).find(e=>e.url===\"https://www.isis.com/StructureDefinition/EXT-Datamart\");",
+                  "  pm.expect(dm.extension[0].valueReference.reference).to.eql(\"EvidenceVariable/EV-LegioLabVariablesGroup\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET studies by canonical URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/ResearchStudy?url={{canonicalBaseR5}}%2FResearchStudy%2FRS-LegioLabStudy",
+              "host": [
+                "{{knowledgeServer}}/ResearchStudy?url={{canonicalBaseR5}}%2FResearchStudy%2FRS-LegioLabStudy"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const b=pm.response.json();",
+                  "pm.test(\"Template and instance are searchable by canonical\", function () {",
+                  "  pm.expect(b.total).to.be.at.least(2);",
+                  "  const phases=(b.entry||[]).map(e=>e.resource?.phase?.coding?.[0]?.code);",
+                  "  pm.expect(phases).to.include(\"template\");",
+                  "  pm.expect(phases).to.include(\"initial\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Run and verify workflow",
+      "item": [
+        {
+          "name": "POST $cohorting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{cohortingServer}}/ResearchStudy/$cohorting",
+              "host": [
+                "{{cohortingServer}}/ResearchStudy/$cohorting"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.collectionVariables.set(\"cohortGroupId\", r.id || \"\");",
+                  "pm.test(\"Cohorting returns a Group\", function () { pm.expect(r.resourceType).to.eql(\"Group\"); });",
+                  "pm.test(\"Exactly two patients are included\", function () { pm.expect(r.member || []).to.have.length(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET ResearchStudy after cohorting",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "host": [
+                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Phase is post-cohorting\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"post-cohorting\"); });",
+                  "pm.test(\"actualGroup is populated\", function () { pm.expect(r.recruitment.actualGroup.reference).to.eql(\"Group/\"+pm.collectionVariables.get(\"cohortGroupId\")); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST $generate-datamart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{datamartServer}}/ResearchStudy/$generate-datamart",
+              "host": [
+                "{{datamartServer}}/ResearchStudy/$generate-datamart"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Datamart returns a List\", function () { pm.expect(r.resourceType).to.eql(\"List\"); });",
+                  "const refs=(r.entry||[]).map(e=>e.item && e.item.reference).filter(Boolean);",
+                  "pm.test(\"Datamart contains two patient parameter sets\", function () { pm.expect(refs).to.have.length(2); });",
+                  "pm.collectionVariables.set(\"datamartListId\", r.id || \"\");",
+                  "if (refs[0]) pm.collectionVariables.set(\"param1Id\", refs[0].split(\"/\").pop());",
+                  "if (refs[1]) pm.collectionVariables.set(\"param2Id\", refs[1].split(\"/\").pop());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET first datamart Parameters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/Parameters/{{param1Id}}",
+              "host": [
+                "{{knowledgeServer}}/Parameters/{{param1Id}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function values(r) {",
+                  "  const out={};",
+                  "  for (const p of (r.parameter||[])) {",
+                  "    const k=Object.keys(p).find(x=>x.startsWith(\"value\"));",
+                  "    if (k) out[p.name]=p[k];",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const v=values(pm.response.json());",
+                  "pm.collectionVariables.set(\"param1Result\", JSON.stringify(v));",
+                  "pm.test(\"First patient has all three variables\", function () {",
+                  "  pm.expect(v).to.have.property(\"gender\");",
+                  "  pm.expect(v).to.have.property(\"birthDate\");",
+                  "  pm.expect(v).to.have.property(\"hba1c\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET second datamart Parameters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/Parameters/{{param2Id}}",
+              "host": [
+                "{{knowledgeServer}}/Parameters/{{param2Id}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function values(r) {",
+                  "  const out={};",
+                  "  for (const p of (r.parameter||[])) {",
+                  "    const k=Object.keys(p).find(x=>x.startsWith(\"value\"));",
+                  "    if (k) out[p.name]=p[k];",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const v=values(pm.response.json());",
+                  "const a=JSON.parse(pm.collectionVariables.get(\"param1Result\") || \"{}\");",
+                  "pm.test(\"Second patient has all three variables\", function () {",
+                  "  pm.expect(v).to.have.property(\"gender\");",
+                  "  pm.expect(v).to.have.property(\"birthDate\");",
+                  "  pm.expect(v).to.have.property(\"hba1c\");",
+                  "});",
+                  "pm.test(\"Expected genders\", function () {",
+                  "  pm.expect([a.gender,v.gender].sort()).to.eql([\"female\",\"male\"]);",
+                  "});",
+                  "pm.test(\"Expected birth dates\", function () {",
+                  "  pm.expect([a.birthDate,v.birthDate].sort()).to.eql([\"1964-08-22\",\"1981-03-15\"]);",
+                  "});",
+                  "pm.test(\"Expected HbA1c values\", function () {",
+                  "  const vals=[a.hba1c && a.hba1c.value, v.hba1c && v.hba1c.value].sort((x,y)=>x-y);",
+                  "  pm.expect(vals).to.eql([6.2,7.4]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET final ResearchStudy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/fhir+json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "host": [
+                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Phase is post-datamart\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"post-datamart\"); });",
+                  "pm.test(\"Final study references the cohort\", function () { pm.expect(r.recruitment.actualGroup.reference).to.eql(\"Group/\"+pm.collectionVariables.get(\"cohortGroupId\")); });",
+                  "const dm=(r.extension||[]).find(e=>e.url===\"https://www.isis.com/StructureDefinition/EXT-Datamart\");",
+                  "const variable=(dm?.extension||[]).find(e=>e.url===\"variable\");",
+                  "const evaluation=(dm?.extension||[]).find(e=>e.url===\"evaluation\");",
+                  "pm.test(\"Final study references the grouped EvidenceVariable\", function () { pm.expect(variable.valueReference.reference).to.eql(\"EvidenceVariable/EV-LegioLabVariablesGroup\"); });",
+                  "pm.test(\"Final study references the datamart List\", function () { pm.expect(evaluation.valueReference.reference).to.eql(\"List/\"+pm.collectionVariables.get(\"datamartListId\")); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

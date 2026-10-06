@@ -1,0 +1,13 @@
+id: legio.r5.ig
+canonical: https://fyrstain.com/fhir/R5/legio
+name: LegioResearchIG
+title: Legio Research Implementation Guide
+description: Research resources used by Legio.
+status: draft
+version: 0.1.0
+fhirVersion: 5.0.0
+copyrightYear: 2026+
+releaseLabel: ci-build
+publisher:
+  name: Fyrstain
+  url: https://fyrstain.com
