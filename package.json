@@ -44,7 +44,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern \"ig/**\" --ignore-pattern \"build/**\" --ignore-pattern \"public/ig/**\"",
     "test:e2e": "node scripts/run-e2e.cjs",
     "test:e2e:run": "tsx test/selenium/legio.e2e.ts",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:ci": "react-app-rewired test --ci --watchAll=false --runInBand --coverage --coverageReporters=text-summary --coverageReporters=json-summary"
   },
   "eslintConfig": {
     "extends": [
