@@ -105,6 +105,16 @@ const tests: E2ETest[] = [
     run: async (driver) => {
       await assertRouteHasSelector(driver, "ImplementationGuide", "iframe.implementation-guide-page__frame");
     },
+  },
+  {
+    name: "unknown route offers a working return to home",
+    run: async (driver) => {
+      const homeLink = ".hl7-status-page__home-link";
+      await assertRouteHasSelector(driver, "route-that-does-not-exist", homeLink);
+      await driver.findElement(By.css(homeLink)).click();
+      await driver.wait(async () => (await driver.getCurrentUrl()).endsWith("/Home"), timeoutMs);
+      await driver.wait(until.elementLocated(By.css(".home-image-icon")), timeoutMs);
+    },
   }
 ];
 

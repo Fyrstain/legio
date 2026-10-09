@@ -11,6 +11,7 @@ This repository is a React application. Keep public APIs and existing user journ
 ## Verification
 
 - Run deterministic tests with `npm run test:ci`.
+- `test:ci` enforces 80% line and branch coverage on study definitions in `config-overrides.js`. Add other business modules as their tests reach the target; global coverage still reports all source files.
 - Run lint with `npm run lint`.
 - Build with `npm run build:app`.
 - Run browser journeys with `npm run test:e2e` (Chrome and ChromeDriver required).
