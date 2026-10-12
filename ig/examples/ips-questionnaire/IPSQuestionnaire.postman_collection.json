@@ -8,6 +8,36 @@
       "key": "questionnaireServer",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "dataServer",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "documentServer",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientIdentifierSystem",
+      "value": "https://legio.test/patients",
+      "type": "string"
+    },
+    {
+      "key": "patientIdentifierValue",
+      "value": "PATIENT-001",
+      "type": "string"
+    },
+    {
+      "key": "extractedBundle",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "extractedObservation",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -48,11 +78,101 @@
               "pm.test(\"Contains Observation\", function () { pm.expect(o).to.exist; });",
               "pm.test(\"HbA1c LOINC\", function () { pm.expect(o.code.coding.some(function(c){ return c.system===\"http://loinc.org\" && c.code===\"4548-4\"; })).to.be.true; });",
               "pm.test(\"Value 6.2 %\", function () { pm.expect(o.valueQuantity.value).to.eql(6.2); pm.expect(o.valueQuantity.code).to.eql(\"%\"); });",
-              "pm.test(\"Laboratory category\", function () { pm.expect((o.category||[]).some(function(x){ return (x.coding||[]).some(function(c){ return c.system===\"http://terminology.hl7.org/CodeSystem/observation-category\" && c.code===\"laboratory\"; }); })).to.be.true; });"
+              "pm.test(\"Laboratory category\", function () { pm.expect((o.category||[]).some(function(x){ return (x.coding||[]).some(function(c){ return c.system===\"http://terminology.hl7.org/CodeSystem/observation-category\" && c.code===\"laboratory\"; }); })).to.be.true; });",
+              "pm.collectionVariables.set(\"extractedBundle\", JSON.stringify(r));",
+              "o.id=\"LegioHbA1cPatient1\";",
+              "o.subject={reference:\"Patient/LegioPatient1\"};",
+              "pm.collectionVariables.set(\"extractedObservation\", JSON.stringify(o));"
             ]
           }
         }
       ]
+    },
+    {
+      "name": "PUT LegioPatient1",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/fhir+json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/fhir+json"
+          }
+        ],
+        "url": {
+          "raw": "{{dataServer}}/Patient/LegioPatient1",
+          "host": [
+            "{{dataServer}}"
+          ],
+          "path": [
+            "Patient",
+            "LegioPatient1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"resourceType\": \"Patient\",\n  \"id\": \"LegioPatient1\",\n  \"meta\": {\n    \"profile\": [\n      \"https://fyrstain.com/fhir/R4/legio/StructureDefinition/MyPatient\"\n    ]\n  },\n  \"identifier\": [\n    {\n      \"system\": \"https://legio.test/patients\",\n      \"value\": \"PATIENT-001\"\n    }\n  ],\n  \"name\": [\n    {\n      \"given\": [\n        \"Alice\"\n      ],\n      \"family\": \"Martin\"\n    }\n  ],\n  \"gender\": \"female\",\n  \"birthDate\": \"1981-03-15\"\n}"
+        }
+      }
+    },
+    {
+      "name": "PUT extracted HbA1c Observation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/fhir+json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/fhir+json"
+          }
+        ],
+        "url": {
+          "raw": "{{dataServer}}/Observation/LegioHbA1cPatient1",
+          "host": [
+            "{{dataServer}}"
+          ],
+          "path": [
+            "Observation",
+            "LegioHbA1cPatient1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{{extractedObservation}}"
+        }
+      }
+    },
+    {
+      "name": "POST Patient $summary",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/fhir+json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/fhir+json"
+          }
+        ],
+        "url": {
+          "raw": "{{documentServer}}/Patient/$summary",
+          "host": [
+            "{{documentServer}}/Patient/$summary"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"identifier\",\n      \"valueIdentifier\": {\n        \"system\": \"{{patientIdentifierSystem}}\",\n        \"value\": \"{{patientIdentifierValue}}\"\n      }\n    }\n  ]\n}"
+        }
+      }
     }
   ]
 }
