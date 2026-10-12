@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "3b89d98b-8c93-4d68-b3c7-leg223labstudy",
     "name": "Legio Lab Study - Cohorting and Datamart",
-    "description": "Reproduces the LEG-223 Legio study on a clean environment. It deploys two example patients and HbA1c observations, the CQL/ELM Libraries, inclusion and research EvidenceVariables, the dataset EvidenceVariable, a ResearchStudy template and initial instance, then runs cohorting and datamart generation. Expected result: exactly 2 patients and three evaluated variables (gender, birthDate, hba1c). Update the collection variables to target another environment. The ResearchStudy template is created with POST; on repeated runs against the same environment this can create additional template resources.",
+    "description": "Reproduces the LEG-223 Legio study on a clean environment. It deploys two example patients and HbA1c observations, the CQL Libraries, inclusion and research EvidenceVariables, the dataset EvidenceVariable, a ResearchStudy template and initial instance, then runs cohorting and datamart generation. Expected result: exactly 2 patients and three evaluated variables (gender, birthDate, hba1c). Update the collection variables to target another environment. The ResearchStudy template is created with POST; on repeated runs against the same environment this can create additional template resources.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
