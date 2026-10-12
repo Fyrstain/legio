@@ -172,7 +172,22 @@
           "mode": "raw",
           "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"identifier\",\n      \"valueIdentifier\": {\n        \"system\": \"{{patientIdentifierSystem}}\",\n        \"value\": \"{{patientIdentifierValue}}\"\n      }\n    }\n  ]\n}"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const ips=pm.response.json();",
+              "pm.test(\"Returns IPS Bundle\", function () { pm.expect(ips.resourceType).to.eql(\"Bundle\"); });",
+              "const hba1c=(ips.entry||[]).map(function(e){return e.resource;}).find(function(r){return r && r.resourceType===\"Observation\" && (r.code.coding||[]).some(function(x){return x.system===\"http://loinc.org\" && x.code===\"4548-4\";});});",
+              "pm.test(\"IPS contains HbA1c Observation\", function () { pm.expect(hba1c).to.exist; });"
+            ]
+          }
+        }
+      ]
     }
   ]
 }
