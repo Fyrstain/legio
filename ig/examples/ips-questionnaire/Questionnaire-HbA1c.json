@@ -20,13 +20,13 @@
           }
         }
       ],
-      "definition": "http://fhir.org#Observation",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation",
       "item": [
         {
           "linkId": "value",
           "text": "HbA1c value",
           "type": "quantity",
-          "definition": "http://fhir.org#Observation.value",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.value",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
@@ -41,7 +41,7 @@
           "linkId": "category",
           "text": "Observation category",
           "type": "choice",
-          "definition": "http://fhir.org#Observation.category",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.category",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
@@ -56,7 +56,7 @@
           "linkId": "status",
           "text": "Observation status",
           "type": "choice",
-          "definition": "http://fhir.org#Observation.status",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.status",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
@@ -71,7 +71,7 @@
           "linkId": "code",
           "text": "Laboratory code",
           "type": "choice",
-          "definition": "http://fhir.org#Observation.code",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.code",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
