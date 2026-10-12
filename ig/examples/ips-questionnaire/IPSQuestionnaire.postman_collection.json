@@ -116,7 +116,18 @@
           "mode": "raw",
           "raw": "{\n  \"resourceType\": \"Patient\",\n  \"id\": \"LegioPatient1\",\n  \"meta\": {\n    \"profile\": [\n      \"https://fyrstain.com/fhir/R4/legio/StructureDefinition/MyPatient\"\n    ]\n  },\n  \"identifier\": [\n    {\n      \"system\": \"https://legio.test/patients\",\n      \"value\": \"PATIENT-001\"\n    }\n  ],\n  \"name\": [\n    {\n      \"given\": [\n        \"Alice\"\n      ],\n      \"family\": \"Martin\"\n    }\n  ],\n  \"gender\": \"female\",\n  \"birthDate\": \"1981-03-15\"\n}"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 or 201\", function () { pm.expect([200,201]).to.include(pm.response.code); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "PUT extracted HbA1c Observation",
@@ -146,7 +157,18 @@
           "mode": "raw",
           "raw": "{{extractedObservation}}"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 or 201\", function () { pm.expect([200,201]).to.include(pm.response.code); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "POST Patient $summary",
