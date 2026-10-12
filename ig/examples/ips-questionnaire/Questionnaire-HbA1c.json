@@ -1,0 +1,88 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "Questionnaire-HbA1c",
+  "meta": {"profile": ["http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extr-defn"]},
+  "url": "https://fyrstain.com/fhir/R4/legio/Questionnaire/HbA1c",
+  "name": "HbA1cQuestionnaire",
+  "status": "active",
+  "subjectType": ["Patient"],
+  "item": [
+    {
+      "linkId": "observation",
+      "text": "HbA1c laboratory result",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Observation"
+          }
+        }
+      ],
+      "definition": "http://fhir.org#Observation",
+      "item": [
+        {
+          "linkId": "value",
+          "text": "HbA1c value",
+          "type": "quantity",
+          "definition": "http://fhir.org#Observation.value",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Observation.value"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "category",
+          "text": "Observation category",
+          "type": "choice",
+          "definition": "http://fhir.org#Observation.category",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Observation.category"
+              }
+            }
+          ]
+        },
+          {
+          "linkId": "status",
+          "text": "Observation status",
+          "type": "choice",
+          "definition": "http://fhir.org#Observation.status",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Observation.status"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "code",
+          "text": "Laboratory code",
+          "type": "choice",
+          "definition": "http://fhir.org#Observation.code",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Observation.code"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
