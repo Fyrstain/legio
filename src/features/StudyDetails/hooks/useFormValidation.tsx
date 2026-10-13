@@ -85,8 +85,10 @@ export const useFormValidation = (): SimpleValidationResult => {
       if (error) {
         return { ...prev, [fieldName]: error };
       } else {
-        delete prev[fieldName];
-        return prev;
+        if (!(fieldName in prev)) return prev;
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
       }
     });
     return error;
