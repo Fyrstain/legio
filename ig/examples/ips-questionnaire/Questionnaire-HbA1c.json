@@ -26,7 +26,7 @@
           "linkId": "value",
           "text": "HbA1c value",
           "type": "quantity",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.value",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation#Observation.value[x]",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
