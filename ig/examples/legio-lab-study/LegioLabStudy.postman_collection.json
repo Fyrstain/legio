@@ -234,7 +234,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "if (pm.collectionVariables.get(\"useExistingPatient1Observation\") === \"true\") {",
+                  "if (pm.variables.get(\"useExistingPatient1Observation\") === \"true\") {",
                   "  pm.execution.skipRequest();",
                   "}"
                 ]

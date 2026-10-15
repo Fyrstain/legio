@@ -76,6 +76,7 @@
               "const r=pm.response.json();",
               "const o=(r.entry||[]).map(function(e){return e.resource;}).find(function(x){return x && x.resourceType===\"Observation\";});",
               "pm.test(\"Contains Observation\", function () { pm.expect(o).to.exist; });",
+              "pm.test(\"Observation linked to patient\", function () { pm.expect(o.subject && o.subject.reference).to.eql(\"Patient/LegioPatient1\"); });",
               "pm.test(\"HbA1c LOINC\", function () { pm.expect(o.code.coding.some(function(c){ return c.system===\"http://loinc.org\" && c.code===\"4548-4\"; })).to.be.true; });",
               "pm.test(\"Value 6.2 %\", function () { pm.expect(o.valueQuantity.value).to.eql(6.2); pm.expect(o.valueQuantity.code).to.eql(\"%\"); });",
               "pm.test(\"Laboratory category\", function () { pm.expect((o.category||[]).some(function(x){ return (x.coding||[]).some(function(c){ return c.system===\"http://terminology.hl7.org/CodeSystem/observation-category\" && c.code===\"laboratory\"; }); })).to.be.true; });",
