@@ -85,6 +85,16 @@
       "key": "useExistingPatient1Observation",
       "value": "false",
       "type": "string"
+    },
+    {
+      "key": "studyInstanceCanonical",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "studyInstanceId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -714,7 +724,7 @@
             "description": "Creates the template with POST, matching the FLUTE/Legio workflow. On a clean environment this should be run once.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"resourceType\": \"ResearchStudy\",\n  \"url\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\",\n  \"name\": \"LegioLabStudyTemplate\",\n  \"title\": \"Legio Laboratory Study\",\n  \"status\": \"active\",\n  \"phase\": {\n    \"coding\": [\n      {\n        \"system\": \"https://www.isis.com/CodeSystem/COS-ResearchStudyPhase\",\n        \"code\": \"template\",\n        \"display\": \"Template\"\n      }\n    ]\n  },\n  \"description\": \"Template study used to validate the Legio workflow with two patients, an HbA1c laboratory observation and three research variables: gender, birth date and HbA1c.\",\n  \"period\": {\n    \"start\": \"2026-09-01\"\n  },\n  \"recruitment\": {\n    \"eligibility\": {\n      \"reference\": \"EvidenceVariable/EV-LegioLabInclusion\",\n      \"identifier\": {\n        \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n        \"value\": \"LegioLabInclusion\"\n      }\n    }\n  },\n  \"extension\": [\n    {\n      \"url\": \"https://www.isis.com/StructureDefinition/EXT-Datamart\",\n      \"extension\": [\n        {\n          \"url\": \"variable\",\n          \"valueReference\": {\n            \"reference\": \"EvidenceVariable/EV-LegioLabVariablesGroup\",\n            \"identifier\": {\n              \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n              \"value\": \"LegioLabVariablesGroup\"\n            }\n          }\n        }\n      ]\n    }\n  ]\n}",
+              "raw": "{\n  \"resourceType\": \"ResearchStudy\",\n  \"url\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudyTemplate\",\n  \"name\": \"LegioLabStudyTemplate\",\n  \"title\": \"Legio Laboratory Study\",\n  \"status\": \"active\",\n  \"phase\": {\n    \"coding\": [\n      {\n        \"system\": \"https://www.isis.com/CodeSystem/COS-ResearchStudyPhase\",\n        \"code\": \"template\",\n        \"display\": \"Template\"\n      }\n    ]\n  },\n  \"description\": \"Template study used to validate the Legio workflow with two patients, an HbA1c laboratory observation and three research variables: gender, birth date and HbA1c.\",\n  \"period\": {\n    \"start\": \"2026-09-01\"\n  },\n  \"recruitment\": {\n    \"eligibility\": {\n      \"reference\": \"EvidenceVariable/EV-LegioLabInclusion\",\n      \"identifier\": {\n        \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n        \"value\": \"LegioLabInclusion\"\n      }\n    }\n  },\n  \"extension\": [\n    {\n      \"url\": \"https://www.isis.com/StructureDefinition/EXT-Datamart\",\n      \"extension\": [\n        {\n          \"url\": \"variable\",\n          \"valueReference\": {\n            \"reference\": \"EvidenceVariable/EV-LegioLabVariablesGroup\",\n            \"identifier\": {\n              \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n              \"value\": \"LegioLabVariablesGroup\"\n            }\n          }\n        }\n      ]\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -740,9 +750,9 @@
           ]
         },
         {
-          "name": "PUT ResearchStudy initial instance",
+          "name": "POST $instantiate-study",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -756,14 +766,14 @@
               }
             ],
             "url": {
-              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "raw": "{{cohortingServer}}/ResearchStudy/$instantiate-study",
               "host": [
-                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+                "{{cohortingServer}}/ResearchStudy/$instantiate-study"
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"resourceType\": \"ResearchStudy\",\n  \"url\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\",\n  \"name\": \"LegioLabStudy\",\n  \"title\": \"Legio Laboratory Study\",\n  \"status\": \"active\",\n  \"phase\": {\n    \"coding\": [\n      {\n        \"system\": \"https://www.isis.com/CodeSystem/COS-ResearchStudyPhase\",\n        \"code\": \"initial\",\n        \"display\": \"Initial Phase\"\n      }\n    ]\n  },\n  \"description\": \"Test study used to validate the Legio workflow with two patients, an HbA1c laboratory observation and three research variables: gender, birth date and HbA1c.\",\n  \"period\": {\n    \"start\": \"2026-09-01\"\n  },\n  \"recruitment\": {\n    \"eligibility\": {\n      \"reference\": \"EvidenceVariable/EV-LegioLabInclusion\",\n      \"identifier\": {\n        \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n        \"value\": \"LegioLabInclusion\"\n      }\n    }\n  },\n  \"extension\": [\n    {\n      \"url\": \"https://www.isis.com/StructureDefinition/EXT-Datamart\",\n      \"extension\": [\n        {\n          \"url\": \"variable\",\n          \"valueReference\": {\n            \"reference\": \"EvidenceVariable/EV-LegioLabVariablesGroup\",\n            \"identifier\": {\n              \"system\": \"{{canonicalBaseR5}}/EvidenceVariable\",\n              \"value\": \"LegioLabVariablesGroup\"\n            }\n          }\n        }\n      ]\n    }\n  ],\n  \"id\": \"RS-LegioLabStudy\"\n}",
+              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"studyUrl\",\n      \"valueCanonical\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudyTemplate\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -778,20 +788,18 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 200 or 201\", function () { pm.expect([200,201]).to.include(pm.response.code); });",
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
                   "const r = pm.response.json();",
-                  "pm.test(\"Initial phase\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"initial\"); });",
-                  "pm.test(\"Uses grouped research variables\", function () {",
-                  "  const dm=(r.extension||[]).find(e=>e.url===\"https://www.isis.com/StructureDefinition/EXT-Datamart\");",
-                  "  pm.expect(dm.extension[0].valueReference.reference).to.eql(\"EvidenceVariable/EV-LegioLabVariablesGroup\");",
-                  "});"
+                  "const p = (r.parameter || []).find(function (x) { return x.name === \"studyInstanceUrl\"; });",
+                  "pm.test(\"Returns studyInstanceUrl\", function () { pm.expect(p && p.valueCanonical).to.exist; });",
+                  "if (p && p.valueCanonical) pm.collectionVariables.set(\"studyInstanceCanonical\", p.valueCanonical);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "GET studies by canonical URL",
+          "name": "GET instantiated ResearchStudy",
           "request": {
             "method": "GET",
             "header": [
@@ -807,9 +815,9 @@
               }
             ],
             "url": {
-              "raw": "{{knowledgeServer}}/ResearchStudy?url={{canonicalBaseR5}}%2FResearchStudy%2FRS-LegioLabStudy",
+              "raw": "{{knowledgeServer}}/ResearchStudy?url={{studyInstanceCanonical}}",
               "host": [
-                "{{knowledgeServer}}/ResearchStudy?url={{canonicalBaseR5}}%2FResearchStudy%2FRS-LegioLabStudy"
+                "{{knowledgeServer}}/ResearchStudy?url={{studyInstanceCanonical}}"
               ]
             }
           },
@@ -821,13 +829,12 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "const b=pm.response.json();",
-                  "pm.test(\"Template and instance are searchable by canonical\", function () {",
-                  "  pm.expect(b.total).to.be.at.least(2);",
-                  "  const phases=(b.entry||[]).map(e=>e.resource?.phase?.coding?.[0]?.code);",
-                  "  pm.expect(phases).to.include(\"template\");",
-                  "  pm.expect(phases).to.include(\"initial\");",
-                  "});"
+                  "const b = pm.response.json();",
+                  "const entries = b.entry || [];",
+                  "pm.test(\"Exactly one instantiated study\", function () { pm.expect(entries).to.have.length(1); });",
+                  "const r = entries[0] && entries[0].resource;",
+                  "if (r && r.id) pm.collectionVariables.set(\"studyInstanceId\", r.id);",
+                  "pm.test(\"Initial phase\", function () { pm.expect(r.phase.coding[0].code).to.eql(\"initial\"); });"
                 ]
               }
             }
@@ -862,7 +869,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
+              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{studyInstanceCanonical}}\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -904,9 +911,9 @@
               }
             ],
             "url": {
-              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "raw": "{{knowledgeServer}}/ResearchStudy/{{studyInstanceId}}",
               "host": [
-                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+                "{{knowledgeServer}}/ResearchStudy/{{studyInstanceId}}"
               ]
             }
           },
@@ -950,7 +957,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{canonicalBaseR5}}/ResearchStudy/RS-LegioLabStudy\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
+              "raw": "{\n  \"resourceType\": \"Parameters\",\n  \"parameter\": [\n    {\n      \"name\": \"researchStudyUrl\",\n      \"valueCanonical\": \"{{studyInstanceCanonical}}\"\n    },\n    {\n      \"name\": \"researchStudyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{knowledgeServer}}\"\n      }\n    },\n    {\n      \"name\": \"dataEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{dataServer}}\"\n      }\n    },\n    {\n      \"name\": \"terminologyEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{terminologyServer}}\"\n      }\n    },\n    {\n      \"name\": \"cqlEngineEndpoint\",\n      \"resource\": {\n        \"resourceType\": \"Endpoint\",\n        \"status\": \"active\",\n        \"connectionType\": [\n          {\n            \"coding\": [\n              {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                \"code\": \"hl7-fhir-rest\"\n              }\n            ]\n          }\n        ],\n        \"payload\": [\n          {\n            \"type\": [\n              {\n                \"coding\": [\n                  {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/endpoint-connection-type\",\n                    \"code\": \"hl7-fhir-rest\",\n                    \"display\": \"HL7 FHIR\"\n                  }\n                ]\n              }\n            ]\n          }\n        ],\n        \"header\": [\n          \"Content-Type: application/json\"\n        ],\n        \"address\": \"{{cqlServer}}\"\n      }\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1107,9 +1114,9 @@
               }
             ],
             "url": {
-              "raw": "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy",
+              "raw": "{{knowledgeServer}}/ResearchStudy/{{studyInstanceId}}",
               "host": [
-                "{{knowledgeServer}}/ResearchStudy/RS-LegioLabStudy"
+                "{{knowledgeServer}}/ResearchStudy/{{studyInstanceId}}"
               ]
             }
           },
@@ -1127,7 +1134,7 @@
                   "const dm=(r.extension||[]).find(e=>e.url===\"https://www.isis.com/StructureDefinition/EXT-Datamart\");",
                   "const variable=(dm?.extension||[]).find(e=>e.url===\"variable\");",
                   "const evaluation=(dm?.extension||[]).find(e=>e.url===\"evaluation\");",
-                  "pm.test(\"Final study references the grouped EvidenceVariable\", function () { pm.expect(variable.valueReference.reference).to.eql(\"EvidenceVariable/EV-LegioLabVariablesGroup\"); });",
+                  "pm.test(\"Final study references the grouped EvidenceVariable\", function () { pm.expect(variable.valueReference.reference).to.match(/^EvidenceVariable\\//); pm.expect(variable.valueReference.identifier && variable.valueReference.identifier.value).to.eql(\"LegioLabVariablesGroup\"); });",
                   "pm.test(\"Final study references the datamart List\", function () { pm.expect(evaluation.valueReference.reference).to.eql(\"List/\"+pm.collectionVariables.get(\"datamartListId\")); });"
                 ]
               }

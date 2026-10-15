@@ -146,15 +146,21 @@ const StudyDetails: FunctionComponent = () => {
   const loadStudy = useCallback(async () => {
     setLoading(true);
     try {
-      // Load the value set for study design
-      const fhirClient = new Client({
-        baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
-      });
-      const valueSetLoader = new ValueSetLoader(fhirClient);
-      const studyDesignValueSet = await valueSetLoader.searchValueSet(
-        researchStudyStudyDesignUrl
-      );
-      setResearchStudyStudyDesign(studyDesignValueSet);
+      // Load the optional value set for study design.
+      // Its absence must not prevent the ResearchStudy from being displayed.
+      try {
+        const fhirClient = new Client({
+          baseUrl: process.env.REACT_APP_TERMINOLOGY_URL ?? "fhir",
+        });
+        const valueSetLoader = new ValueSetLoader(fhirClient);
+        const studyDesignValueSet = await valueSetLoader.searchValueSet(
+          researchStudyStudyDesignUrl
+        );
+        setResearchStudyStudyDesign(studyDesignValueSet);
+      } catch (error) {
+        console.warn("Study design ValueSet unavailable:", error);
+        setResearchStudyStudyDesign([]);
+      }
       // Load the ResearchStudy resource from the backend
       const response = await StudyService.loadStudy(studyId ?? "");
       const study: ResearchStudy = response as ResearchStudy;
