@@ -14,4 +14,6 @@ The extracted HbA1c Observation was successfully reused by the LEG-223 study usi
 
 The `dataServer` and `documentServer` endpoints are configurable. The Chambéry IG is available as implementation documentation, but no validated Chambéry/BOW Medical runtime endpoint is available for this workflow, so that integration is documented but not executed end-to-end.
 
-To reproduce the validated Legio part, run this collection first with the CHMS sandbox endpoint, then run `examples/legio-lab-study/LegioLabStudy.postman_collection.json` with `useExistingPatient1Observation=true`. The study will keep the Observation created from the QuestionnaireResponse instead of replacing it with its static fixture.
+To reproduce the validated Legio part, run this collection first with the CHMS sandbox endpoint, then run `../legio-lab-study/LegioLabStudy.postman_collection.json` with `useExistingPatient1Observation=true`. The study will keep the Observation created from the QuestionnaireResponse instead of replacing it with its static fixture.
+
+The JSON files here are exact Postman inputs and an expected operation result. The standalone Patient, Questionnaire, QuestionnaireResponse and Observation examples are also maintained as FSH instances in `../../ig/input/fsh/`.

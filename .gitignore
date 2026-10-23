@@ -36,6 +36,11 @@ ig/input-cache
 ig/temp
 ig/template
 ig/output
+ig-r5/fsh-generated
+ig-r5/input-cache
+ig-r5/temp
+ig-r5/template
+ig-r5/output
 ig/my-template/**/.index.db
 ig/my-template/**/.index.json
 public/ig

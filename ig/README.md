@@ -1,5 +1,9 @@
 # Legio IG
 
+Ce guide FHIR R4 contient le profil Patient, les exemples Patient, Observation, Questionnaire et QuestionnaireResponse, ainsi que les ressources Library et les sources CQL. Chaque définition ou instance FSH est dans un fichier du dossier de son type de ressource sous `input/fsh/`. Les exemples Questionnaire illustrent le flux d'extraction HbA1c ; les corps de requête exacts et les collections de test sont dans `../postman/`.
+
+Le guide frère `../ig-r5/` contient les EvidenceVariable, la ResearchStudy et l'extension EXT-Datamart propre à ResearchStudy. Son URL canonique est `https://www.isis.com/StructureDefinition/EXT-Datamart`. Les EvidenceVariable R5 référencent les Library CQL de ce guide R4. Les ressources de chaque guide doivent être générées séparément avec SUSHI depuis leur dossier.
+
 ## Pré-requis
 
 Avant de commencer, assurez-vous d'avoir installé les éléments suivants :
