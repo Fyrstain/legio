@@ -11,6 +11,7 @@ jobs:
     uses: ./.github/workflows/react-ci.yml
     with:
       node_version: '24'
+      run_e2e: true
       java_version: '17'
       fsh_sushi_version: latest
       install_jekyll: true
