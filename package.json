@@ -42,7 +42,7 @@
     "copy:ig:public": "node scripts/copy-ig-output.cjs public/ig",
     "dev:ig": "npm run build:ig && npm run copy:ig:public",
     "test": "react-app-rewired test",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern \"ig/**\" --ignore-pattern \"build/**\" --ignore-pattern \"public/ig/**\"",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern \"ig/**\" --ignore-pattern \"ig-r5/**\" --ignore-pattern \"ig-common/**\" --ignore-pattern \"build/**\" --ignore-pattern \"public/ig/**\"",
     "test:e2e": "node scripts/run-e2e.cjs",
     "test:e2e:run": "tsx test/selenium/legio.e2e.ts",
     "eject": "react-scripts eject"
