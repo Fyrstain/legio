@@ -1,7 +1,8 @@
 Instance: QuestionnaireResponse-HbA1c
 InstanceOf: QuestionnaireResponse
+Description: "Completed HbA1c questionnaire response for LegioPatient1 with a 6.2% result for Observation extraction."
 Usage: #example
-* questionnaire = "https://fyrstain.com/fhir/R4/legio/Questionnaire/HbA1c"
+* questionnaire = "https://fyrstain.com/fhir/R4/legio/Questionnaire/Questionnaire-HbA1c"
 * status = #completed
 * subject = Reference(LegioPatient1)
 * item[0].linkId = "observation"

@@ -9,6 +9,8 @@ Usage: #definition
 * title = "Legio Laboratory Research Variables"
 * status = #active
 * description = "Group of research variables for the Legio laboratory study."
+* text.status = #additional
+* text.div = "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Legio Laboratory Research Variables</b> (active). Group of research variables for the Legio laboratory study.</p><p>Canonical URL: <code>https://fyrstain.com/fhir/R5/legio/EvidenceVariable/EV-LegioLabVariablesGroup</code></p><p>Dataset containing patient gender, birth date, and HbA1c variables.</p></div>"
 * actual = true
 * extension[+].url = "http://hl7.org/fhir/StructureDefinition/cqf-library"
 * extension[=].valueCanonical = "https://fyrstain.com/fhir/R4/legio/Library/LegioLabResearchVariables"

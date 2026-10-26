@@ -8,6 +8,8 @@ Usage: #definition
 * title = "Inclusion Variable for Legio Laboratory Study"
 * status = #draft
 * description = "Include patients who have a final HbA1c laboratory observation."
+* text.status = #additional
+* text.div = "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Inclusion Variable for Legio Laboratory Study</b> (draft). Include patients who have a final HbA1c laboratory observation.</p><p>Canonical URL: <code>https://fyrstain.com/fhir/R5/legio/EvidenceVariable/EV-LegioLabInclusion</code></p><p>Characteristic: patient has a final HbA1c observation. CQL expression: <code>isIncluded</code>.</p></div>"
 * actual = true
 * extension[+].url = "http://hl7.org/fhir/StructureDefinition/cqf-library"
 * extension[=].valueCanonical = "https://fyrstain.com/fhir/R4/legio/Library/LegioLabInclusionCriteria"

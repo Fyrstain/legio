@@ -1,5 +1,6 @@
 Instance: LegioHbA1cPatient1
 InstanceOf: Observation
+Description: "Final HbA1c laboratory observation with a value of 6.2% for example patient LegioPatient1."
 Usage: #example
 * status = #final
 * category[0].coding.system = "http://terminology.hl7.org/CodeSystem/observation-category"

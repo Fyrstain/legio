@@ -1,5 +1,7 @@
 # Legio IG
 
+Le point d'entrée du dépôt est `npm run build:ig` à la racine : il ajoute temporairement les sources de `../ig-common/input/`, génère ce guide R4 et le guide R5 de `../ig-r5/`, puis prépare leur publication commune avec `npm run copy:ig:build`. La page d'accueil générée est `../build/ig/index.html`.
+
 Ce guide FHIR R4 contient le profil Patient, les exemples Patient, Observation, Questionnaire et QuestionnaireResponse, ainsi que les ressources Library et les sources CQL. Chaque définition ou instance FSH est dans un fichier du dossier de son type de ressource sous `input/fsh/`. Les exemples Questionnaire illustrent le flux d'extraction HbA1c ; les corps de requête exacts et les collections de test sont dans `../postman/`.
 
 Le guide frère `../ig-r5/` contient les EvidenceVariable, la ResearchStudy et l'extension EXT-Datamart propre à ResearchStudy. Son URL canonique est `https://www.isis.com/StructureDefinition/EXT-Datamart`. Les EvidenceVariable R5 référencent les Library CQL de ce guide R4. Les ressources de chaque guide doivent être générées séparément avec SUSHI depuis leur dossier.
@@ -73,29 +75,29 @@ npm install -g fsh-sushi
 
 ## Installation de l'IG Publisher
 
-L'IG Publisher est l'outil principal pour compiler et publier un guide d'implémentation FHIR. Vous devez lancer le script `_updatePublisher.sh` (ou `.bat` si vous êtes sous Windows).
-
-Ce script installera le jar `publisher.jar` contenant l'IG Publisher dans le dossier `input-cache`. Il installera également et vous proposera de mettre à jour les scripts liés à l'IG Publisher.
+L'IG Publisher est l'outil principal pour compiler et publier un guide d'implémentation FHIR. `npm run build:ig`, lancé depuis la racine du dépôt, utilise `ig-common/input-cache/publisher.jar` pour R4 et R5, et le télécharge s'il est absent. Pour le mettre à jour, lancez `_updatePublisher` depuis `ig-common/` puis reconstruisez les guides afin de régénérer les rapports QA.
 
 ## Compiler avec SUSHI
+
+Depuis la racine du dépôt, utilisez `npm run build:ig:sushi` pour inclure les sources communes dans les deux guides.
 
 [SUSHI](https://fshschool.org/docs/sushi/) est utilisé pour transformer les fichiers FSH en ressources FHIR.  
 
 Pour compiler les fichiers FSH du projet :
 
 ```bash
-sushi .
+npm run build:ig:sushi
 ```
 
 ## Compiler l'IG
 
-Pour compiler l'entièreté du guide d'implémentation avec l'IG Publisher, vous pouvez utiliser le script `_genonce.sh` (ou `.bat` sous Windows).
+Depuis la racine du dépôt, utilisez cette commande pour construire R4 et R5 avec les sources et le template communs, puis IG Publisher :
 
 ```bash
-./_genonce.sh
+npm run build:ig
 ```
 
-Ce script va lancer la compilation avec SUSHI, puis lancera la génération de l'ensemble des artéfacts et des pages webs composants le Guide d'Implémentation. Le résultat sera généré dans le dossier `output`.
+Le résultat est généré dans `ig/output/` et `ig-r5/output/`. Pour le servir avec `npm start`, lancez `npm run dev:ig` depuis la racine.
 
 ## Afficher le contenu de l'IG
 
@@ -188,29 +190,27 @@ npm install -g fsh-sushi
 
 ## Installing the IG Publisher
 
-The IG Publisher is the main tool for compiling and publishing a FHIR implementation guide. You need to run the `_updatePublisher.sh` script (or `.bat` if you are on Windows).
-
-This script will install the `publisher.jar` containing the IG Publisher in the `input-cache` folder. It will also install and offer to update scripts related to the IG Publisher.
+The IG Publisher is the main tool for compiling and publishing a FHIR implementation guide. Run `npm run build:ig` from the repository root; it uses `ig-common/input-cache/publisher.jar` for both guides and downloads it if missing. To update it, run `_updatePublisher` from `ig-common/`, then rebuild the guides to refresh their QA reports.
 
 ## Compile with SUSHI
 
 [SUSHI](https://fshschool.org/docs/sushi/) is used to transform FSH files into FHIR resources.
 
-To compile the project's FSH files:
+To compile both guides' FSH files with shared inputs, run from the repository root:
 
 ```bash
-sushi .
+npm run build:ig:sushi
 ```
 
 ## Compile the IG
 
-To compile the entire implementation guide with the IG Publisher, use the `_genonce.sh` script (or `.bat` on Windows).
+To compile both implementation guides with their shared inputs and template, run from the repository root:
 
 ```bash
-./_genonce.sh
+npm run build:ig
 ```
 
-This script will run the SUSHI compilation, then generate all artifacts and web pages that make up the Implementation Guide. The result will be generated in the `output` folder.
+The outputs are generated in `ig/output/` and `ig-r5/output/`. To serve them with `npm start`, run `npm run dev:ig` from the repository root.
 
 ## View the IG Content
 

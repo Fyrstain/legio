@@ -3,3 +3,10 @@
 # Add warning and/or information messages here after you've confirmed that they aren't really a problem
 # (And include comments like this justifying why)
 # See https://github.com/FHIR/sample-ig/blob/master/input/ignoreWarnings.txt for examples
+
+# Name conflict, the CQL code remains correct
+An operand identifier reference is hiding another identifier of the same name.
+
+# Use fictitious URLs
+No definition could be found for URL value 'https://legio.test/patients'
+

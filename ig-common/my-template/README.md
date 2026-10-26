@@ -8,6 +8,8 @@ package-id = fhir.base.template
 Base IG template managed by HL7 but modified by FYRSTAIN.
 This folder is used to update the graphic style of the different IGs offered by FYRSTAIN.
 
+In Legio, this template lives in `ig-common/my-template/`. Run `npm run build:ig` from the repository root: the build temporarily copies it to `ig/my-template/` and `ig-r5/my-template/` so that `template = #my-template` resolves in both guides, then removes the copies. Running IG Publisher directly from either guide does not prepare this template.
+
 ## Update graphic style
 
 To simply modify the css style, color of elements for example, go to my-template/content/assets/css/fyr.css.

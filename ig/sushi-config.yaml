@@ -25,7 +25,9 @@ publisher:
 # use cases, the value can be an object with keys for id, uri, and version.
 #
 dependencies:
-  ans.fhir.fr.cds: 2.0.0
+  ans.fhir.fr.cds: 2.0.1
+  hl7.fhir.uv.sdc: 3.0.0
+
 #   hl7.fhir.us.mcode:
 #     id: mcode
 #     uri: http://hl7.org/fhir/us/mcode/ImplementationGuide/hl7.fhir.us.mcode
@@ -46,6 +48,8 @@ dependencies:
 pages:
   index.md:
     title: Home
+  legio-overview.md:
+    title: Legio R4 et R5
 #   implementation.xml:
 #   examples.xml:
 #     title: Examples Overview
@@ -76,6 +80,7 @@ parameters:
 # ╰────────────────────────────────────────────────────────────────────────────────────────────────╯
 menu:
   Home: index.html
+  Legio R4 et R5: legio-overview.html
   Artefacts: artifacts.html
 
 # ╭───────────────────────────Less Common Implementation Guide Properties──────────────────────────╮

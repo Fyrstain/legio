@@ -7,7 +7,7 @@ export default function ImplementationGuidePage() {
       <iframe
         className="implementation-guide-page__frame"
         src={toPublicUrl("/ig/index.html")}
-        title="FHIR Implementation Guide"
+        title="Guides d'implémentation FHIR R4 et R5"
       />
     </main>
   );

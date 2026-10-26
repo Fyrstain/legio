@@ -8,6 +8,8 @@ Usage: #definition
 * title = "Patient HbA1c"
 * status = #draft
 * description = "HbA1c laboratory result of the patient."
+* text.status = #additional
+* text.div = "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Patient HbA1c</b> (draft). HbA1c laboratory result of the patient.</p><p>Canonical URL: <code>https://fyrstain.com/fhir/R5/legio/EvidenceVariable/EV-HbA1c</code></p><p>Characteristic: final patient HbA1c result. CQL expression: <code>hba1c</code>.</p></div>"
 * actual = true
 * extension[+].url = "http://hl7.org/fhir/StructureDefinition/cqf-library"
 * extension[=].valueCanonical = "https://fyrstain.com/fhir/R4/legio/Library/LegioLabResearchVariables"

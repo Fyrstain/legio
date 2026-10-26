@@ -45,6 +45,8 @@ dependencies: {} # R5 resources use only the core FHIR package
 pages:
   index.md:
     title: Home
+  legio-overview.md:
+    title: Legio R4 et R5
 #   implementation.xml:
 #   examples.xml:
 #     title: Examples Overview
@@ -61,7 +63,9 @@ pages:
 # For parameters defined by the FHIR Tools IG see:
 # http://build.fhir.org/ig/FHIR/fhir-tools-ig/branches/master/CodeSystem-ig-parameters.html
 #
-parameters: {} # CQL binaries belong to the R4 guide
+parameters: # CQL binaries belong to the R4 guide
+  special-url:
+  - https://www.isis.com/StructureDefinition/EXT-Datamart
 #
 # ╭────────────────────────────────────────────menu.xml────────────────────────────────────────────╮
 # │ The menu property will be used to generate the input/menu.xml file. The menu is represented    │
@@ -73,6 +77,7 @@ parameters: {} # CQL binaries belong to the R4 guide
 # ╰────────────────────────────────────────────────────────────────────────────────────────────────╯
 menu:
   Home: index.html
+  Legio R4 et R5: legio-overview.html
   Artefacts: artifacts.html
 
 # ╭───────────────────────────Less Common Implementation Guide Properties──────────────────────────╮

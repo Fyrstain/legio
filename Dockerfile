@@ -50,7 +50,7 @@ RUN gem install jekyll bundler && npm install --global fsh-sushi@latest
 
 RUN find ig -type f -name '*.sh' -exec sed -i 's/\\r$//' {} +
 
-RUN npm run build && npm run copy:ig:public && test -f build/ig/index.html && test -f public/ig/index.html
+RUN npm run build && npm run copy:ig:public && test -f build/ig/index.html && test -f build/ig/r4/index.html && test -f build/ig/r5/index.html && test -f public/ig/index.html
 # Build the app
 #RUN npm run build
 # ==== RUN =======
