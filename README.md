@@ -190,7 +190,7 @@ You should be able to use the users of the realm after the import.
 
 ## FHIR Implementation Guide build
 
-The FHIR R4 specification is stored in `ig/`, the FHIR R5 specification in `ig-r5/`, and shared source files in `ig-common/input/`. The shared tree uses the same layout as each guide's `input/` directory. Its files are copied into each guide during the build and removed afterwards; a path collision fails the build instead of replacing guide-specific content. The template in `ig-common/my-template/` is likewise staged temporarily in each guide's `my-template/` directory while Publisher runs. Shared Markdown pages must also be declared in both `sushi-config.yaml` files.
+The FHIR R4 specification is stored in `ig/`, the FHIR R5 specification in `ig-r5/`, and shared source files in `ig-common/input/`. The shared tree uses the same layout as each guide's `input/` directory. Its files are copied into each guide during the build and removed afterwards; a path collision fails the build instead of replacing guide-specific content. The template in `ig-common/my-template/` is likewise staged temporarily in each guide's `my-template/` directory while Publisher runs. After Publisher, the build removes the staged files and generated cache files in directories it created, while preserving pre-existing guide files. Shared Markdown pages must also be declared in both `sushi-config.yaml` files.
 
 Available npm commands:
 
