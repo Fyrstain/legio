@@ -1,0 +1,25 @@
+{
+  "resourceType": "Patient",
+  "id": "LegioPatient1",
+  "meta": {
+    "profile": [
+      "https://fyrstain.com/fhir/R4/legio/StructureDefinition/MyPatient"
+    ]
+  },
+  "identifier": [
+    {
+      "system": "https://legio.test/patients",
+      "value": "PATIENT-001"
+    }
+  ],
+  "name": [
+    {
+      "given": [
+        "Alice"
+      ],
+      "family": "Martin"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1981-03-15"
+}

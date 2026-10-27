@@ -35,17 +35,18 @@
     "start:e2e": "set PORT=4000&& set BROWSER=none&& set REACT_APP_E2E_MODE=true&& react-app-rewired start",
     "build": "npm run build:ig && npm run build:app && npm run copy:ig:build",
     "build:app": "react-app-rewired build",
-    "build:ig": "cd ig && bash _updatePublisher.sh --yes && bash _genonce.sh",
+    "build:ig": "node scripts/build-igs.cjs",
+    "build:ig:sushi": "node scripts/build-igs.cjs both --sushi-only",
     "copy:ig": "node scripts/copy-ig-output.cjs",
     "copy:ig:build": "node scripts/copy-ig-output.cjs build/ig",
     "copy:ig:public": "node scripts/copy-ig-output.cjs public/ig",
     "dev:ig": "npm run build:ig && npm run copy:ig:public",
     "test": "react-app-rewired test",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern \"ig/**\" --ignore-pattern \"build/**\" --ignore-pattern \"public/ig/**\"",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern \"ig/**\" --ignore-pattern \"ig-r5/**\" --ignore-pattern \"ig-common/**\" --ignore-pattern \"build/**\" --ignore-pattern \"public/ig/**\"",
     "test:e2e": "node scripts/run-e2e.cjs",
     "test:e2e:run": "tsx test/selenium/legio.e2e.ts",
     "eject": "react-scripts eject",
-    "test:ci": "react-app-rewired test --ci --watchAll=false --runInBand --coverage --coverageReporters=text-summary --coverageReporters=json-summary"
+    "test:ci": "node --test scripts/build-igs.test.cjs && react-app-rewired test --ci --watchAll=false --runInBand --coverage --coverageReporters=text-summary --coverageReporters=json-summary"
   },
   "eslintConfig": {
     "extends": [

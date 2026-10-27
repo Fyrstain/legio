@@ -1,0 +1,17 @@
+== Suppressed Messages ==
+
+# Add warning and/or information messages here after you've confirmed that they aren't really a problem
+# (And include comments like this justifying why)
+# See https://github.com/FHIR/sample-ig/blob/master/input/ignoreWarnings.txt for examples
+
+# Use fictitious URLs
+No definition could be found for URL value 'https://fyrstain.com/fhir/R5/legio/EvidenceVariable'
+
+# Use canonical URL of the R4 resources
+A definition could not be found for Canonical URL 'https://fyrstain.com/fhir/R4/legio/Library/LegioLabResearchVariables'
+A definition could not be found for Canonical URL 'https://fyrstain.com/fhir/R4/legio/Library/LegioLabInclusionCriteria'
+
+# Suppress ResearchStudy link errors because ResearchStudy resource is not a Canonical resource and is supposed to be
+The link 'https://fyrstain.com/fhir/R5/legio/ResearchStudy/RS-LegioLabStudy' for "https://fyrstain.com/fhir/R5/legio/ResearchStudy/RS-LegioLabStudy" cannot be resolved
+No definition could be found for URL value 'https://fyrstain.com/fhir/R5/legio/ResearchStudy/RS-LegioLabStudy'
+Hyperlink 'https://fyrstain.com/fhir/R5/legio/ResearchStudy/RS-LegioLabStudy' at 'div/p/a' for 'https://fyrstain.com/fhir/R5/legio/ResearchStudy/RS-LegioLabStudy' does not resolve

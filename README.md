@@ -190,19 +190,21 @@ You should be able to use the users of the realm after the import.
 
 ## FHIR Implementation Guide build
 
-The specification is stored in the `ig/` directory.
+The FHIR R4 specification is stored in `ig/`, the FHIR R5 specification in `ig-r5/`, and shared source files in `ig-common/input/`. The shared tree uses the same layout as each guide's `input/` directory. Its files are copied into each guide during the build and removed afterwards; a path collision fails the build instead of replacing guide-specific content. The template in `ig-common/my-template/` is likewise staged temporarily in each guide's `my-template/` directory while Publisher runs. After Publisher, the build removes the staged files and generated cache files in directories it created, while preserving pre-existing guide files. Shared Markdown pages must also be declared in both `sushi-config.yaml` files.
 
 Available npm commands:
 
-- `npm run build:ig`: downloads/updates the FHIR IG Publisher and builds the IG from `ig/`.
+- `npm run build:ig`: uses `ig-common/input-cache/publisher.jar` for both guides, downloading it if needed, then builds R4 and R5. Updating the JAR requires a new build to refresh both QA reports.
+- `npm run build:ig:sushi`: generates both guides' FHIR resources without running Publisher.
+- `node scripts/build-igs.cjs r4` or `node scripts/build-igs.cjs r5`: builds one guide, including shared inputs.
 - `npm run build:app`: builds the React application only.
-- `npm run copy:ig:public`: copies `ig/output` into `public/ig` for local development.
-- `npm run copy:ig:build`: copies `ig/output` into `build/ig` for production build.
+- `npm run copy:ig:public`: creates `public/ig/index.html`, `public/ig/r4/` and `public/ig/r5/` for local development.
+- `npm run copy:ig:build`: creates the same layout in `build/ig` for production.
 - `npm run dev:ig`: builds the IG and copies it into `public/ig`.
 - `npm run build`: runs the full production build: IG generation, React build, then IG copy.
 
 When using `npm start`, run `npm run dev:ig` first to make the IG available locally under `public/ig`.
 
-After `npm run build`, the generated application contains the specification under `build/ig`. When the app is served, the IG is available under the same base URL as the application, at `/ig/` or `<PUBLIC_URL>/ig/` when the app is deployed on a sub-path.
+After `npm run build`, the generated application contains a guide selector at `build/ig/index.html`, with complete Publisher outputs at `build/ig/r4/index.html` and `build/ig/r5/index.html`. When the app is served, the same paths are available below `/ig/` or `<PUBLIC_URL>/ig/` when deployed on a sub-path. CI and release workflows also upload `build/ig/` as the `legio-implementation-guides` artifact.
 
 The IG build requires Java and internet access at least when the publisher or dependencies need to be updated.
