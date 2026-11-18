@@ -5,9 +5,9 @@
 # ╰────────────────────────────────────────────────────────────────────────────────────────────────╯
 id: legio.ig
 canonical: https://fyrstain.com/fhir/R4/legio
-name: IG legio
-title: legio Guide d'Implémentation
-description: legio guide d'implémentation.
+name: LegioR4ImplementationGuide
+title: Legio R4 Implementation Guide
+description: FHIR R4 artifacts used by Legio, alongside the separate FHIR R5 research guide.
 status: draft # draft | active | retired | unknown
 version: 0.1.0
 fhirVersion: 4.0.1 # https://www.hl7.org/fhir/valueset-FHIR-version.html
